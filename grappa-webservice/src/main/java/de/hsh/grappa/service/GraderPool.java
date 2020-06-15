@@ -38,7 +38,7 @@ public class GraderPool {
     private BackendPlugin backendPlugin;
     private GraderConfig graderConfig;
 
-//    private ConcurrentHashMap<String, CompletableFuture<ProformaResponse>> hp =
+    //    private ConcurrentHashMap<String, CompletableFuture<ProformaResponse>> hp =
 //        new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Future<ProformaResponse>> gpMap =
         new ConcurrentHashMap<>();
@@ -79,13 +79,13 @@ public class GraderPool {
                     releaseSemaphore = false; // starting another thread that will release the semaphore eventually
                     log.info("[GraderId: '{}', GradeProcessId: '{}']: Starting grading process...",
                         graderConfig.getId(), queuedSubm.getGradeProcId());
-
                     CompletableFuture.supplyAsync(() -> {
                         return runGradingProcess(queuedSubm);
-                    }).thenAcceptAsync(resp -> {
+                    }).thenAccept(resp -> {
                         processProformaResponseResult(resp, queuedSubm.getGradeProcId());
-                    }).thenRunAsync(() -> {
-                        tryGrade(); // Grading slot has become free, try grading if there's anything in queue
+                    }).thenRun(() -> {
+                        // Grading slot has become free, try grading if there's anything queued.
+                        tryGrade();
                     });
                 } else
                     log.debug("[GraderID: '{}']: This grader's submission queue is empty.", graderConfig.getId());
@@ -108,7 +108,7 @@ public class GraderPool {
         try {
             log.debug("GRADE START: {}", subm.getGradeProcId());
             futureTask = new FutureTask<ProformaResponse>(() -> {
-                    return backendPlugin.grade(subm.getSubmission());
+                return backendPlugin.grade(subm.getSubmission());
             });
             gpMap.put(subm.getGradeProcId(), futureTask);
             new Thread(futureTask).start();
@@ -122,7 +122,7 @@ public class GraderPool {
                 return resp;
             }
             throw new NoResultGraderExecption("Grader did not supply a proforma response.");
-        } catch (ExecutionException|NoResultGraderExecption e) { // BackendPlugin threw an exception
+        } catch (ExecutionException | NoResultGraderExecption e) { // BackendPlugin threw an exception
             totalGradingProcessesFailed.incrementAndGet();
             log.error("[GraderId: '{}', GradeProcessId: '{}']: Grading process failed with error: {}",
                 graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
@@ -178,8 +178,7 @@ public class GraderPool {
         if (null != resp) {
             log.debug("[Grader '{}']: Caching response: {}", graderConfig.getId(), resp);
             GrappaServlet.redis.setResponse(gradeProcId, resp);
-        }
-        else {
+        } else {
             log.debug("[Grader '{}']: Grading process did not supply a response result. " +
                 "Nothing to cache.", graderConfig.getId());
         }
