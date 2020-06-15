@@ -80,20 +80,10 @@ public class GraderPool {
                     log.info("[GraderId: '{}', GradeProcessId: '{}']: Starting grading process...",
                         graderConfig.getId(), queuedSubm.getGradeProcId());
 
-                    /*CompletableFuture<ProformaResponse> respFuture = */
                     CompletableFuture.supplyAsync(() -> {
-                        return grade(queuedSubm);
+                        return runGradingProcess(queuedSubm);
                     }).thenAcceptAsync(resp -> {
-                        if (null != resp) {
-                            log.debug("[Grader '{}']: Caching response: {}", graderConfig.getId(),
-                                resp);
-                            GrappaServlet.redis.setResponse(queuedSubm.getGradeProcId(), resp);
-                        }
-                        else {
-                            log.debug("[Grader '{}']: Grading process did not supply a response result. " +
-                                    "Nothing to cache.", graderConfig.getId());
-                        }
-                        gpMap.remove(queuedSubm.getGradeProcId());
+                        processProformaResponseResult(resp, queuedSubm.getGradeProcId());
                     }).thenRunAsync(() -> {
                         tryGrade(); // Grading slot has become free, try grading if there's anything in queue
                     });
@@ -113,7 +103,7 @@ public class GraderPool {
         return false; // will not grade (all workers are busy)
     }
 
-    public ProformaResponse grade(QueuedSubmission subm) {
+    public ProformaResponse runGradingProcess(QueuedSubmission subm) {
         FutureTask<ProformaResponse> futureTask = null;
         try {
             log.debug("GRADE START: {}", subm.getGradeProcId());
@@ -177,10 +167,22 @@ public class GraderPool {
             totalGradingProcessesExecuted.incrementAndGet(); // finished one way or the other
             log.debug("GRADE ENDE: {}", subm.getGradeProcId());
             semaphore.release();
+            gpMap.remove(subm.getGradeProcId());
             log.debug("Grader '{}': semaphore released, {} left", graderConfig.getId(),
                 semaphore.availablePermits());
         }
         return null;
+    }
+
+    private void processProformaResponseResult(ProformaResponse resp, String gradeProcId) {
+        if (null != resp) {
+            log.debug("[Grader '{}']: Caching response: {}", graderConfig.getId(), resp);
+            GrappaServlet.redis.setResponse(gradeProcId, resp);
+        }
+        else {
+            log.debug("[Grader '{}']: Grading process did not supply a response result. " +
+                "Nothing to cache.", graderConfig.getId());
+        }
     }
 
     public boolean cancelGradeProcess(String gradeProcId) {
