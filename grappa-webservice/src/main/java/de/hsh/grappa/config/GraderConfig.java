@@ -2,6 +2,7 @@ package de.hsh.grappa.config;
 
 public class GraderConfig {
   private String id;
+  private String name;
   private boolean enabled;
   private String class_path;
   private String class_name;
@@ -15,6 +16,14 @@ public class GraderConfig {
 
   public void setId(String id) {
     this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   public boolean getEnabled() { return enabled; }
@@ -65,7 +74,9 @@ public class GraderConfig {
   public String toString() {
     return "Grader{" +
             "id='" + id + '\'' +
+            ", name=" + name + '\'' +
             ", enabled='" + enabled + '\'' +
+            ", class_path=" + class_path + '\'' +
             ", class_name='" + class_name + '\'' +
             ", config_path='" + config_path + '\'' +
             ", max_runtime_seconds=" + timeout_seconds +

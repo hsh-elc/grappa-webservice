@@ -205,7 +205,7 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
                 throw new FileNotFoundException(String.format("Neither '%s' nor '%s' could be " +
                     "retrieved from the container.", responseZipPath, responseXmlPath));
         }
-        
+
         return proformaResponse;
     }
 }

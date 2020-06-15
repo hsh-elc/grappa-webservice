@@ -42,25 +42,22 @@ public class GrappaResource {
     @Produces(MediaType.APPLICATION_JSON)
     public String getStatus() {
         var graderStat = GraderPoolManager.getInstance().getGraderStatistics();
-
-
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        JsonObject gradersRuntimeInfo = new JsonObject();
-        for (GraderConfig g : GrappaServlet.CONFIG.getGraders()) {
-            JsonObject graderStatus = new JsonObject();
-            graderStatus.addProperty("id", g.getId());
-            graderStatus.addProperty("currentlyQueuedSubmissions",
-                GrappaServlet.redis.getSubmissionQueueCount(g.getId()));
-            GraderStatistics gs = graderStat.get(g.getId());
-            if (null != gs) {
-                graderStatus.addProperty("gradingProcessesExecuted", gs.getExecuted());
-                graderStatus.addProperty("gradingProcessesSucceeded", gs.getSucceeded());
-                graderStatus.addProperty("gradingProcessesFailed", gs.getFailed());
-                graderStatus.addProperty("gradingProcessesCancelled", gs.getCancelled());
-                graderStatus.addProperty("gradingProcessesTimedOut", gs.getTimedOut());
-            }
-            gradersRuntimeInfo.add("grader", graderStatus);
-        }
+        JsonObject gradersRuntimeInfo = AllGraderResources.getGradersStatus();
+//        for (GraderConfig g : GrappaServlet.CONFIG.getGraders()) {
+//            JsonObject graderStatus = new JsonObject();
+//            graderStatus.addProperty("id", g.getId());
+//            graderStatus.addProperty("currentlyQueuedSubmissions",
+//                GrappaServlet.redis.getSubmissionQueueCount(g.getId()));
+//            GraderStatistics gs = graderStat.get(g.getId());
+//            if (null != gs) {
+//                graderStatus.addProperty("gradingProcessesExecuted", gs.getExecuted());
+//                graderStatus.addProperty("gradingProcessesSucceeded", gs.getSucceeded());
+//                graderStatus.addProperty("gradingProcessesFailed", gs.getFailed());
+//                graderStatus.addProperty("gradingProcessesCancelled", gs.getCancelled());
+//                graderStatus.addProperty("gradingProcessesTimedOut", gs.getTimedOut());
+//            }
+//            gradersRuntimeInfo.add("grader", graderStatus);
+//        }
 
         JsonObject service = new JsonObject();
         service.addProperty("webappName", "grappa-webapp-name_retrieve-from-context");
@@ -86,19 +83,8 @@ public class GrappaResource {
         JsonObject status = new JsonObject();
         status.add("service", service);
 
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(status);
-    }
-
-    private String getConfigString() {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            var mapper = new ObjectMapper(new YAMLFactory());
-            mapper.writeValue(baos, GrappaServlet.CONFIG);
-            return baos.toString(Charsets.UTF_8);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            log.error(ExceptionUtils.getStackTrace(e));
-            return e.getMessage();
-        }
     }
 }
 

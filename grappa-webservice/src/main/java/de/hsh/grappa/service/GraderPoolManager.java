@@ -7,9 +7,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable {
@@ -100,6 +98,14 @@ public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable 
             }
         }
 
+    }
+
+    /**
+     *
+     * @return A list of grader ids. All of these graders are guaranteed to be active (enabled).
+     */
+    public Collection<String> getGraderIds() {
+        return Collections.unmodifiableCollection(pools.keySet());
     }
 
     public Map<String, GraderStatistics> getGraderStatistics() {
