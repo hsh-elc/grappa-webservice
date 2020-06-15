@@ -1,0 +1,39 @@
+# OUTDATED config!!! see /etc/ for more recent version
+
+service:
+  ignore_proforma_version_mismatch: false
+  prev_grading_seconds_max_list_size: 10
+  # A problem's estimated grading time is based on the arithmetic mean of previously measured grading times that are kept in a list; limiting that list's size to a maximum controls how many of these most recent (previous) grading times are taken into account when estimating a problem's new grading time
+  logging_level: "DEBUG"
+  # Sets the logging level (possible values: OFF, ERROR, WARN, INFO, DEBUG, TRACE and ALL)
+
+#logging:
+#  level: DEBUG
+#  # Sets the logging level (possible values: OFF, ERROR, WARN, INFO, DEBUG, TRACE and ALL)
+
+lms:
+  - name: "moodle@hsh"
+    id: "id"
+    password_hash: "hash"
+
+graders:
+  - name: "example grader"
+    class_name: "de.hsh.graja.Plugin"
+    config_path: "/path/to/config.properties"
+    max_runtime_seconds: 120
+    concurrency: 5 # is also the number of max instances in a pool
+      #     classpathes:
+      #       - path1
+      #       - path2
+      #     fileextensions:
+      #       - ".jar"
+      #     docker:
+
+
+redis:
+  host: "moodev-grappa.elc.hs-hannover.de"
+  port: 6379
+  password: "password"
+
+
+#repository

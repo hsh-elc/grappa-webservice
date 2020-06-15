@@ -1,0 +1,6 @@
+.idea/
+catalina*
+target/
+out/
+*.iml
+
