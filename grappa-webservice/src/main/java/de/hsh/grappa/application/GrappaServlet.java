@@ -29,13 +29,28 @@ public class GrappaServlet implements ServletContextListener {
     //public static GraderWorkersManager graderWorkersManager;
     private Thread t;
 
+    private static String grappaInstanceName = "grappa-webservice";
+
     @Override
     public void contextInitialized(ServletContextEvent ctxEvent) {
         try {
-            log.info("Context path: {}", ctxEvent.getServletContext().getContextPath());
+            try {
+                // This will supposedly throw a NullPointerException when the
+                // container is configured to expand the war file in memory
+                // instead of in disk.
+                // If that happens, grappa won't be able to distinguish between
+                // multiple running grappa instances that are configured to run
+                // with different grader jars.
+                grappaInstanceName = new File(ctxEvent.getServletContext()
+                    .getContextPath()).getName();
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                log.error(ExceptionUtils.getStackTrace(e));
+            }
+            log.info("Running grappa web service instance: '{}'.", grappaInstanceName);
             readConfigFile();
             setupRedisConnection();
-            loadGradingEnvironmentSetups();
+            //loadGradingEnvironmentSetups();
             //graderWorkersManager = new GraderWorkersManager(CONFIG.getGraders());
             GraderPoolManager.getInstance().init(CONFIG.getGraders());
             //t = new Thread(graderWorkersManager);
@@ -115,6 +130,13 @@ public class GrappaServlet implements ServletContextListener {
 //          log.error(e.getMessage());
 //          log.error(ExceptionUtils.getStackTrace(e));
 //        }
+    }
 
+    /**
+     * @return the name of the grappa instance depending on what grader this
+     * instance is running with.
+     */
+    public static String getGrappaInstanceName() {
+        return grappaInstanceName;
     }
 }
