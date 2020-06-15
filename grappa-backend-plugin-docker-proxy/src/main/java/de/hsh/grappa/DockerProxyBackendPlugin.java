@@ -198,19 +198,14 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
             proformaResponse = new ProformaResponse(respBytes, MimeType.ZIP);
         } else {
             resp = tryFetchResponseFile(dockerClient, containerId, responseXmlPath);
-            if (null != resp) {
+            if (null != resp) { // try for the other one
                 byte[] respBytes = IOUtils.toByteArray(resp);
                 proformaResponse = new ProformaResponse(respBytes, MimeType.XML);
             } else
                 throw new FileNotFoundException(String.format("Neither '%s' nor '%s' could be " +
                     "retrieved from the container.", responseZipPath, responseXmlPath));
         }
-
-        if (null == resp) // try for the other one
-            resp = tryFetchResponseFile(dockerClient, containerId, responseZipPath);
-        if (null != resp) {
-            byte[] respBytes = IOUtils.toByteArray(resp);
-        }
+        
         return proformaResponse;
     }
 }
