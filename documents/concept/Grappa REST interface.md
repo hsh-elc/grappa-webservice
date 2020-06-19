@@ -163,9 +163,8 @@ Poll for the status of a Proforma submission (queued for grading, being graded, 
   * **Code:** `404 Not Found` <br/>
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
-    **Description**: Parameter `:lmsid` or `:gradeProcessId` does not exist. This status also applies to an already
-     greaded submission that is associated with this `gradeProcessId`.
-
+    **Description**: Parameter `:lmsid` or `:gradeProcessId` does not exist.
+    
   * **Code:** `500 Internal Server Error` <br/>
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
