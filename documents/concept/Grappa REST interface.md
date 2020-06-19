@@ -31,8 +31,8 @@ Get the service's status information, such as runtime infos.
             "totalAllExceptExecuted": 0,
             "graderRuntimeInfo": {
                 "grader": {
-                    "id": "DummyGrader",
-                    "name": "DummyGrader",
+                    "id": "id",
+                    "name": "human-friendly name",
                     "currentlyQueuedSubmissions": 0,
                     "gradingProcessesExecuted": 0,
                     "gradingProcessesSucceeded": 0,
@@ -148,9 +148,8 @@ Poll for the status of a Proforma submission (queued for grading, being graded, 
        finished successfully or failed, a Proforma response for
        the submission will be returned in the HTTP response's content body. Refer to the Proforma response's [is-internal-error flag](https://github.com/Proforma/proformaxml/blob/master/Whitepaper.md#is-internal-error) 
        to determine if the grading process failed. In case the grading process was cancelled by the client, the HTTP
-        response's content body will return empty. If the cancellation request is sent in on an already finished grading
-         process, the cancellation will have no effect and the response's content body will be a valid Proforma
-          response.   
+        response's content body will return empty. If the cancellation request is sent in on an already finished
+         grading process, the cancellation will have no effect and the response's content body will be a valid Proforma response.   
      
   * **Code:** `202 Accepted` <br/>
     **Content**: *None* <br/>
