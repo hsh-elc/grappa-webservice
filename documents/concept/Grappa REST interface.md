@@ -20,14 +20,28 @@ Get the service's status information, such as runtime infos.
     **Content**:
     ```
     {
-        "id": "graderId",
-        "name": "human-friendly name",
-        "currentlyQueuedSubmissions": 0,
-        "gradingProcessesExecuted": 0,
-        "gradingProcessesSucceeded": 0,
-        "gradingProcessesFailed": 0,
-        "gradingProcessesCancelled": 0,
-        "gradingProcessesTimedOut": 0
+        "service": {
+            "webappName": "grappa-webservice",
+            "staticConfigPath": "/etc/grappa/grappa-config.yaml",
+            "totalGradingProcessesExecuted": 0,
+            "totalGradingProcessesSucceeded": 0,
+            "totalGradingProcessesFailed": 0,
+            "totalGradingProcessesCancelled": 0,
+            "totalGradingProcessesTimedOut": 0,
+            "totalAllExceptExecuted": 0,
+            "graderRuntimeInfo": {
+                "grader": {
+                    "id": "DummyGrader",
+                    "name": "DummyGrader",
+                    "currentlyQueuedSubmissions": 0,
+                    "gradingProcessesExecuted": 0,
+                    "gradingProcessesSucceeded": 0,
+                    "gradingProcessesFailed": 0,
+                    "gradingProcessesCancelled": 0,
+                    "gradingProcessesTimedOut": 0
+                }
+            }
+        }
     }
     ```    
     **Content Type**: `application/json` <br/>
@@ -37,11 +51,6 @@ Get the service's status information, such as runtime infos.
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unauthorized access to this resource.
-
-  * **Code:** `404 Not Found` <br/>
-    **Content**: `{ error : "message" }` <br/>
-    **Content Type**: `application/json` <br/>
-    **Description**: Parameter `graderId` does not exist.
 
   * **Code:** `500 Internal Server Error` <br/>
     **Content**: `{ error : "message" }` <br/>
