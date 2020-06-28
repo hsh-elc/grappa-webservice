@@ -42,6 +42,7 @@
 	<logger name="io.lettuce" level="ERROR" />
 	<logger name="io.netty" level="ERROR" />
 	<logger name="de.hsh.grappa" level="DEBUG" />
+	<logger name="ch.qos.logback" level="ERROR" />
 	<root level="DEBUG">
 	    <appender-ref ref="SIFT" />
 	    <appender-ref ref="STDOUT" />
