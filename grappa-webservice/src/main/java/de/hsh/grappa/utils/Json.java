@@ -14,6 +14,6 @@ public class Json {
     }
 
     public static String createJsonExceptionMessage(Throwable e) {
-        return createJsonKeyValueAsString("errorMessage", e.getMessage());
+        return createJsonKeyValueAsString("error", e.getMessage());
     }
 }
