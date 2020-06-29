@@ -1,0 +1,29 @@
+############################################################
+# iptables rules for outgoing connections in this container
+# The container doesn't expose any ports to the outside.
+# Therefore no need to specify any incoming rules.
+# Last line of file must be empty.
+############################################################
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+# block all outgoing traffic
+:OUTPUT DROP [0:0]
+# allow loopback
+-A OUTPUT -o lo -j ACCEPT
+# accept related and established traffic
+-A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+# accept dns
+-A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
+-A OUTPUT -p udp -m udp --sport 53 -j ACCEPT
+-A OUTPUT -p tcp -m tcp --dport 53 -j ACCEPT
+-A OUTPUT -p tcp -m tcp --sport 53 -j ACCEPT
+############################################################
+# Allow additional outgoing connections below
+# e.g.
+# -A OUTPUT -p tcp -d google.com --dport 80 -j ACCEPT
+############################################################
+# ADD RULES HERE
+############################################################
+-A OUTPUT -j REJECT
+COMMIT
