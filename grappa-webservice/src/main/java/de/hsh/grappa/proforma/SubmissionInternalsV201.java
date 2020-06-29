@@ -22,17 +22,7 @@ public class SubmissionInternalsV201 extends SubmissionInternals {
         if (null != concreteSubmPojo.getExternalTask()) {
             String taskUuid = concreteSubmPojo.getExternalTask().getUuid(); // may return null;
             String taskRepoUrl = concreteSubmPojo.getExternalTask().getValue();
-
-            // return new ExteralTaskRetriever()
-
-            // put this into of ExternalTaskRetriever
-//            if (Strings.isNullOrEmpty(taskRepoUrl)) {
-//                taskAvailability = TaskAvailabilityType.UUID;
-//                if (Strings.isNullOrEmpty(taskuuid))
-//                    throw new IllegalArgumentException("taskuuid and task repository are not specified");
-//            } else {
-//                taskAvailability = TaskAvailabilityType.EXTERNAL;
-//            }
+            return new ExternalTaskRetrieverV201(concreteSubmPojo, this);
         } else if (null != concreteSubmPojo.getIncludedTaskFile()) {
             IncludedTaskFileType included = concreteSubmPojo.getIncludedTaskFile();
             //String taskUuid = included.getUuid(); // may be null, the attribute is optional
@@ -43,12 +33,10 @@ public class SubmissionInternalsV201 extends SubmissionInternals {
             } else if (null != included.getEmbeddedZipFile()) {
                 // return EmbeddedZipTaskRetriever
                 //String zip = included.getEmbeddedZipFile();
-                throw new NotImplementedException("embedded zip not yet implemented");
+                throw new NotImplementedException("TODO: implement embedded zip");
             } else throw new IllegalArgumentException("Unknown IncludedTaskFileType");
         } else if (null != concreteSubmPojo.getTask())
-            throw new NotImplementedException("native xml task not implemented");
+            throw new NotImplementedException("TODO: implement native xml task element");
         else throw new IllegalArgumentException("Unknown task element in submission");
-
-        throw new NotImplementedException("implement remaining cases");
     }
 }
