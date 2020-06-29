@@ -18,8 +18,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-public class Main {
-    private static final Logger log = LoggerFactory.getLogger(Main.class);
+public class GraderBackendStarter {
+    private static final Logger log = LoggerFactory.getLogger(GraderBackendStarter.class);
 
     private static final String CONFIG_CLASS_PATHES = "grappa.plugin.grader.classpathes";
     private static final String CONFIG_CLASS_NAME = "grappa.plugin.grader.class";
