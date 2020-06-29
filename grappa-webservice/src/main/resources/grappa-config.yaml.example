@@ -1,0 +1,32 @@
+service:
+  # A problem's estimated grading time is based on the arithmetic mean of previously measured grading times that are kept in a list; limiting that list's size to a maximum controls how many of these most recent (previous) grading times are taken into account when estimating a problem's new grading time
+  prev_grading_seconds_max_list_size: 10
+  # Sets the logging level (possible values: OFF, ERROR, WARN, INFO, DEBUG, TRACE and ALL)
+  logging_level: "DEBUG"
+  default_grading_environment_setup_class_path: "path to jar"
+  default_grading_environment_setup_class_name: "de.hsh.grappa.VagrantHostSetup"
+
+lms:
+  - name: "test@HsH"
+    id: "test"
+    password_hash: "test"
+
+graders:
+  - id: "DummyGrader"
+    name: "DummyGrader" # user friendly name
+    enabled: true  # enable or disable grader
+    class_path: "path to grappa-backend-plugin-docker-proxy.jar"
+    class_name: "de.hsh.grappa.DockerProxyBackendPlugin"
+    config_path: "path to grappa-backend-plugin-docker-proxy.properties"
+    timeout_seconds: 60
+    # concurrent_grading_processes sets the number of max grader instances in a grader pool
+    concurrent_grading_processes: 5
+
+cache:
+  submission_timeout: 86400 # 1 day
+  task_timeout: 2592000 # 30 days
+  response_timeout: 2592000 # 30 day
+  redis:
+    host: ""
+    port: 6379
+    password: ""
