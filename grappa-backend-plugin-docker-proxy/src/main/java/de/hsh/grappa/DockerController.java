@@ -2,6 +2,7 @@ package de.hsh.grappa;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Frame;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class DockerController {
+public class DockerController { // TODO: refactor to ctor(dockerClient, containerId)
     public static void copyFile(byte[] fileBytes, String destinationDirPath, String destinationFileName,
                                 DockerClient client, String containerId, boolean overwrite) throws Exception {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -55,24 +56,25 @@ public class DockerController {
         client.removeContainerCmd(containerId).exec();
     }
 
-    public static InputStream fetchResponse(DockerClient client, String containerId,
-                                            String containerResponseFilePath) throws Exception {
+    public static InputStream fetchFile(DockerClient client, String containerId,
+                                        String containerFilePath) throws Exception {
         // Copy file from container
         try (TarArchiveInputStream tarStream = new TarArchiveInputStream(
-            client.copyArchiveFromContainerCmd(containerId, containerResponseFilePath).exec())) {
+            client.copyArchiveFromContainerCmd(containerId, containerFilePath).exec())) {
 
             // https://github.com/docker-java/docker-java/issues/991#issuecomment-366185304
-            // DockerClient's copyArchiveFromContainerCmd wraps the response.(zip|txt) within
+            // DockerClient's copyArchiveFromContainerCmd wraps the file within
             // a tar archive. Either way, we can expect just a single tar entry within this
             // tar archive.
             TarArchiveEntry tarEntry = tarStream.getNextTarEntry();
-            if (null != tarEntry) {
+//            if (null != tarEntry) {
                 try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                     IOUtils.copy(tarStream, baos);
                     return new ByteArrayInputStream(baos.toByteArray());
-                }
-            } else
-                throw new Exception("response file has no content.");
+//                }
+//            } else {
+//                throw new Exception("file has no content.");
+            }
         }
     }
 
@@ -89,4 +91,9 @@ public class DockerController {
         }).awaitCompletion(1500, TimeUnit.MILLISECONDS);
         return logs;
     }
+
+//    public static long getContainerExitCode(DockerClient client, String containerId) throws Exception {
+//        InspectContainerResponse.ContainerState state = client.inspectContainerCmd(containerId).exec().getState();
+//        return state.getExitCodeLong();
+//    }
 }

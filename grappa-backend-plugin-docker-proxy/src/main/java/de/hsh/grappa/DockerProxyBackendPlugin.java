@@ -7,6 +7,7 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
+import com.google.common.base.Strings;
 import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
 import de.hsh.grappa.proforma.MimeType;
 import de.hsh.grappa.proforma.ProformaResponse;
@@ -27,9 +28,12 @@ import java.util.Properties;
 public class DockerProxyBackendPlugin implements BackendPlugin {
     private static Logger log = LoggerFactory.getLogger(DockerProxyBackendPlugin.class);
 
+    private static final String GRADER_EXCEPTION_STACKTRACE_FILE_PATH =
+        "/var/grb_starter/tmp/grader_exception_stacktrace";
+
     private String dockerContainerImage;
     private String dockerHost;
-    private String copySubmissionToDirecotryPath;
+    private String copySubmissionToDirectoryPath;
     private String responseResultDirectoryPath;
 
     @Override
@@ -37,7 +41,7 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
         log.debug("Entering DockerProxyBackendPlugin.init()...");
         dockerContainerImage = props.get("dockerproxybackendplugin.container_image").toString();
         dockerHost = props.get("dockerproxybackendplugin.docker_host").toString();
-        copySubmissionToDirecotryPath =
+        copySubmissionToDirectoryPath =
             props.get("dockerproxybackendplugin.copy_submission_to_directory_path").toString();
         responseResultDirectoryPath = props.get("dockerproxybackendplugin.response_result_directory_path").toString();
     }
@@ -71,8 +75,10 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
             // Starts container and subsequentlly the grading process
             DockerController.startContainer(dockerClient, containerId);
 
+            long exitCode = -1;
             try {
-                waitForContainerToFinishGrading(dockerClient, containerId);
+                exitCode = waitForContainerToFinishGrading(dockerClient, containerId);
+                log.info("Container finished with exit code " + exitCode);
             } catch (InterruptedException e) {
                 log.info("Thread interrupted while waiting for the grading result, proceeding to deleting docker " +
                     "container...");
@@ -80,19 +86,32 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
             }
 
             ProformaResponse proformaResponse = null;
-            // Thread interruption: Do not expect (nor care about) any result or container log
-            // with the running container and grading process about to be stopped and removed
-            if (!Thread.currentThread().isInterrupted()) {
-                try {
-                    proformaResponse = fetchProformaResponseFile(dockerClient, containerId);
-
-                } catch (InterruptedException e) {
-                    log.info("Thread interruption during fetching response result file.");
-                    Thread.currentThread().interrupt();
+            String graderStackTrace = null;
+            if (0 != exitCode) {
+                log.error("Grader finished abnormally with exit code " + exitCode);
+                log.info("Fetching grader stack trace file: " + GRADER_EXCEPTION_STACKTRACE_FILE_PATH);
+                try (InputStream is = DockerController.fetchFile(dockerClient, containerId,
+                    GRADER_EXCEPTION_STACKTRACE_FILE_PATH)) {
+                    graderStackTrace = IOUtils.toString(is, "utf8");
                 } catch (Exception e) {
-                    log.error("Failed to fetch response file from container.");
-                    log.error(e.getMessage());
+                    log.error("Could not load grader stack trace file '{}'.",
+                        GRADER_EXCEPTION_STACKTRACE_FILE_PATH);
                     log.error(ExceptionUtils.getStackTrace(e));
+                }
+            } else {
+                // Thread interruption: Do not expect (nor care about) any result or container log
+                // with the running container and grading process about to be stopped and removed
+                if (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        proformaResponse = fetchProformaResponseFile(dockerClient, containerId);
+                    } catch (InterruptedException e) {
+                        log.info("Thread interruption during fetching response result file.");
+                        Thread.currentThread().interrupt();
+                    } catch (Exception e) {
+                        log.error("Failed to fetch response file from container.");
+                        log.error(e.getMessage());
+                        log.error(ExceptionUtils.getStackTrace(e));
+                    }
                 }
             }
 
@@ -119,7 +138,7 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
                 DockerController.stopContainer(dockerClient, containerId);
                 log.debug("[ContainerId: '{}'] Container stopped", containerId);
             } catch (Exception e) {
-                log.warn("[ContainerId: '{}'] Failed to stop container (it may already be stopped).", containerId);
+                log.warn("[ContainerId: '{}'] Failed to stop container (it may already have stopped).", containerId);
             }
 
             try {
@@ -132,6 +151,13 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
             }
 
             log.info("DockerProxyBackendPlugin finished.");
+            if (!Strings.isNullOrEmpty(graderStackTrace)) {
+                log.info("Re-throwing grader exception stack trace.");
+                throw new GraderException(graderStackTrace);
+            }
+
+            // if the grader was interrupted, but shut down gracefully, it should still
+            // return a null proforma response, and that's what we will return
             return proformaResponse;
         }
     }
@@ -142,12 +168,12 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
         String submDestFileName = subm.getMimeType()
             .equals(MimeType.XML) ? "submission.xml" : "submission.zip";
         log.info("Copying submission file to docker container: '{}'...",
-            FilenameUtils.separatorsToUnix(Paths.get(copySubmissionToDirecotryPath, submDestFileName).toString()));
-        DockerController.copyFile(proformaSubmBytes, copySubmissionToDirecotryPath,
+            FilenameUtils.separatorsToUnix(Paths.get(copySubmissionToDirectoryPath, submDestFileName).toString()));
+        DockerController.copyFile(proformaSubmBytes, copySubmissionToDirectoryPath,
             submDestFileName, dockerClient, containerId, true);
     }
 
-    private void waitForContainerToFinishGrading(DockerClient dockerClient, String containerId)
+    private long waitForContainerToFinishGrading(DockerClient dockerClient, String containerId)
         throws InterruptedException {
         InspectContainerResponse.ContainerState state = dockerClient.inspectContainerCmd(containerId).exec().getState();
         for (int i = 3; !Thread.currentThread().isInterrupted()
@@ -157,6 +183,8 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
             Thread.sleep(1000);
             state = dockerClient.inspectContainerCmd(containerId).exec().getState();
         }
+
+        return state.getExitCodeLong();
     }
 
     /**
@@ -172,8 +200,8 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
         log.info("Fetching response file: {}", respFilePath);
         InputStream resp = null;
         try {
-            resp = DockerController.fetchResponse(dockerClient, containerId,
-                respFilePath.toString());
+            resp = DockerController.fetchFile(dockerClient, containerId,
+                respFilePath);
         } catch (com.github.dockerjava.api.exception.NotFoundException e) {
             log.info("Response file '{}' does not exist.", respFilePath);
             return null;
