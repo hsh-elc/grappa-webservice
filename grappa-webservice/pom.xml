@@ -29,7 +29,7 @@
         </dependency>
         <dependency>
             <groupId>de.hsh.grappa</groupId>
-            <artifactId>grappa-docker-proxy-backend-plugin</artifactId>
+            <artifactId>grappa-backend-plugin-docker-proxy</artifactId>
             <version>0.1</version>
         </dependency>
         <dependency>
@@ -65,79 +65,23 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.11</version>
         </dependency>
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
             <version>5.3.0.RELEASE</version>
         </dependency>
-
-
-
-
-
-<!--        <dependency>-->
-<!--            <groupId>jakarta.xml.bind</groupId>-->
-<!--            <artifactId>jakarta.xml.bind-api</artifactId>-->
-<!--            <version>2.3.3</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>jakarta.activation</groupId>-->
-<!--            <artifactId>jakarta.activation-api</artifactId>-->
-<!--            <version>1.2.1</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
             <version>2.3.1</version>
         </dependency>
-
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
             <version>2.3.1</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.glassfish.jaxb</groupId>-->
-<!--            <artifactId>jaxb-runtime</artifactId>-->
-<!--            <version>2.3.2</version>-->
-<!--        </dependency>-->
-        <!-- https://mvnrepository.com/artifact/org.glassfish.jaxb/jaxb-core -->
-<!--        <dependency>-->
-<!--            <groupId>org.glassfish.jaxb</groupId>-->
-<!--            <artifactId>jaxb-core</artifactId>-->
-<!--            <version>2.3.0.1</version>-->
-<!--        </dependency>-->
-
-
-
-        <!--        throws com sun istack pool noclassdeffounderror-->
-<!--        <dependency> -->
-<!--            <groupId>com.sun.xml.bind</groupId>-->
-<!--            <artifactId>jaxb-impl</artifactId>-->
-<!--            <version>2.3.2</version>-->
-<!--        </dependency>-->
-
-
-
-<!--        <dependency>-->
-<!--            <groupId>com.sun.xml.bind</groupId>-->
-<!--            <artifactId>jaxb-core</artifactId>-->
-<!--            <version>2.3.0.1</version>-->
-<!--        </dependency>-->
-
-        <!-- https://mvnrepository.com/artifact/com.sun.istack/istack-commons-runtime -->
-<!--        <dependency>-->
-<!--            <groupId>com.sun.istack</groupId>-->
-<!--            <artifactId>istack-commons-runtime</artifactId>-->
-<!--            <version>3.0.11</version>-->
-<!--        </dependency>-->
-
-
-
-
-
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
