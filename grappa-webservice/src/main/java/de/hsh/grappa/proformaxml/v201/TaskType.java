@@ -40,6 +40,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * 
  * 
  */
+@XmlRootElement(name = "task")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "task-type", namespace = "urn:proforma:v2.0.1", propOrder = {
     "title",
