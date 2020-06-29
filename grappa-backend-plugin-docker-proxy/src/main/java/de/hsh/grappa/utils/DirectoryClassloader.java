@@ -62,7 +62,7 @@ public class DirectoryClassloader {
                 s, suffixes);
         for (String suffix : suffixes)
             if (s.length() >= suffix.length()
-                    && s.substring(s.length() - suffix.length(), s.length())
+                    && s.substring(s.length() - suffix.length())
                             .equalsIgnoreCase(suffix))
                 return true;
         return false;
@@ -87,7 +87,7 @@ public class DirectoryClassloader {
 
             Method method = sysclass.getDeclaredMethod("addURL", parameters);
             method.setAccessible(true);
-            method.invoke(webappClassLoader, new Object[] { jarUrl });
+            method.invoke(webappClassLoader, jarUrl);
         } catch (Throwable t) {
             throw new IOException(
                     "Error, could not add URL to system classloader");

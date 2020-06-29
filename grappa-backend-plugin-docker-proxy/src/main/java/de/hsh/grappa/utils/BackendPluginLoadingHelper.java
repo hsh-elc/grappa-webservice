@@ -2,6 +2,7 @@ package de.hsh.grappa.utils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.Properties;
 
 import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
@@ -47,18 +48,16 @@ public class BackendPluginLoadingHelper {
             logger.warn("Grader config file not configured.");
         }
 
-        // find BackendPlugin
+// find BackendPlugin
         Class<?> clazz = null;
-
         ClassLoader contextClassLoader = Thread.currentThread()
-                .getContextClassLoader();
-
+            .getContextClassLoader();
         clazz = contextClassLoader.loadClass(config
-                .getProperty("grappa.plugin.grader.class"));
-
-        graderPlugin = (BackendPlugin) clazz.newInstance();
-
-        // Plugin configurieren
+            .getProperty("grappa.plugin.grader.class"));
+        //graderPlugin = (BackendPlugin) clazz.newInstance();
+        Class<? extends BackendPlugin> newClass = clazz.asSubclass(BackendPlugin.class);
+        Constructor<? extends BackendPlugin> constructor = newClass.getConstructor();
+        graderPlugin = (BackendPlugin) constructor.newInstance();
 
         if (!backendConf.isEmpty()) {
             try {

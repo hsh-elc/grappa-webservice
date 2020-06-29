@@ -1,5 +1,6 @@
 package de.hsh.grappa.utils;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +24,8 @@ public class ClassLoaderHelper<C> {
             Constructor<? extends C> constructor = newClass.getConstructor();
             return constructor.newInstance();
         } catch (Exception e) {
-            log.error("Class with path '{}' and class name  '{}' could not be loaded.", classPath, className);
-            log.error(e.getMessage());
-            throw e;
+            throw new Exception(String.format("Class with path '%s' and class name  '%s' could not be loaded.",
+                classPath, className), e);
         }
     }
 }
