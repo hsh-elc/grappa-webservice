@@ -21,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,8 @@ public class AllGraderResources {
      * @return a JSON array of mappings (graderId, graderName) of *online* graders.
      */
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getGraders() {
+    @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")
+    public Response getGraders() {
         var ids = GraderPoolManager.getInstance().getGraderIds();
         JsonObject graders = new JsonObject();
         for (String graderId : ids) {
@@ -56,7 +57,7 @@ public class AllGraderResources {
             graders.add("graders", grader);
         }
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return gson.toJson(graders);
+        return Response.ok().entity(gson.toJson(graders)).build();
     }
 
 //    @GET

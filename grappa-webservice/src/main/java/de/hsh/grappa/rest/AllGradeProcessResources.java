@@ -36,7 +36,7 @@ public class AllGradeProcessResources {
 
     @POST
     @Consumes({MediaType.APPLICATION_XML, MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM})
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")
     public Response grade(@DefaultValue("true") @QueryParam("async") boolean async,
                           @QueryParam("graderId") String graderId, InputStream submission,
                           @Context HttpHeaders headers) throws Exception {

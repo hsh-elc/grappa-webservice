@@ -21,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
@@ -39,30 +40,14 @@ public class GrappaResource {
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getStatus() {
+    @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")
+    public Response getStatus() {
         var graderStat = GraderPoolManager.getInstance().getGraderStatistics();
         JsonObject gradersRuntimeInfo = AllGraderResources.getGradersStatus();
-//        for (GraderConfig g : GrappaServlet.CONFIG.getGraders()) {
-//            JsonObject graderStatus = new JsonObject();
-//            graderStatus.addProperty("id", g.getId());
-//            graderStatus.addProperty("currentlyQueuedSubmissions",
-//                GrappaServlet.redis.getSubmissionQueueCount(g.getId()));
-//            GraderStatistics gs = graderStat.get(g.getId());
-//            if (null != gs) {
-//                graderStatus.addProperty("gradingProcessesExecuted", gs.getExecuted());
-//                graderStatus.addProperty("gradingProcessesSucceeded", gs.getSucceeded());
-//                graderStatus.addProperty("gradingProcessesFailed", gs.getFailed());
-//                graderStatus.addProperty("gradingProcessesCancelled", gs.getCancelled());
-//                graderStatus.addProperty("gradingProcessesTimedOut", gs.getTimedOut());
-//            }
-//            gradersRuntimeInfo.add("grader", graderStatus);
-//        }
 
         JsonObject service = new JsonObject();
         service.addProperty("webappName", "grappa-webapp-name_retrieve-from-context");
         service.addProperty("staticConfigPath", GrappaServlet.CONFIG_FILENAME_PATH);
-
 
         GraderStatistics total = new GraderStatistics();
         for (Map.Entry<String, GraderStatistics> e : graderStat.entrySet())
@@ -84,7 +69,7 @@ public class GrappaResource {
         status.add("service", service);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return gson.toJson(status);
+        return Response.ok().entity(gson.toJson(status)).build();
     }
 }
 

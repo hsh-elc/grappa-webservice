@@ -13,6 +13,7 @@ import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.GraderStatistics;
 import de.hsh.grappa.utils.Json;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
@@ -43,10 +45,10 @@ public class GraderResource {
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getStatus(@PathParam("graderId") String graderId) throws Exception {
+    @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")
+    public Response getStatus(@PathParam("graderId") String graderId) throws Exception {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return gson.toJson(getGraderStatus(graderId));
+        return Response.ok().entity(gson.toJson(getGraderStatus(graderId))).build();
     }
 
     public static JsonObject getGraderStatus(String graderId) throws NotFoundException {
