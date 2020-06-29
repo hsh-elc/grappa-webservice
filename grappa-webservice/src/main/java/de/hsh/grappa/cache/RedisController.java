@@ -117,6 +117,7 @@ public class RedisController {
      * @return
      */
     public synchronized long getSubmissionQueueCount(String graderId) {
+        // TODO: validate graderId
         // don't spam this: log.debug("[GraderId: '{}']: getSubmissionQueueCount()", graderId);
         try (var redis = redisClient.connect()) {
             return redis.sync().llen(SUBMISSION_QUEUE_PREFIX.concat(graderId));
@@ -146,8 +147,17 @@ public class RedisController {
         }
     }
 
-    public synchronized boolean isSubmissionQueued(String gradeProcId) {
+    private synchronized void validateGraderProcId(String gradeProcId) throws NotFoundException {
+        // If no graderId is mapped to this gradeProcId, then this
+        // gradeProcId has never been created for a submission.
+        String graderId = getAssociatedGraderId(gradeProcId);
+        if(null == graderId)
+            throw new NotFoundException(String.format("GradeProcId '%s' does not exist.", gradeProcId));
+    }
+
+    public synchronized boolean isSubmissionQueued(String gradeProcId) throws NotFoundException {
         log.debug("[GradeProcId: '{}']: isSubmissionQueued() called.", gradeProcId);
+        validateGraderProcId(gradeProcId);
         String graderId = getAssociatedGraderId(gradeProcId);
         try (var redis = redisClient.connect()) {
             List<String> graderQueue = redis.sync().lrange(SUBMISSION_QUEUE_PREFIX.concat(graderId), 0, -1);
