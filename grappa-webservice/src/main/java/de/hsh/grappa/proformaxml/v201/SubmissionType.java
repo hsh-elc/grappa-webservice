@@ -3,10 +3,7 @@ package de.hsh.grappa.proformaxml.v201;
 
 import de.hsh.grappa.proforma.AbstractSubmissionType;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 
 
 /**
@@ -39,6 +36,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  * 
  */
+@XmlRootElement(name = "submission")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "submission-type", namespace = "urn:proforma:v2.0.1", propOrder = {
     "externalTask",

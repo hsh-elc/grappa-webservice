@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * 
  * 
  */
-@XmlRootElement
+@XmlRootElement(name = "response")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "response-type", namespace = "urn:proforma:v2.0.1", propOrder = {
     "mergedTestFeedback",
