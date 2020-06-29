@@ -2,6 +2,7 @@
 package de.hsh.grappa.rest;
 
 import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.proforma.MimeType;
 import de.hsh.grappa.proforma.ProformaResponse;
 import de.hsh.grappa.service.GraderPoolManager;
 import org.slf4j.Logger;
@@ -43,15 +44,21 @@ public class GradeProcessResource {
         ProformaResponse proformaResponse = GrappaServlet.redis.getResponse(gradeProcessId);
         if (null != proformaResponse) {
             log.debug("[GradeProcId: '{}']: ProformaResponse file is available.", gradeProcessId);
+            String responseFileName = "response." +  (proformaResponse.getMimeType()
+                .equals(MimeType.XML) ? "xml" : "zip");
+            Response.ResponseBuilder resp =
+                Response.status(Response.Status.OK)
+                    .header("content-disposition","attachment; filename = " + responseFileName)
+                    .entity(proformaResponse.getContent());
             var acceptableTypes = headers.getAcceptableMediaTypes();
             if (acceptableTypes.stream().anyMatch(mt -> mt.isCompatible(MediaType.APPLICATION_OCTET_STREAM_TYPE))) {
                 log.debug("[GradeProcId: '{}']: Returning ProformaResponse as APPLICATION_OCTET_STREAM.",
                     gradeProcessId);
-                return Response.status(Response.Status.OK).entity(proformaResponse.getContent()).type(MediaType.APPLICATION_OCTET_STREAM).build();
+                return resp.type(MediaType.APPLICATION_OCTET_STREAM).build();
             } else { // for everything else
                 log.debug("[GradeProcId: '{}']: Returning ProformaResponse as MULTIPART_FORM_DATA.",
                     gradeProcessId);
-                return Response.status(Response.Status.OK).entity(proformaResponse.getContent()).type(MediaType.MULTIPART_FORM_DATA).build();
+                return resp.type(MediaType.MULTIPART_FORM_DATA).build();
             }
         } else if (GrappaServlet.redis.isSubmissionQueued(gradeProcessId)) {
             log.debug("[GradeProcId: '{}']: Submission is still queued.", gradeProcessId);
