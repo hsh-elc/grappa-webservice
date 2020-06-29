@@ -1,9 +1,6 @@
 package de.hsh.grappa.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,15 +28,16 @@ public class Zip {
     public static byte[] getFileFromZip(InputStream zipStream, String fileName) throws Exception {
         //fileName = fileName.replace('\\', '/');
         Path filePath = Paths.get(fileName);
+        //System.out.println("Looking for " + fileName + "in ZIP...");
         boolean fileNotFound = true;
         try (ZipInputStream zip = new ZipInputStream(zipStream)) {
             var out = new ByteArrayOutputStream();
             ZipEntry ze;
             while (null != (ze = zip.getNextEntry())) {
                 Path zePath = Paths.get(ze.getName());
+                //System.out.println("Checking zip file: " + zePath);
                 if(zePath.equals(filePath)) {
                     fileNotFound = false;
-                //System.out.println("Checking zip file: " + zePath);
                     byte[] buffer = new byte[10000000]; // 10Mb file
                     int len;
                     while (-1 != (len = zip.read(buffer))) {

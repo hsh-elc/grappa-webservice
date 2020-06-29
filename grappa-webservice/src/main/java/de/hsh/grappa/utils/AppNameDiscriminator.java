@@ -2,7 +2,6 @@ package de.hsh.grappa.utils;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.sift.Discriminator;
-import com.sun.xml.bind.v2.TODO;
 import de.hsh.grappa.application.GrappaServlet;
 
 public class AppNameDiscriminator implements Discriminator<ILoggingEvent> {
