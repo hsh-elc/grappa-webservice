@@ -27,6 +27,10 @@ public class Main {
     private static final String CONFIG_FILE_EXTENSIONS = "grappa.plugin.grader.fileextensions";
     private static final String CONFIG_FILE_NAME = "grappa-grader-backend-starter.properties";
     private static final String TMP_INPUT_PATH = "/var/grb_starter/tmp";
+//    private static final String GRADER_EXCEPTION_MESSAGE_FILE_PATH =
+//        TMP_INPUT_PATH.concat("/grader_exception_message");
+    private static final String GRADER_EXCEPTION_STACKTRACE_FILE_PATH =
+        TMP_INPUT_PATH.concat("/grader_exception_stacktrace");
     private static final String RESULT_RESPONSE_FILE_PATH_WITHOUT_EXTENSION = "/var/grb_starter/tmp/response";
 
     private static final String WORKING_DIR_PATH = "/opt/grader/starter";
@@ -88,8 +92,19 @@ public class Main {
                 proformaResponse = bp.grade(proformaSubmission);
                 log.info("Grading finished.");
             } catch (Exception e) {
-                log.error("Grading process failed.");
+                log.error("Grading process failed with the following message and stacktrace:");
+                log.error(e.getMessage());
                 log.error(ExceptionUtils.getStackTrace(e));
+
+                try(FileOutputStream fos = new FileOutputStream(GRADER_EXCEPTION_STACKTRACE_FILE_PATH);
+                    ByteArrayInputStream baos = new ByteArrayInputStream
+                        (ExceptionUtils.getStackTrace(e).getBytes())) {
+                    IOUtils.copy(baos, fos);
+                } catch (Exception e2) {
+                    log.error(e2.getMessage());
+                    log.error(ExceptionUtils.getStackTrace(e2));
+                }
+
                 System.exit(-1);
             }
 
