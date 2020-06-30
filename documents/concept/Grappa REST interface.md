@@ -81,7 +81,7 @@ Submit a Proforma submission for grading.
 
 * **HTTP Responses**
   
-  * **Code:** `201 Accepted` <br/>
+  * **Code:** `201 Created` <br/>
      **Content**: `{ gradeProcessId : "unique id" }` <br/>
      **Content Type**: `application/json` <br/>
      **Description**: The Proforma submission has been accepted for grading.
