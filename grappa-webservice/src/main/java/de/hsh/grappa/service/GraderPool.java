@@ -1,5 +1,6 @@
 package de.hsh.grappa.service;
 
+import de.hsh.grappa.DockerProxyBackendPlugin;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.QueuedSubmission;
 import de.hsh.grappa.config.GraderConfig;
@@ -119,10 +120,31 @@ public class GraderPool {
         return false; // will not grade (all workers are busy)
     }
 
+    /**
+     * Set graderId and gradeProcessId for the docker proxy plugin, so
+     * the Ids can be used in the plugin's logging context
+     * @param graderId
+     * @param gradeProcId
+     */
+    private void setLoggingContextIdsForDockerProxy(String graderId, String gradeProcId) {
+        try {
+            if (backendPlugin instanceof DockerProxyBackendPlugin) {
+                DockerProxyBackendPlugin dp = (DockerProxyBackendPlugin) backendPlugin;
+                dp.setLmsId("N/A"); //TODO
+                dp.setGraderId(graderId);
+                dp.setGradeProcId(gradeProcId);
+            }
+        } catch (Exception e) {
+            log.error("Could not set logging context ids for docker proxy plugin.");
+            log.error(ExceptionUtils.getStackTrace(e));
+        }
+    }
+
     public ProformaResponse runGradingProcess(QueuedSubmission subm) {
         try {
             FutureTask<ProformaResponse> futureTask = null;
             int timeoutSeconds = graderConfig.getTimeout_seconds();
+            setLoggingContextIdsForDockerProxy(graderConfig.getId(), subm.getGradeProcId());
             try {
                 log.debug("GRADE START: {}", subm.getGradeProcId());
                 futureTask = new FutureTask<ProformaResponse>(() -> {
