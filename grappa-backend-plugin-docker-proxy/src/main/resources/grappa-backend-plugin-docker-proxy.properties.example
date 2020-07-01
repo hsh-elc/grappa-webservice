@@ -1,5 +1,5 @@
 # docker host uri (including port)
-dockerproxybackendplugin.docker_host=tcp://localhost:2375
+dockerproxybackendplugin.docker_host=tcp://localhost:2376
 # Name of the docker image to create a container from
 dockerproxybackendplugin.container_image=grappa-remote-backend-dummygrader
 dockerproxybackendplugin.copy_submission_to_directory_path=/var/grb_starter/tmp
