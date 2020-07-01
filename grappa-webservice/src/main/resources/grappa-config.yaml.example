@@ -1,4 +1,5 @@
 service:
+  default_estimated_grading_seconds: 20
   # A problem's estimated grading time is based on the arithmetic mean of previously measured grading times that are kept in a list; limiting that list's size to a maximum controls how many of these most recent (previous) grading times are taken into account when estimating a problem's new grading time
   prev_grading_seconds_max_list_size: 10
   # Sets the logging level (possible values: OFF, ERROR, WARN, INFO, DEBUG, TRACE and ALL)
