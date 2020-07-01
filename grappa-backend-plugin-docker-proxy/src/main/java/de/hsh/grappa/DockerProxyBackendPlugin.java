@@ -53,8 +53,7 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
 
     @Override
     public void init(Properties props) throws Exception {
-        log.debug("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Entering DockerProxyBackendPlugin.init()...",
-            lmsId, graderId, gradeProcId);
+        log.debug("Entering DockerProxyBackendPlugin.init()...");
         dockerContainerImage = props.get("dockerproxybackendplugin.container_image").toString();
         dockerHost = props.get("dockerproxybackendplugin.docker_host").toString();
         copySubmissionToDirectoryPath =
