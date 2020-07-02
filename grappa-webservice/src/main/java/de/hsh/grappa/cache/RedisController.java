@@ -130,7 +130,9 @@ public class RedisController {
      * @param gradeProcId
      * @param proformaSubmission
      */
-    public synchronized void pushSubmission(String graderId, String gradeProcId, ProformaSubmission proformaSubmission) {
+    public synchronized void pushSubmission(String graderId, String gradeProcId,
+                                            String taskUuid, ProformaSubmission proformaSubmission,
+                                            boolean prioritize) {
         log.debug("[GraderId: '{}', GradeProcId: '{}']: pushSubmission(): {}", graderId, gradeProcId,
             proformaSubmission);
         // cache the submission data
@@ -141,8 +143,11 @@ public class RedisController {
         mapGraderProcIdToGraderId(gradeProcId, graderId);
         // push the graderProcId onto the queue
         try (var redis = redisClient.connect()) {
-            // use rpush to add submissions to the queue's tail
-            long listSize = redis.sync().rpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
+            long listSize;
+            if(prioritize)
+                listSize = redis.sync().lpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
+            else
+                listSize = redis.sync().rpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
             log.debug("[GraderId: '{}', GradeProcId: '{}']: new queue size: {}", graderId, gradeProcId,
                 listSize);
         }

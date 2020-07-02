@@ -37,8 +37,9 @@ public class AllGradeProcessResources {
     @POST
     @Consumes({MediaType.APPLICATION_XML, MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM})
     @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")
-    public Response grade(@DefaultValue("true") @QueryParam("async") boolean async,
-                          @QueryParam("graderId") String graderId, InputStream submission,
+    public Response grade(InputStream submission, @QueryParam("graderId") String graderId,
+                          @DefaultValue("true") @QueryParam("async") boolean async,
+                          @DefaultValue("false") @QueryParam("prioritize") boolean prioritize,
                           @Context HttpHeaders headers) throws Exception {
         log.debug("[GraderId: '{}']: grade() with async={} called.", graderId, async);
         MediaType contentType = headers.getMediaType();
@@ -59,6 +60,7 @@ public class AllGradeProcessResources {
             String gradeProcId = new SubmissionProcessor(proformaSubm, graderId).process();
             String gradeProcIdResponse = Json.createJsonKeyValueAsString("gradeProcessId", gradeProcId);
             return Response.status(Response.Status.CREATED).entity(gradeProcIdResponse).build();
+            String gradeProcId = new SubmissionProcessor(proformaSubm, graderId).process(prioritize);
         }
         throw new de.hsh.grappa.exceptions.BadRequestException("Received grade request with unspecified content type.");
     }
