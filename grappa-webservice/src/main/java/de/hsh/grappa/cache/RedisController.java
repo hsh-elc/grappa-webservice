@@ -141,7 +141,8 @@ public class RedisController {
         mapGraderProcIdToGraderId(gradeProcId, graderId);
         // push the graderProcId onto the queue
         try (var redis = redisClient.connect()) {
-            long listSize = redis.sync().lpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
+            // use rpush to add submissions to the queue's tail
+            long listSize = redis.sync().rpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
             log.debug("[GraderId: '{}', GradeProcId: '{}']: new queue size: {}", graderId, gradeProcId,
                 listSize);
         }
