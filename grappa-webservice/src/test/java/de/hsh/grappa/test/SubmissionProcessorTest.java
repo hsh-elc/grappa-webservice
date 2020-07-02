@@ -32,7 +32,7 @@ public class SubmissionProcessorTest {
         try (FileInputStream fis = new FileInputStream(proformaSubmissionFilePath)) {
             ProformaSubmission subm = new ProformaSubmission(IOUtils.toByteArray(fis), MimeType.ZIP);
             SubmissionProcessor proc = new SubmissionProcessor(subm, "DummyGrader");
-            proc.process();
+            proc.process(false);
         }
     }
 }
