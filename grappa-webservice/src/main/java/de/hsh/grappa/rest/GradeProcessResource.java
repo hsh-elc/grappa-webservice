@@ -5,6 +5,7 @@ import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.proforma.MimeType;
 import de.hsh.grappa.proforma.ProformaResponse;
 import de.hsh.grappa.service.GraderPoolManager;
+import de.hsh.grappa.utils.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,19 +38,32 @@ public class GradeProcessResource {
     }
 
     @GET
-    @Produces({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM})
+//    @Produces({
+//        MediaType.MULTIPART_FORM_DATA, 
+//        MediaType.APPLICATION_OCTET_STREAM,
+//        MediaType.APPLICATION_JSON + "; charset=utf-8"
+//    })
     public Response poll(@PathParam("gradeProcessId") String gradeProcessId, @Context HttpHeaders headers)
         throws Exception {
         log.debug("[GradeProcId: '{}']: poll() called.", gradeProcessId);
+
+        int queuedSubmPos = -1;
+        long avgGradingSeconds = GrappaServlet.redis.getSubmissionAverageGradingDurationSeconds
+            (gradeProcessId, GrappaServlet.CONFIG.getService()
+                .getDefault_estimated_grading_seconds());
+        
+        // Check if the submission has been graded and if a response is available result
         ProformaResponse proformaResponse = GrappaServlet.redis.getResponse(gradeProcessId);
         if (null != proformaResponse) {
             log.debug("[GradeProcId: '{}']: ProformaResponse file is available.", gradeProcessId);
             String responseFileName = "response." +  (proformaResponse.getMimeType()
                 .equals(MimeType.XML) ? "xml" : "zip");
+
             Response.ResponseBuilder resp =
                 Response.status(Response.Status.OK)
                     .header("content-disposition","attachment; filename = " + responseFileName)
                     .entity(proformaResponse.getContent());
+
             var acceptableTypes = headers.getAcceptableMediaTypes();
             if (acceptableTypes.stream().anyMatch(mt -> mt.isCompatible(MediaType.APPLICATION_OCTET_STREAM_TYPE))) {
                 log.debug("[GradeProcId: '{}']: Returning ProformaResponse as APPLICATION_OCTET_STREAM.",
@@ -60,12 +74,26 @@ public class GradeProcessResource {
                     gradeProcessId);
                 return resp.type(MediaType.MULTIPART_FORM_DATA).build();
             }
-        } else if (GrappaServlet.redis.isSubmissionQueued(gradeProcessId)) {
-            log.debug("[GradeProcId: '{}']: Submission is still queued.", gradeProcessId);
-            return Response.status(Response.Status.ACCEPTED).build();
-        } else if (GraderPoolManager.getInstance().isGradeProcIdBeingGradedRightNow(gradeProcessId)) {
+        } else if (-1 != (queuedSubmPos = GrappaServlet.redis.getQueuedSubmissionIndex(gradeProcessId))) {
+            log.debug("[GradeProcId: '{}']: Submission is still queued at position {}.",
+                gradeProcessId, queuedSubmPos);
+            //String gradeProcIdResponse = Json.createJsonKeyValueAsString("gradeProcessId", gradeProcId);
+            long estimatedSecondsRemaining =
+                GraderPoolManager.getInstance()
+                    .getEstimatedSecondsUntilGradeProcIdIsFinished(gradeProcessId);
+            String jsonResp = Json.createJsonKeyValueAsString(new String[][] {
+                {"estimatedSecondsRemaining", String.valueOf(estimatedSecondsRemaining)}
+            });
+            return Response.status(Response.Status.ACCEPTED).entity(jsonResp)
+                .type(MediaType.APPLICATION_JSON + "; charset=utf-8").build();
+        }
+        else if (GraderPoolManager.getInstance().isGradeProcIdBeingGradedRightNow(gradeProcessId)) {
             log.debug("[GradeProcId: '{}']: Submission is being graded right now.", gradeProcessId);
-            return Response.status(Response.Status.ACCEPTED).build();
+            String jsonResp = Json.createJsonKeyValueAsString(new String[][] {
+                {"estimatedGradingSeconds", String.valueOf(avgGradingSeconds)}
+            });
+            return Response.status(Response.Status.ACCEPTED).entity(jsonResp)
+                .type(MediaType.APPLICATION_JSON + "; charset=utf-8").build();
         }
         throw new de.hsh.grappa.exceptions.NotFoundException(String.format("gradeProcessId '%s' was neither found in " +
             "the submission queue nor in an active grading process.", gradeProcessId));

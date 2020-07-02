@@ -2,7 +2,9 @@ package de.hsh.grappa.service;
 
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.config.GraderConfig;
+import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.exceptions.GrappaException;
+import de.hsh.grappa.exceptions.NotFoundException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,15 +60,12 @@ public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable 
 
     public boolean cancelGradingProcess(String gradeProcId) throws Exception {
         String graderId = GrappaServlet.redis.getAssociatedGraderId(gradeProcId);
-        if (null != graderId) {
-            GraderPool gp = pools.get(graderId);
-            if (null != gp)
-                return gp.cancelGradeProcess(gradeProcId);
-            // Treat it as a server error if the associated grader pool is missing
-            throw new GrappaException(String.format("Missing GraderPool for graderId '%s' and associated gradeProcId '%s'",
-                graderId, gradeProcId));
-        }
-        return false;
+        GraderPool gp = pools.get(graderId);
+        if (null != gp)
+            return gp.cancelGradeProcess(gradeProcId);
+        // Treat it as a server error if the associated grader pool is missing
+        throw new GrappaException(String.format("Missing GraderPool for graderId '%s' and associated gradeProcId '%s'",
+            graderId, gradeProcId));
     }
 
 //    @Override public void propertyChange(PropertyChangeEvent evt) {
@@ -101,11 +100,75 @@ public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable 
     }
 
     /**
-     *
      * @return A list of grader ids. All of these graders are guaranteed to be active (enabled).
      */
     public Collection<String> getGraderIds() {
         return Collections.unmodifiableCollection(pools.keySet());
+    }
+
+    public int getPoolSize(String graderId) throws NotFoundException {
+        var pool = pools.get(graderId);
+        if(null != pool)
+            return pool.getPoolSize();
+        throw new NotFoundException(String.format("GraderId '{}' does not exist.", graderId));
+    }
+
+    public int getBusyCount(String graderId) throws NotFoundException {
+        var pool = pools.get(graderId);
+        if(null != pool)
+            return pool.getBusyCount();
+        throw new NotFoundException(String.format("GraderId '{}' does not exist.", graderId));
+    }
+
+//    public long getEstimatedSecondsUntilQueueIsGraded(String graderId) throws NotFoundException {
+//        var pool = pools.get(graderId);
+//        if (null != pool) {
+//            int busy = pool.getBusyCount();
+//            int poolSize = pool.getPoolSize();
+//            long avgGradingSeconds = GrappaServlet.redis.getSubmissionAverageGradingDurationSeconds(gradeProcId,
+//                GrappaServlet.CONFIG.getService().getDefault_estimated_grading_seconds());
+//            long queueCount = GrappaServlet.redis.getSubmissionQueueCount(graderId);
+//            long estimatedSeconds = (queueCount / poolSize) * avgGradingSeconds;
+//            if(busy > 0)
+//                estimatedSeconds += estimatedSeconds;
+//            return estimatedSeconds;
+//        }
+//        throw new NotFoundException(String.format("GraderId '{}' does not exist.", graderId));
+//    }
+
+    public long getEstimatedSecondsUntilGradeProcIdIsFinished(String gradeProcId) throws NotFoundException {
+        String graderId = GrappaServlet.redis.getAssociatedGraderId(gradeProcId);
+        var pool = pools.get(graderId);
+        if (null != pool) {
+            int poolSize = pool.getPoolSize();
+            int freeCount = poolSize - pool.getBusyCount();
+            long avgGradingSeconds = GrappaServlet.redis.getSubmissionAverageGradingDurationSeconds(gradeProcId,
+                GrappaServlet.CONFIG.getService().getDefault_estimated_grading_seconds());
+            int submPos = GrappaServlet.redis.getQueuedSubmissionIndex(gradeProcId);
+
+            // Calculating a submission's estimated grading seconds remaining
+            // relies heavily on the submission's position/index in a queue:
+            // if the subm. index is -1, it is being processed right now (in case it's not been graded already)
+            // if the subm. index is 0 or above, it's probably next up for grading once a grader instance
+            // becomes free. We also need to account for asynchronous grading, i.e. the grader pool size
+            if(-1 == submPos)
+                return avgGradingSeconds;
+            // A group of N graders can pick up N submissions from the submission queue.
+            // the groupIndex is the multiplicator for the average time it takes to garde
+            // a task.
+            long groupIndex = (submPos + poolSize) / poolSize;
+            // account for some or all graders being busy at this point
+            boolean noGraderAvailableToGradeMe = submPos + 1 > freeCount;
+            long addAvgSec = noGraderAvailableToGradeMe ? avgGradingSeconds : 0;
+            // if there's no free grader available to grade this queued submission,
+            // add 1 avgGradingSeconds on top to account for busy graders
+            long addedAvg = (noGraderAvailableToGradeMe ? avgGradingSeconds : 0);
+            long estimatedSeconds = groupIndex * avgGradingSeconds + addedAvg;
+            log.debug("[GradeProcId: {}]: submIndex: {}, groupIndex: {}, noGraderFreeToGradeMe: {}, estimatedSec: {}",
+                gradeProcId, submPos, groupIndex, noGraderAvailableToGradeMe, estimatedSeconds);
+            return estimatedSeconds;
+        }
+        throw new NotFoundException(String.format("GraderId '{}' does not exist.", graderId));
     }
 
     public Map<String, GraderStatistics> getGraderStatistics() {

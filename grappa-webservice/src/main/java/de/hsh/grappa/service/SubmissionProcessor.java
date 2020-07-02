@@ -81,12 +81,14 @@ public class SubmissionProcessor {
      * @throws NotFoundException
      * @throws GrappaException
      */
-    public String process() throws BadRequestException, NotFoundException, GrappaException {
+    public String process(boolean prioritize) throws Exception {// throws BadRequestException, NotFoundException,
+        // GrappaException {
         validateSubmission();
         cacheTask();
         // Queue submission for grading
         String gradeProcId = ObjectId.createObjectId();
-        GrappaServlet.redis.pushSubmission(graderId, gradeProcId, subm.getProformaSubmission());
+        GrappaServlet.redis.pushSubmission(graderId, gradeProcId, subm.getTask().getUuid(),
+            subm.getProformaSubmission(), prioritize);
         synchronized (GraderPoolManager.getInstance()) {
             GraderPoolManager.getInstance().notify();
         }

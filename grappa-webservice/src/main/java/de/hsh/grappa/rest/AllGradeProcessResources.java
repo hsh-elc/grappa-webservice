@@ -1,7 +1,9 @@
 package de.hsh.grappa.rest;
 
+import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.proforma.MimeType;
 import de.hsh.grappa.proforma.ProformaSubmission;
+import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.SubmissionProcessor;
 import de.hsh.grappa.utils.InputStreamCopy;
 import de.hsh.grappa.utils.Json;
@@ -54,13 +56,23 @@ public class AllGradeProcessResources {
             else
                 throw new de.hsh.grappa.exceptions.BadRequestException("Received grade request with " +
                     "unsupported content type: " + contentType.toString());
+
             ProformaSubmission proformaSubm = new ProformaSubmission
                 (IOUtils.toByteArray(submission), mimeType);
             log.info("[GraderId: {}] Processing submission: {}", graderId, proformaSubm);
-            String gradeProcId = new SubmissionProcessor(proformaSubm, graderId).process();
-            String gradeProcIdResponse = Json.createJsonKeyValueAsString("gradeProcessId", gradeProcId);
-            return Response.status(Response.Status.CREATED).entity(gradeProcIdResponse).build();
             String gradeProcId = new SubmissionProcessor(proformaSubm, graderId).process(prioritize);
+
+            int queuedSubmPos = GrappaServlet.redis.getQueuedSubmissionIndex(gradeProcId);
+            log.debug("subm to be graded in queue at pos {}", queuedSubmPos);
+            long estimatedSecondsRemaining =
+                GraderPoolManager.getInstance()
+                    .getEstimatedSecondsUntilGradeProcIdIsFinished(gradeProcId);
+            String jsonResp = Json.createJsonKeyValueAsString(new String[][] {
+                {"gradeProcessId", gradeProcId},
+                {"estimatedSecondsRemaining", String.valueOf(estimatedSecondsRemaining)}
+            });
+
+            return Response.status(Response.Status.CREATED).entity(jsonResp).build();
         }
         throw new de.hsh.grappa.exceptions.BadRequestException("Received grade request with unspecified content type.");
     }

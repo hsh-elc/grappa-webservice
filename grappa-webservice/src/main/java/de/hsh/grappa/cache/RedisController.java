@@ -9,7 +9,9 @@ import de.hsh.grappa.utils.StringByteCodec;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.SetArgs;
+import io.netty.util.internal.StringUtil;
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +78,8 @@ public class RedisController {
      */
     private static final String GRADEPROCID_TO_GRADERID_MAP = "gradeprocid-to-graderid-map:";
 
+    private static final String GRADEPROCID_TO_TASKUUID_MAP = "gradeprocid-to-taskuuid-map:";
+
     /**
      * When a grader worker pops a submission gradeProcId from "submission-queue", the
      * gradeProcId must be put into the "processing" list so that submissions to be
@@ -102,6 +106,9 @@ public class RedisController {
      * E.g. task:taskUuid
      */
     private static final String TASK_KEY_PREFIX = "task:";
+
+    private static final String TASK_AVG_GRADING_DURATION_SECONDS_KEY_PREFIX = "avg-grading-seconds:task:" +
+        ":task:";
 
     /**
      * This is the prefix for response keys (gradeProcId) used for storing
@@ -141,6 +148,7 @@ public class RedisController {
             cacheConfig.getSubmission_timeout());
         setTimestamp(submKey, cacheConfig.getSubmission_timeout());
         mapGraderProcIdToGraderId(gradeProcId, graderId);
+        mapGraderProcIdToTaskUuid(gradeProcId, taskUuid);
         // push the graderProcId onto the queue
         try (var redis = redisClient.connect()) {
             long listSize;
@@ -157,8 +165,8 @@ public class RedisController {
         // If no graderId is mapped to this gradeProcId, then this
         // gradeProcId has never been created for a submission.
         String graderId = getAssociatedGraderId(gradeProcId);
-        if(null == graderId)
-            throw new NotFoundException(String.format("GradeProcId '%s' does not exist.", gradeProcId));
+//        if(null == graderId)
+//            throw new NotFoundException(String.format("GradeProcId '%s' does not exist.", gradeProcId));
     }
 
     public synchronized boolean isSubmissionQueued(String gradeProcId) throws NotFoundException {
@@ -171,6 +179,25 @@ public class RedisController {
                 .filter(i -> gradeProcId.equals(graderQueue.get(i)))
                 .findFirst().orElse(-1);
             return -1 != index;
+        }
+    }
+
+    /**
+     * Get the index position of a submission in a queue.
+     * @param gradeProcId
+     * @return -1, if the submission is not queued (anymore), or a positive number.
+     * 0, if the submission is literally up next for grading.
+     * @throws NotFoundException
+     */
+    public synchronized int getQueuedSubmissionIndex(String gradeProcId) throws NotFoundException {
+        log.debug("[GradeProcId: '{}']: getSubmissionQueueIndex() called.", gradeProcId);
+        validateGraderProcId(gradeProcId);
+        String graderId = getAssociatedGraderId(gradeProcId);
+        try (var redis = redisClient.connect()) {
+            List<String> graderQueue = redis.sync().lrange(SUBMISSION_QUEUE_PREFIX.concat(graderId), 0, -1);
+            return IntStream.range(0, graderQueue.size())
+                .filter(i -> gradeProcId.equals(graderQueue.get(i)))
+                .findFirst().orElse(-1);
         }
     }
 
@@ -231,7 +258,7 @@ public class RedisController {
             if (null == subm) {
                 // The submission object for this garderProcId likely expired
                 throw new NotFoundException(String.format
-                    ("The submission for graderProcId '{}' does not exist.",
+                    ("The submission for graderProcId '%s' does not exist.",
                         gradeProcId));
             }
 
@@ -319,12 +346,45 @@ public class RedisController {
      * @param graderProcId
      * @return the associated gradeId for the graderProcId, or null if the graderProcId does not exist
      */
-    public String getAssociatedGraderId(String graderProcId) {
-        return this.getString(GRADEPROCID_TO_GRADERID_MAP.concat(graderProcId));
+    public String getAssociatedGraderId(String graderProcId) throws NotFoundException {
+        String id = this.getString(GRADEPROCID_TO_GRADERID_MAP.concat(graderProcId));
+        if (null != id)
+            return id;
+        throw new NotFoundException(String.format("No associated graderId exists for gradeProcId '%s'.",
+            graderProcId));
     }
 
     private void mapGraderProcIdToGraderId(String gradeProcId, String graderId) {
-        set(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId), graderId);
+        set(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId), graderId,
+            cacheConfig.getSubmission_timeout());
+    }
+
+    public String getAssociatedTaskUuid(String graderProcId) throws NotFoundException {
+        String id = this.getString(GRADEPROCID_TO_TASKUUID_MAP.concat(graderProcId));
+        if (null != id)
+            return id;
+        throw new NotFoundException(String.format("No associated taskUuid exists for gradeProcId '%s'.",
+            graderProcId));
+    }
+
+    private void mapGraderProcIdToTaskUuid(String gradeProcId, String taskUuid) {
+        set(GRADEPROCID_TO_TASKUUID_MAP.concat(gradeProcId), taskUuid,
+            cacheConfig.getSubmission_timeout());
+    }
+
+    public synchronized void setTaskAverageGradingDurationSeconds(String taskUuid, long seconds) {
+        set(TASK_AVG_GRADING_DURATION_SECONDS_KEY_PREFIX.concat(taskUuid), String.valueOf(seconds),
+            cacheConfig.getTask_timeout());
+    }
+
+    public synchronized long getSubmissionAverageGradingDurationSeconds(String gradeProcId, long defaultSeconds) throws NotFoundException {
+        String taskUuid = getAssociatedTaskUuid(gradeProcId);
+        return getTaskAverageGradingDurationSeconds(taskUuid, defaultSeconds);
+    }
+
+    public synchronized long getTaskAverageGradingDurationSeconds(String taskUuid, long defaultValue) {
+        String s = getString(TASK_AVG_GRADING_DURATION_SECONDS_KEY_PREFIX.concat(taskUuid));
+        return !StringUtil.isNullOrEmpty(s) ? Long.parseLong(s): defaultValue;
     }
 
     private synchronized boolean keyExists(String key) {

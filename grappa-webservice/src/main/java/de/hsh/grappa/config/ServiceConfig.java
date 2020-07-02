@@ -1,6 +1,7 @@
 package de.hsh.grappa.config;
 
 public class ServiceConfig {
+    private int default_estimated_grading_seconds = 20;
     private int prev_grading_seconds_max_list_size = 10;
     private String logging_level;
     private String default_grading_environment_setup_class_path;
@@ -20,6 +21,14 @@ public class ServiceConfig {
 
     public void setLogging_level(String logging_level) {
         this.logging_level = logging_level;
+    }
+
+    public int getDefault_estimated_grading_seconds() {
+        return default_estimated_grading_seconds;
+    }
+
+    public void setDefault_estimated_grading_seconds(int default_estimated_grading_seconds) {
+        this.default_estimated_grading_seconds = default_estimated_grading_seconds;
     }
 
     public String getDefault_grading_environment_setup_class_path() {

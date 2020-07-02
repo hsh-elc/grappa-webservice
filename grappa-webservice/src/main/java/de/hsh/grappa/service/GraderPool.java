@@ -1,10 +1,13 @@
 package de.hsh.grappa.service;
 
+import com.google.common.collect.MinMaxPriorityQueue;
 import de.hsh.grappa.DockerProxyBackendPlugin;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.QueuedSubmission;
+import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GraderConfig;
 import de.hsh.grappa.exceptions.NoResultGraderExecption;
+import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
 import de.hsh.grappa.proforma.ProformaResponse;
 import de.hsh.grappa.proforma.ProformaV201ResponseGenerator;
@@ -16,6 +19,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,17 +45,22 @@ public class GraderPool {
     private BackendPlugin backendPlugin;
     private GraderConfig graderConfig;
 
-    //    private ConcurrentHashMap<String, CompletableFuture<ProformaResponse>> hp =
-//        new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Future<ProformaResponse>> gpMap =
         new ConcurrentHashMap<>();
 
+    private HashMap<String /*taskUuid*/, MinMaxPriorityQueue<Duration> /*seconds*/>
+        gradingDurationMap = new HashMap<>();
+
     private Semaphore semaphore;
-    //private PropertyChangeSupport workerFreeEvent = new PropertyChangeSupport(this);
     private GraderPoolManager graderWorkersMgr;
 
     public GraderPool(GraderConfig graderConfig, GraderPoolManager graderManager) throws Exception {
         this.graderConfig = graderConfig;
+
+        if(0 >= graderConfig.getConcurrent_grading_processes())
+            throw new IllegalArgumentException(String.format("concurrent_grading_processes must not be less than 1 " +
+                "for graderId '%s'.", graderConfig.getConcurrent_grading_processes()));
+
         this.backendPlugin = loadBackendPlugin(graderConfig);
         log.debug("Using grader '{}' with {} concurrent instances.",
             graderConfig.getId(), graderConfig.getConcurrent_grading_processes());
@@ -141,6 +152,7 @@ public class GraderPool {
     }
 
     public ProformaResponse runGradingProcess(QueuedSubmission subm) {
+        LocalDateTime beginTime = LocalDateTime.now();
         try {
             FutureTask<ProformaResponse> futureTask = null;
             int timeoutSeconds = graderConfig.getTimeout_seconds();
@@ -210,12 +222,44 @@ public class GraderPool {
                 gpMap.remove(subm.getGradeProcId());
                 log.debug("Grader '{}': semaphore released, {} left", graderConfig.getId(),
                     semaphore.availablePermits());
+                setGradingDuration(Duration.between(beginTime, LocalDateTime.now()),
+                    subm.getGradeProcId());
             }
         } catch (Exception e) {
             log.error("Code hadling grading process exceptions failed with: {}", e.getMessage());
             log.error(ExceptionUtils.getStackTrace(e));
         }
         return null;
+    }
+
+    private void setGradingDuration(Duration d, String gradeProcId) {
+        try {
+            String taskUuid = GrappaServlet.redis.getAssociatedTaskUuid(gradeProcId);
+            if(null == taskUuid)
+                throw new NotFoundException(String
+                    .format("There is no associated taskUuid for gradeProcId '{}'.",
+                    gradeProcId));
+
+            long avgDuration;
+            synchronized (gradingDurationMap) {
+                var queue = gradingDurationMap.get(taskUuid);
+                if (null == queue) {
+                    queue = MinMaxPriorityQueue.maximumSize
+                        (GrappaServlet.CONFIG.getService()
+                            .getPrev_grading_seconds_max_list_size()).create();
+                    gradingDurationMap.put(taskUuid, queue);
+                }
+                queue.add(d);
+                avgDuration = queue.stream().reduce((a, b) -> a.plus(b)).get().toSeconds() / queue.size();
+            }
+
+            log.debug("Average grading duration: {} seconds", avgDuration);
+            GrappaServlet.redis.setTaskAverageGradingDurationSeconds(taskUuid, avgDuration);
+        } catch (Exception e) {
+            log.error("Failed to set grading duration.");
+            log.error(e.getMessage());
+            log.error(ExceptionUtils.getStackTrace(e));
+        }
     }
 
     private void cacheProformaResponseResult(ProformaResponse resp, String gradeProcId) {
@@ -240,6 +284,14 @@ public class GraderPool {
         }
         log.debug("GraderPool.cancel(): No grading process active with gradeProcId '{}'", gradeProcId);
         return false;
+    }
+
+    public int getPoolSize() {
+        return graderConfig.getConcurrent_grading_processes();
+    }
+
+    public int getBusyCount() {
+        return getPoolSize() - semaphore.availablePermits();
     }
 
     public GraderStatistics getGraderStatistics() {

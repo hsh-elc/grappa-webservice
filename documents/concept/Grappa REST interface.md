@@ -69,22 +69,28 @@ Submit a Proforma submission for grading.
   
   `POST`
   
-* **URL Params**
+* **Required URL Params**
 
   * `lmsid=[string]`: The LMS-ID, which represents the client ID.  
    
   * `graderId=[string]`: The grader instance to be used for grading this submission.
    
-  * `async=[boolean]`: `true`, if this `POST` request should return immediately after submitting the Proforma
-   submission for asynchronous grading, or `false`, if the `POST` request should block until a Proforma response is
-    returned. Note: synchronous (i.e. async=false) grading is not supported yet.   
+  **Optional URL Params**
+   
+  * `async=[boolean][default=true]`: `true`, if this `POST` request should return immediately after submitting the
+   Proforma submission for asynchronous grading, or `false`, if the `POST` request should block until a Proforma
+    response is returned. Note: synchronous (i.e. async=false) grading is not supported yet.   
+
+  * `prioritize=[boolean][default=false]`: `true` if the submission should be prioritized and graded as soon as a
+   grader instance is available, or `false` if the submission should join the end of the submission queue. 
 
 * **HTTP Responses**
   
   * **Code:** `201 Created` <br/>
-     **Content**: `{ gradeProcessId : "unique id" }` <br/>
+     **Content**: `{"gradeProcessId" : "String Id", "estimatedSecondsRemaining": "Integer"}` <br/>
      **Content Type**: `application/json` <br/>
-     **Description**: The Proforma submission has been accepted for grading.
+     **Description**: The Proforma submission has been accepted for grading. Use `gradeProcessId` for subsequent polling
+      requests. `estimatedSecondsRemaining` indicates the time remaining until the submission is graded.
      
   * **Code:** `400 Bad Request` <br/>
     **Content**: `{ error : "message" }` <br/>
@@ -152,8 +158,8 @@ Poll for the status of a Proforma submission (queued for grading, being graded, 
          grading process, the cancellation will have no effect and the response's content body will be a valid Proforma response.   
      
   * **Code:** `202 Accepted` <br/>
-    **Content**: *None* <br/>
-    **Description**: The grading process is either pending or in progress.
+    **Content**: `{"estimatedSecondsRemaining": "Integer"}` <br/>
+    **Description**: The grading process is either pending or in progress. `estimatedSecondsRemaining` indicates the time remaining until the submission is graded.
        
   * **Code:** `401 Unauthorized` <br/>
     **Content**: `{ error : "message" }` <br/>
