@@ -77,12 +77,12 @@ Submit a Proforma submission for grading.
    
   **Optional URL Params**
    
-  * `async=[boolean][default=true]`: `true`, if this `POST` request should return immediately after submitting the
-   Proforma submission for asynchronous grading, or `false`, if the `POST` request should block until a Proforma
+  * `async=[boolean][default=true]`: `true` if this `POST` request should return immediately after submitting the
+   Proforma submission for asynchronous grading, or `false` if the `POST` request should block until a Proforma
     response is returned. Note: synchronous (i.e. async=false) grading is not supported yet.   
 
-  * `prioritize=[boolean][default=false]`: `true` if the submission should be prioritized and graded as soon as a
-   grader instance is available, or `false` if the submission should join the end of the submission queue. 
+  * `prioritize=[boolean][default=false]`: `true`, if the submission should be prioritized and graded as soon as a
+   grader instance is available, or `false`, if the submission should join the tail of the submission queue. 
 
 * **HTTP Responses**
   
