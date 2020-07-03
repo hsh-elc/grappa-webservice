@@ -1,16 +1,12 @@
 package de.hsh.grappa.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import de.hsh.grappa.application.GrappaServlet;
-import de.hsh.grappa.config.GraderConfig;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.GraderStatistics;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +18,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
 @Path("/")
@@ -43,7 +38,7 @@ public class GrappaResource {
     @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")
     public Response getStatus() {
         var graderStat = GraderPoolManager.getInstance().getGraderStatistics();
-        JsonObject gradersRuntimeInfo = AllGraderResources.getGradersStatus();
+        JsonArray graderStatusArray = AllGraderResources.getGraderStatusArray();
 
         JsonObject service = new JsonObject();
         service.addProperty("webappName", "grappa-webapp-name_retrieve-from-context");
@@ -60,10 +55,9 @@ public class GrappaResource {
         service.addProperty("totalAllExceptExecuted",
             total.getSucceeded()+total.getCancelled()+total.getFailed()+
             total.getTimedOut());
-        service.add("graderRuntimeInfo", gradersRuntimeInfo);
+        service.add("graderRuntimeInfo", graderStatusArray);
 
         // TODO maybe add: service.add("static_config", new JsonParser().parse(gson.toJson(GrappaServlet.CONFIG))
-        // .getAsJsonObject());
 
         JsonObject status = new JsonObject();
         status.add("service", service);

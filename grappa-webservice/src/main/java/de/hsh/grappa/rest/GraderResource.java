@@ -62,8 +62,12 @@ public class GraderResource {
         JsonObject graderStatus = new JsonObject();
         graderStatus.addProperty("id", graderId);
         graderStatus.addProperty("name", gc.getName());
-        graderStatus.addProperty("currentlyQueuedSubmissions",
+        graderStatus.addProperty("poolSize", GraderPoolManager.getInstance().getPoolSize(graderId));
+        graderStatus.addProperty("busyCount", GraderPoolManager.getInstance().getBusyCount(graderId));
+        graderStatus.addProperty("queuedSubmissionCount",
             GrappaServlet.redis.getSubmissionQueueCount(graderId));
+//        graderStatus.addProperty("estimatedGradingSecondsTillQueueProcessed",
+//            GraderPoolManager.getInstance().getEstimatedSecondsUntilQueueIsGraded(graderId));
         var gsOpt = GraderPoolManager.getInstance().getGraderStatistics()
             .entrySet().stream().filter(e -> e.getKey().equals(graderId)).findFirst();
         if (gsOpt.isPresent()) {
