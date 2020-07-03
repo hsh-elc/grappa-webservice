@@ -20,8 +20,6 @@ public class SubmissionInternalsV201 extends SubmissionInternals {
         de.hsh.grappa.proformaxml.v201.SubmissionType concreteSubmPojo =
             (de.hsh.grappa.proformaxml.v201.SubmissionType) getAbstractSubmPojo();
         if (null != concreteSubmPojo.getExternalTask()) {
-            String taskUuid = concreteSubmPojo.getExternalTask().getUuid(); // may return null;
-            String taskRepoUrl = concreteSubmPojo.getExternalTask().getValue();
             return new ExternalTaskRetrieverV201(concreteSubmPojo, this);
         } else if (null != concreteSubmPojo.getIncludedTaskFile()) {
             IncludedTaskFileType included = concreteSubmPojo.getIncludedTaskFile();

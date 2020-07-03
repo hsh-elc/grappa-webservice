@@ -322,10 +322,12 @@ public class RedisController {
         setTimestamp(taskKey, cacheConfig.getTask_timeout());
     }
 
-    public synchronized ProformaTask getCachedTask(String taskUuid) {
+    public synchronized ProformaTask getCachedTask(String taskUuid) throws NotFoundException {
         log.debug("[TaskUuid: '{}']: getCachedTask()", taskUuid);
         try (var redis = redisClient.connect(new StringByteCodec())) {
             byte[] taskBytes = redis.sync().get(TASK_KEY_PREFIX.concat(taskUuid));
+            if(null == taskBytes)
+                throw new NotFoundException(String.format("Task with uuid '%s' is not cached", taskUuid));
             return SerializationUtils.deserialize(taskBytes);
         }
     }

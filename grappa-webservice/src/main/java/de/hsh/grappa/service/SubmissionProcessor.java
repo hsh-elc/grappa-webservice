@@ -49,7 +49,7 @@ public class SubmissionProcessor {
      * @throws BadRequestException when a ill-formatted submission is received
      * @throws GrappaException     when an internal service error occurs
      */
-    private void validateSubmission() throws BadRequestException, NotFoundException, GrappaException {
+    private void validateSubmission() throws Exception {
         // Make sure the requested graderId exists and
         // is enabled in the config file
         var grader = GrappaServlet.CONFIG.getGraders().stream().filter(g -> g.getId().equals(graderId)).findFirst();
@@ -60,22 +60,15 @@ public class SubmissionProcessor {
             throw new GrappaException(String.format("Grader '%s' is disabled in the service's configuration file.",
                 graderId));
 
-        try {
-            var task = subm.getTask();
-            String taskuuid = task.getUuid();
-            if (Strings.isNullOrEmpty(taskuuid)) {
-                // TODO: taskuuid may not be set in the submission, it might be in the task ojbect though
-                throw new BadRequestException("taskuuid is not set in the submission file.");
-            }
-        } catch (BadRequestException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new GrappaException(e);
+        var task = subm.getTask();
+        String taskuuid = task.getUuid();
+        if (Strings.isNullOrEmpty(taskuuid)) {
+            // TODO: taskuuid may not be set in the submission, it might be in the task ojbect though
+            throw new BadRequestException("taskuuid is not set in the submission file.");
         }
     }
 
     /**
-     *
      * @return the gradeProcId
      * @throws BadRequestException
      * @throws NotFoundException
@@ -95,75 +88,13 @@ public class SubmissionProcessor {
         return gradeProcId;
     }
 
-    private void cacheTask() throws GrappaException {
-        try {
-            TaskInternals task = subm.getTask();
-            if (!GrappaServlet.redis.isTaskCached(task.getUuid())) {
-                GrappaServlet.redis.cacheTask(task.getUuid(), task.getProformaTask());
-            } else {
-                // otherwise, refresh existing cached task timeout
-                GrappaServlet.redis.refreshTaskTimeout(task.getUuid());
-            }
-        } catch (Exception e) {
-            throw new GrappaException(e);
+    private void cacheTask() throws Exception {
+        TaskInternals task = subm.getTask();
+        if (!GrappaServlet.redis.isTaskCached(task.getUuid())) {
+            GrappaServlet.redis.cacheTask(task.getUuid(), task.getProformaTask());
+        } else {
+            // otherwise, refresh existing cached task timeout
+            GrappaServlet.redis.refreshTaskTimeout(task.getUuid());
         }
     }
 }
-
-
-
-
-
-
-
-
-
-        //var proformaUri = new ProFormAXmlUriInspector().getUriFromXml(is);
-        //var x = new XmlSubmissionOld<AbstractSubmissionType>(is, AbstractSubmissionType.class).toPOJO();
-        //var x = new XmlSubmission(is).toPOJO();
-
-        //var x = (SubmissionType)subm.toPOJO(); // uncomment and do this https://stackoverflow.com/questions/7805266/how-can-i-reopen-a-closed-inputstream-when-i-need-to-use-it-2-times
-        //System.out.println("x: " + x);
-
-
-        //String taskuuid = x..getTask().getUuid().;
-
-//    byte[] bytes = IOUtils.toByteArray(this.subm.getRawInputStream());
-//    r.sync().set("test", bytes);
-
-
-        //String taskuuid = null;
-
-//    // test: write task bytes to zip file in temp dir
-//    byte[] taskBytes = null;
-//    AbstractSubmissionType s = subm.getSubmissionPOJO();
-//    System.out.println(s);
-//    taskBytes = subm.getTaskBytes();
-//    Path tmpDir = Files.createTempDirectory("grdprocid");
-//    File submZipTargetFile = new File(Paths.get(tmpDir.toString(), "task.zip").toString());
-//    System.out.println("Writing zip to: " + submZipTargetFile.getPath());
-//    System.out.println("Writing byte count: " + taskBytes.length);
-//    OutputStream out = new FileOutputStream(submZipTargetFile);
-//    out.write(taskBytes);
-//    out.close();
-
-        //var submPojo = subm.getSubmissionPOJO();
-
-        //System.out.println("taskuuid: " + uuid);
-
-
-//    if(s instanceof de.hsh.grappa.proformaxml.v201.SubmissionType) {
-//      de.hsh.grappa.proformaxml.v201.SubmissionType st = (de.hsh.grappa.proformaxml.v201.SubmissionType)s;
-//      de.hsh.grappa.proformaxml.v201.TaskType tt = st.getTask();
-//      taskuuid = st.getTask().getUuid();
-//      submBytes = IOUtils.toByteArray(this.subm.getRawInputStream());
-//    } else {
-//      doCacheTask = false;
-//    }
-//
-
-
-        //GrappaServlet.redisClient.connect()
-
-//    }
-//}
