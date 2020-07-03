@@ -1,5 +1,9 @@
 package de.hsh.grappa.proforma;
 
+import com.google.common.base.Strings;
+import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.exceptions.BadRequestException;
+import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.proformaxml.v201.SubmissionType;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -17,13 +21,23 @@ public class ExternalTaskRetrieverV201 extends TaskRetriever {
 
     @Override
     public TaskInternals getTask() throws Exception {
-        throw new NotImplementedException("TODO: implement external task download");
-        //            if (Strings.isNullOrEmpty(taskRepoUrl)) {
-//                taskAvailability = TaskAvailabilityType.UUID;
-//                if (Strings.isNullOrEmpty(taskuuid))
-//                    throw new IllegalArgumentException("taskuuid and task repository are not specified");
-//            } else {
-//                taskAvailability = TaskAvailabilityType.EXTERNAL;
-//            }
+        String taskUuid = concreteSubmPojo.getExternalTask().getUuid();
+        String taskRepoUrl = concreteSubmPojo.getExternalTask().getValue();
+        if (Strings.isNullOrEmpty(taskRepoUrl)) {
+            if (Strings.isNullOrEmpty(taskUuid))
+                throw new BadRequestException("Neither the task repository url nor the task uuid have been " +
+                    "specified.");
+
+            // If the task repo url is empty and the taskuuid is set, try getting the task from cache
+            try {
+                ProformaTask task = GrappaServlet.redis.getCachedTask(taskUuid);
+                return new TaskInternalsV201(task);
+            } catch (NotFoundException e) {
+                throw new NotFoundException(String.format("The task uuid '%s' specified in the external task element " +
+                    "(with the task repo url being empty) is not cached by the middleware.", taskUuid), e);
+            }
+        } else {
+            throw new NotImplementedException("Downloading external task from a repository is not supported yet.");
+        }
     }
 }
