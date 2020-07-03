@@ -25,7 +25,7 @@ public class BasicAuth implements ContainerRequestFilter {
         var auth = containerRequest.getHeaders().get(HttpHeaders.AUTHORIZATION);
         if (auth == null || auth.isEmpty())
             throw new AuthenticationException(String.format
-                ("Unauthorized access to resource '{}'.",
+                ("Unauthorized access to resource '%s'.",
                     containerRequest.getUriInfo().getPath()));
         String encodedUserPassw = auth.get(0).replaceFirst
             (AUTHENTICATION_SCHEME + " ", "");
