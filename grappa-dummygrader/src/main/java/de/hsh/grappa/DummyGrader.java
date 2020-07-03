@@ -21,10 +21,8 @@ public class DummyGrader implements de.hsh.grappa.plugins.backendplugin.BackendP
 
     @Override
     public ProformaResponse grade(ProformaSubmission proformaSubmission) throws Exception {
-        int rand = ThreadLocalRandom.current().nextInt(0, 5);
         TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(2, 6));
-        if(rand%4==0)
-            throw new Exception("DummyGrader is simulating a grading error.");
+        //throw new Exception("DummyGrader is simulating a grading error.");
         return new ProformaResponse(IOUtils.toByteArray(createResponse()), MimeType.ZIP);
     }
 
