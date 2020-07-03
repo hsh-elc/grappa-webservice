@@ -30,11 +30,27 @@ public class ProformaV201ResponseGenerator {
         feedbackList.getTeacherFeedback().add(fb);
         feedbackList.getStudentFeedback().add(fb);
 
+        ResultType result = new ResultType();
+        result.setIsInternalError(true);
+        result.setScore(BigDecimal.ZERO);
+        result.setValidity(BigDecimal.ZERO);
+
+        TestResultType testResult = new TestResultType();
+        testResult.setResult(result);
+        testResult.setFeedbackList(feedbackList);
+
+        TestResponseType testResp = new TestResponseType();
+        testResp.setId("N/A");
+        testResp.setTestResult(testResult);
+
         TestsResponseType testsResponse = new TestsResponseType();
+        testsResponse.getTestResponse().add(testResp);
+
+        FeedbackListType emptyFblist = new FeedbackListType();
 
         SeparateTestFeedbackType separateTestFeedback = new SeparateTestFeedbackType();
         separateTestFeedback.setTestsResponse(testsResponse);
-        separateTestFeedback.setSubmissionFeedbackList(feedbackList);
+        separateTestFeedback.setSubmissionFeedbackList(new FeedbackListType());
 
         GraderEngineType graderEngine = new GraderEngineType();
         graderEngine.setName("N/A");
