@@ -21,7 +21,7 @@ public class AuthExceptionMapper implements
     @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")
     public Response toResponse(AuthenticationException e) {
         log.error(e.getMessage());
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+        return Response.status(Response.Status.UNAUTHORIZED)
             .entity(Json.createJsonExceptionMessage(e)).build();
     }
 }
