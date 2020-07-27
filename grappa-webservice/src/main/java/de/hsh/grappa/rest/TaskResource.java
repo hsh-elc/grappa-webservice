@@ -1,6 +1,6 @@
 package de.hsh.grappa.rest;
 
-import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.cache.RedisController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +29,7 @@ public class TaskResource {
     @HEAD
     @Path("/{taskUuid}")
     public Response exists(@PathParam("taskUuid") String taskUuid) {
-        if (GrappaServlet.redis.isTaskCached(taskUuid))
+        if (RedisController.getInstance().isTaskCached(taskUuid))
             return Response.ok().build();
         return Response.status(Response.Status.NOT_FOUND).build();
     }

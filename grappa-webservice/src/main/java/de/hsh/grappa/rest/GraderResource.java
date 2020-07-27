@@ -1,20 +1,12 @@
 package de.hsh.grappa.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import de.hsh.grappa.application.GrappaServlet;
-import de.hsh.grappa.config.GraderConfig;
+import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.service.GraderPoolManager;
-import de.hsh.grappa.service.GraderStatistics;
-import de.hsh.grappa.utils.Json;
-import org.apache.commons.io.input.ReaderInputStream;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +19,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
-import java.util.Map;
 
 @Path("/graders/{graderId}")
 public class GraderResource {
@@ -65,7 +55,7 @@ public class GraderResource {
         graderStatus.addProperty("poolSize", GraderPoolManager.getInstance().getPoolSize(graderId));
         graderStatus.addProperty("busyCount", GraderPoolManager.getInstance().getBusyCount(graderId));
         graderStatus.addProperty("queuedSubmissionCount",
-            GrappaServlet.redis.getSubmissionQueueCount(graderId));
+            RedisController.getInstance().getSubmissionQueueCount(graderId));
 //        graderStatus.addProperty("estimatedGradingSecondsTillQueueProcessed",
 //            GraderPoolManager.getInstance().getEstimatedSecondsUntilQueueIsGraded(graderId));
         var gsOpt = GraderPoolManager.getInstance().getGraderStatistics()

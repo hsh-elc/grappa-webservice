@@ -1,7 +1,7 @@
 package de.hsh.grappa.proforma;
 
 import com.google.common.base.Strings;
-import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.exceptions.BadRequestException;
 import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.proformaxml.v201.SubmissionType;
@@ -30,7 +30,7 @@ public class ExternalTaskRetrieverV201 extends TaskRetriever {
 
             // If the task repo url is empty and the taskuuid is set, try getting the task from cache
             try {
-                ProformaTask task = GrappaServlet.redis.getCachedTask(taskUuid);
+                ProformaTask task = RedisController.getInstance().getCachedTask(taskUuid);
                 return new TaskInternalsV201(task);
             } catch (NotFoundException e) {
                 throw new NotFoundException(String.format("The task uuid '%s' specified in the external task element " +

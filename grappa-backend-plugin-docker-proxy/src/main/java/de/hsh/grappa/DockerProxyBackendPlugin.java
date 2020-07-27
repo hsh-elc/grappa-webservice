@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Properties;
 
 public class DockerProxyBackendPlugin implements BackendPlugin {
-    private static Logger log = LoggerFactory.getLogger(DockerProxyBackendPlugin.class);
+    private static final Logger log = LoggerFactory.getLogger(DockerProxyBackendPlugin.class);
 
     private static final String GRADER_EXCEPTION_STACKTRACE_FILE_PATH =
         "/var/grb_starter/tmp/grader_exception_stacktrace";

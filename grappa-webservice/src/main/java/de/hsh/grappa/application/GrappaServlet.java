@@ -20,10 +20,10 @@ import java.io.File;
 @WebListener
 public class GrappaServlet implements ServletContextListener {
     //public static RedisClient redisClient;
-    public static RedisController redis;
+//    public static RedisController redis;
     public static GrappaConfig CONFIG;
 
-    private static Logger log = LoggerFactory.getLogger(GrappaServlet.class);
+    private static final Logger log = LoggerFactory.getLogger(GrappaServlet.class);
     public static final String CONFIG_FILENAME_PATH = "/etc/grappa/grappa-config.yaml";
 
     //public static GraderWorkersManager graderWorkersManager;
@@ -69,7 +69,7 @@ public class GrappaServlet implements ServletContextListener {
         try {
             GraderPoolManager.getInstance().stopStartingNewGradingProcesses();
             t.interrupt();
-            redis.shutdown();
+            RedisController.getInstance().shutdown();
         } catch (Exception e) {
             log.error("Error during webservice deinitialization.");
             log.error(e.getMessage());
@@ -99,10 +99,11 @@ public class GrappaServlet implements ServletContextListener {
     }
 
     private void setupRedisConnection() throws Exception {
-        redis = new RedisController(CONFIG.getCache());
-        redis.init();
+        //redis = new RedisController(CONFIG.getCache());
+        //redis.init();
+        RedisController.getInstance().init(CONFIG.getCache());
         log.info("Testing redis connection...");
-        if (redis.ping()) {
+        if (RedisController.getInstance().ping()) {
             log.info("Redis connection established");
         } else {
             log.error("Redis connection could not be established.");

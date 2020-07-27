@@ -14,7 +14,7 @@ import javax.ws.rs.ext.Provider;
 @Provider
 public class BadRequestExceptionMapper implements
     ExceptionMapper<de.hsh.grappa.exceptions.BadRequestException> {
-    private static Logger log = LoggerFactory.getLogger(BadRequestExceptionMapper.class);
+    private static final Logger log = LoggerFactory.getLogger(BadRequestExceptionMapper.class);
 
     @Override
     @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")

@@ -2,7 +2,6 @@ package de.hsh.grappa;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Frame;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;

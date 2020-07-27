@@ -1,7 +1,6 @@
 package de.hsh.grappa.service;
 
 import com.google.common.collect.MinMaxPriorityQueue;
-import de.hsh.grappa.DockerProxyBackendPlugin;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.QueuedSubmission;
 import de.hsh.grappa.cache.RedisController;
@@ -30,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Manages worker threads for a specific graderId.
  */
 public class GraderPool {
-    private static Logger log = LoggerFactory.getLogger(GraderPool.class);
+    private static final Logger log = LoggerFactory.getLogger(GraderPool.class);
     private final AtomicLong totalGradingProcessesExecuted =
         new AtomicLong(0);
     private final AtomicLong totalGradingProcessesSucceeded =
@@ -45,7 +44,7 @@ public class GraderPool {
     private BackendPlugin backendPlugin;
     private GraderConfig graderConfig;
 
-    private ConcurrentHashMap<String, Future<ProformaResponse>> gpMap =
+    private ConcurrentHashMap<String /*gradeProcId*/, Future<ProformaResponse>> gpMap =
         new ConcurrentHashMap<>();
 
     private HashMap<String /*taskUuid*/, MinMaxPriorityQueue<Duration> /*seconds*/>
@@ -85,7 +84,7 @@ public class GraderPool {
             log.debug("Grader '{}': semaphore aquired, {} left", graderConfig.getId(), semaphore.availablePermits());
             boolean releaseSemaphore = true; // release in current thread if we can't start a grading process
             try {
-                QueuedSubmission queuedSubm = GrappaServlet.redis.popSubmission(graderConfig.getId());
+                QueuedSubmission queuedSubm = RedisController.getInstance().popSubmission(graderConfig.getId());
                 if (null != queuedSubm) {
                     releaseSemaphore = false; // starting another thread that will release the semaphore eventually
                     log.info("[GraderId: '{}', GradeProcessId: '{}']: Starting grading process...",
@@ -139,12 +138,7 @@ public class GraderPool {
      */
     private void setLoggingContextIdsForDockerProxy(String graderId, String gradeProcId) {
         try {
-            if (backendPlugin instanceof DockerProxyBackendPlugin) {
-                DockerProxyBackendPlugin dp = (DockerProxyBackendPlugin) backendPlugin;
-                dp.setLmsId("N/A"); //TODO
-                dp.setGraderId(graderId);
-                dp.setGradeProcId(gradeProcId);
-            }
+
         } catch (Exception e) {
             log.error("Could not set logging context ids for docker proxy plugin.");
             log.error(ExceptionUtils.getStackTrace(e));
@@ -234,7 +228,7 @@ public class GraderPool {
 
     private void setGradingDuration(Duration d, String gradeProcId) {
         try {
-            String taskUuid = GrappaServlet.redis.getAssociatedTaskUuid(gradeProcId);
+            String taskUuid = RedisController.getInstance().getAssociatedTaskUuid(gradeProcId);
             if(null == taskUuid)
                 throw new NotFoundException(String
                     .format("There is no associated taskUuid for gradeProcId '{}'.",
@@ -254,7 +248,7 @@ public class GraderPool {
             }
 
             log.debug("Average grading duration: {} seconds", avgDuration);
-            GrappaServlet.redis.setTaskAverageGradingDurationSeconds(taskUuid, avgDuration);
+            RedisController.getInstance().setTaskAverageGradingDurationSeconds(taskUuid, avgDuration);
         } catch (Exception e) {
             log.error("Failed to set grading duration.");
             log.error(e.getMessage());
@@ -265,7 +259,7 @@ public class GraderPool {
     private void cacheProformaResponseResult(ProformaResponse resp, String gradeProcId) {
         if (null != resp) {
             log.debug("[Grader '{}']: Caching response: {}", graderConfig.getId(), resp);
-            GrappaServlet.redis.setResponse(gradeProcId, resp);
+            RedisController.getInstance().setResponse(gradeProcId, resp);
         } else {
             log.debug("[Grader '{}']: Grading process did not supply a response result. " +
                 "Nothing to cache.", graderConfig.getId());
@@ -318,6 +312,7 @@ public class GraderPool {
         BackendPlugin bp = new ClassLoaderHelper<BackendPlugin>().LoadClass(grader.getClass_path(),
             grader.getClass_name(),
             BackendPlugin.class);
+        //setLoggingContextIdsForDockerProxy();
         try (InputStream is = new FileInputStream(new File(grader.getConfig_path()))) {
             Properties props = new Properties();
             props.load(is);

@@ -1,6 +1,5 @@
 package de.hsh.grappa.utils;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +9,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 public class ClassLoaderHelper<C> {
-    private static Logger log = LoggerFactory.getLogger(ClassLoaderHelper.class);
+    private static final Logger log = LoggerFactory.getLogger(ClassLoaderHelper.class);
 
     public C LoadClass(String classPath, String className, Class<C> parentClass) throws Exception {
         File jar = new File(classPath);

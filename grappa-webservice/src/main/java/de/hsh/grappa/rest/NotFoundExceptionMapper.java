@@ -15,7 +15,7 @@ import javax.ws.rs.ext.Provider;
 @Provider
 public class NotFoundExceptionMapper implements
     ExceptionMapper<de.hsh.grappa.exceptions.NotFoundException> {
-    private static Logger log = LoggerFactory.getLogger(NotFoundExceptionMapper.class);
+    private static final Logger log = LoggerFactory.getLogger(NotFoundExceptionMapper.class);
 
     @Override
     @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")

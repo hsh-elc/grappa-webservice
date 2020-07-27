@@ -9,7 +9,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 public class ClassLoaderHelper<C> {
-    private static Logger log = LoggerFactory.getLogger(ClassLoaderHelper.class);
+    private static final Logger log = LoggerFactory.getLogger(ClassLoaderHelper.class);
 
     public C LoadClass(String jarPath, String classpath, Class<C> parentClass) throws Exception {
         File jar = new File(jarPath);

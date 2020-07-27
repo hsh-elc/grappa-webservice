@@ -5,17 +5,19 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.proforma.ProformaV201ResponseGenerator;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.utils.TestConfig;
-import de.hsh.grappa.utils.Zip;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -26,6 +28,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
@@ -36,7 +39,17 @@ public class Client {
     private javax.ws.rs.client.Client client;
     private GrappaConfig config;
 
-    private String proformaSubmissionFilePath = "...";
+    @Ignore
+    @Test
+    public void tmp() throws Exception {
+
+    }
+
+    //    private String proformaSubmissionFilePath = "C:\\data_utc-bn9-u1\\Documents-Local\\Grappa\\Roberts ProFormA 2.0 " +
+//        "Aufgaben\\submission-separate-2.zip";
+//    private String proformaSubmissionFilePath = "C:\\Users\\nudroid\\Desktop\\Grappa\\submission-separate.zip";
+    private String proformaSubmissionFilePath = "C:\\Users\\nudroid\\Desktop\\Grappa\\submission-separate-with-cached" +
+        "-task.zip";
 
     @Before
     public void loadConfig() throws Exception {
@@ -78,17 +91,21 @@ public class Client {
     @Test
     public void getResponseAndPrint() throws Exception {
         try {
-            String gradeProcId = "cb9c1de5-31d6-4c9a-a789-2e8908b0d3de";
+            String gradeProcId = "79457f50-61fb-474d-932f-100e7669efd5";
             WebTarget target = client.target(TestConfig.getServer())
                 .path("test").path("gradeprocesses").path(gradeProcId);
             try (Response response = target.request()
+                .header("Authorization", "basic "
+                    + Base64.getEncoder().encodeToString("test:test".getBytes()))
                 .accept(MediaType.APPLICATION_OCTET_STREAM)
                 //.accept(MediaType.MULTIPART_FORM_DATA)
                 .get()) {
                 System.out.println(response.getStatus());
-                byte[] resp = response.readEntity(byte[].class);
-                resp = Zip.getFileFromZip(resp, "response.xml");
-                String respXml = IOUtils.toString(resp, "utf8");
+                var respBody = response.readEntity(byte[].class);
+                byte[] xmlBytes = respBody;
+                // if response returned form-data/octet-stream, read zip instead
+                //var xmlBytes = Zip.getFileFromZip(respBytes, "response.xml");
+                String respXml = IOUtils.toString(xmlBytes, "utf8");
                 System.out.println(respXml);
             }
         } catch (Exception e) {
@@ -104,15 +121,67 @@ public class Client {
         System.out.println(xmlString);
     }
 
-    //@Ignore
+    @Ignore
+    @Test
+    public void poll() throws Exception {
+        String gradeProcId = "a301513d-71d1-4cf8-9080-7097c32bd8d9";
+        try {
+            WebTarget target = client.target(TestConfig.getServer()).path("/test/gradeprocesses")
+                .path(gradeProcId);
+            MediaType mediaType = FilenameUtils.getExtension(proformaSubmissionFilePath)
+                .equals("xml") ? MediaType.APPLICATION_XML_TYPE : MediaType.APPLICATION_OCTET_STREAM_TYPE;
+
+            try (Response response = target
+                .request()
+                .header("Authorization", "basic "
+                    + Base64.getEncoder().encodeToString("test:test".getBytes()))
+                .get()) {
+
+                if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+                    String json = response.readEntity(String.class);
+                    System.out.println("Status: " + response.getStatus() + ", JSON: " + json);
+                } else {
+                    byte[] b = response.readEntity(byte[].class);
+                    System.out.println("Status: " + response.getStatus() + ", byte[].len: " + b.length);
+                }
+
+            }
+        } catch (Exception e) {
+            System.out.println(ExceptionUtils.getStackTrace(e));
+        }
+    }
+
+    @Ignore
+    @Test
+    public void testSubmQueueIndex() throws Exception {
+        RedisController.getInstance().init(config.getCache());
+        int i = RedisController.getInstance().getQueuedSubmissionIndex("e40433e9-1184-40e9-a312-fa4545d1882a");
+        System.out.println(i);
+    }
+
+    @Ignore
     @Test
     public void testStressTestSubmissionSubmitting() throws Exception {
         AtomicInteger cancelCounter = new AtomicInteger(0);
         var exec = Executors.newFixedThreadPool(10);
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 1; i++) {
+            System.out.println("Submitting no. " + i);
+            String gradeProcId = testSubmitSubmissionAndReturnGradeProcId();
+        }
+    }
+
+    @Ignore
+    @Test
+    public void testStressTestSubmissionSubmittingAsync() throws Exception {
+        AtomicInteger cancelCounter = new AtomicInteger(0);
+        var exec = Executors.newFixedThreadPool(10);
+        for (int i = 0; i < 10; i++) {
             CompletableFuture.supplyAsync(() -> {
                 return testSubmitSubmissionAndReturnGradeProcId();
-            }, exec).thenAcceptAsync((gradeProcId) -> {
+            }, exec).thenAccept((gradeProcId) -> {
+                if(null == gradeProcId)
+                    return;
+
                 int rand = ThreadLocalRandom.current().nextInt(0, 3 + 1);
                 if (rand % 4 == 0) {
                     try {
@@ -120,10 +189,10 @@ public class Client {
                         cancelCounter.incrementAndGet();
                         testCancelSubmission(gradeProcId);
                     } catch (Exception e) {
-                        System.out.println(e.getMessage());
+                        System.out.println(ExceptionUtils.getStackTrace(e));
                     }
                 }
-            }); // don't run thenAcceptAsync on the same executor
+         }); // don't run thenAcceptAsync on the same executor
         }
         exec.shutdown();
         exec.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
@@ -139,24 +208,35 @@ public class Client {
     public String testSubmitSubmissionAndReturnGradeProcId() {
         try {
             WebTarget target = client.target(TestConfig.getServer()).path("/test/gradeprocesses");
-            ClassLoader classLoader = getClass().getClassLoader();
             File file = new File(proformaSubmissionFilePath);
+            MediaType mediaType = FilenameUtils.getExtension(proformaSubmissionFilePath)
+                .equals("xml") ? MediaType.APPLICATION_XML_TYPE : MediaType.APPLICATION_OCTET_STREAM_TYPE;
+
             try (Response response = target.queryParam("async", true)
+                .queryParam("prioritize", true)
                 .queryParam("graderId", "DummyGrader")
                 .request()
-                .post(Entity.entity(file,
-                    /*MediaType.MULTIPART_FORM_DATA*/ MediaType.APPLICATION_OCTET_STREAM))) {
+                .header("Authorization", "basic "
+                    + Base64.getEncoder().encodeToString("teset:test".getBytes()))
+                .post(Entity.entity(file, mediaType))) {
+
                 String json = response.readEntity(String.class);
+                System.out.println("Status: " + response.getStatus() + ", return body: " + json);
                 JsonParser p = new JsonParser();
                 JsonElement e = p.parse(json);
-                String gradeProcId = e.getAsJsonObject().get("gradeProcessId").toString();
-                gradeProcId = gradeProcId.substring(1, gradeProcId.length() - 1);
-                System.out.println(String.format("Submitting... Status: %s, gradeProcessId: %s",
-                    response.getStatus(), gradeProcId));
-                return gradeProcId;
+                if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
+                    String gradeProcId = e.getAsJsonObject().get("gradeProcessId").toString();
+                    gradeProcId = gradeProcId.substring(1, gradeProcId.length() - 1);
+                    System.out.println(String.format("Submitted Status: %s, gradeProcessId: %s",
+                        response.getStatus(), gradeProcId));
+                    return gradeProcId;
+                } else {
+                    String error = e.getAsJsonObject().get("error").toString();
+                    System.out.println("Request resulted in an error: " + error);
+                }
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(ExceptionUtils.getStackTrace(e));
         }
         return null;
     }

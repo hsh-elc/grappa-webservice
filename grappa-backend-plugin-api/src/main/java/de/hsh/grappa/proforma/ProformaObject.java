@@ -1,7 +1,6 @@
 package de.hsh.grappa.proforma;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 public abstract class ProformaObject implements Serializable {
     private final byte[] content;

@@ -3,6 +3,9 @@
  */
 package de.hsh.grappa.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -11,11 +14,8 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class DirectoryClassloader {
-    private static Logger logger = LoggerFactory
+    private static final Logger logger = LoggerFactory
             .getLogger(DirectoryClassloader.class);
 
     public DirectoryClassloader(String[] pathes, String[] extensions)

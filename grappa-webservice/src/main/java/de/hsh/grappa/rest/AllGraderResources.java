@@ -1,8 +1,5 @@
 package de.hsh.grappa.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -10,7 +7,6 @@ import com.google.gson.JsonObject;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.config.GraderConfig;
 import de.hsh.grappa.service.GraderPoolManager;
-import de.hsh.grappa.service.GraderStatistics;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +19,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 @Path("/graders")
 public class AllGraderResources {

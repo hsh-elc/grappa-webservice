@@ -11,7 +11,6 @@ import io.lettuce.core.RedisURI;
 import io.lettuce.core.SetArgs;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,19 +21,22 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.IntStream;
 
-// TODO: make this a wrapper class for the real redisClient
-
 public class RedisController {
-    private static Logger log = LoggerFactory.getLogger(RedisController.class);
+    private static final Logger log = LoggerFactory.getLogger(RedisController.class);
 
+    private static RedisController instance = new RedisController();
     private RedisClient redisClient = null;
     private CacheConfig cacheConfig;
 
-    public RedisController(CacheConfig cacheConfig) throws Exception {
-        this.cacheConfig = cacheConfig;
+    private RedisController() {
     }
 
-    public synchronized void init() {
+    public static RedisController getInstance() {
+        return instance;
+    }
+
+    public synchronized void init(CacheConfig cc) {
+        this.cacheConfig = cc;
         var redisURI =
             RedisURI.Builder.redis(cacheConfig.getRedis().getHost(),
                 cacheConfig.getRedis().getPort()).
@@ -152,7 +154,7 @@ public class RedisController {
         // push the graderProcId onto the queue
         try (var redis = redisClient.connect()) {
             long listSize;
-            if(prioritize)
+            if (prioritize)
                 listSize = redis.sync().lpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
             else
                 listSize = redis.sync().rpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
@@ -184,6 +186,7 @@ public class RedisController {
 
     /**
      * Get the index position of a submission in a queue.
+     *
      * @param gradeProcId
      * @return -1, if the submission is not queued (anymore), or a positive number.
      * 0, if the submission is literally up next for grading.
@@ -224,7 +227,7 @@ public class RedisController {
                 }
             } else {
                 log.debug("[GradeProcId: '{}']: Cannot procced with removing the submission, no information about the " +
-                        "associated graderId is available.", gradeProcId);
+                    "associated graderId is available.", gradeProcId);
             }
             return false;
         }
@@ -298,7 +301,7 @@ public class RedisController {
         log.debug("[GradeProcId: '{}']: getResponse()", gradeProcId);
         try (var redis = redisClient.connect(new StringByteCodec())) {
             byte[] respBytes = redis.sync().get(RESPONSE_KEY_PREFIX.concat(gradeProcId));
-            if(null == respBytes)
+            if (null == respBytes)
                 return null;
             return SerializationUtils.deserialize(respBytes);
         }
@@ -326,7 +329,7 @@ public class RedisController {
         log.debug("[TaskUuid: '{}']: getCachedTask()", taskUuid);
         try (var redis = redisClient.connect(new StringByteCodec())) {
             byte[] taskBytes = redis.sync().get(TASK_KEY_PREFIX.concat(taskUuid));
-            if(null == taskBytes)
+            if (null == taskBytes)
                 throw new NotFoundException(String.format("Task with uuid '%s' is not cached", taskUuid));
             return SerializationUtils.deserialize(taskBytes);
         }
@@ -386,7 +389,7 @@ public class RedisController {
 
     public synchronized long getTaskAverageGradingDurationSeconds(String taskUuid, long defaultValue) {
         String s = getString(TASK_AVG_GRADING_DURATION_SECONDS_KEY_PREFIX.concat(taskUuid));
-        return !StringUtil.isNullOrEmpty(s) ? Long.parseLong(s): defaultValue;
+        return !StringUtil.isNullOrEmpty(s) ? Long.parseLong(s) : defaultValue;
     }
 
     private synchronized boolean keyExists(String key) {
@@ -400,6 +403,7 @@ public class RedisController {
     //private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
     // Use localized time
     private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+
     /**
      * Set a ISO 8601 timestamp for a key of another key/value pair chache entry.
      */

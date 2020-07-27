@@ -3,6 +3,7 @@ package de.hsh.grappa.service;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.exceptions.BadRequestException;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.exceptions.NotFoundException;
@@ -80,7 +81,7 @@ public class SubmissionProcessor {
         cacheTask();
         // Queue submission for grading
         String gradeProcId = ObjectId.createObjectId();
-        GrappaServlet.redis.pushSubmission(graderId, gradeProcId, subm.getTask().getUuid(),
+        RedisController.getInstance().pushSubmission(graderId, gradeProcId, subm.getTask().getUuid(),
             subm.getProformaSubmission(), prioritize);
         synchronized (GraderPoolManager.getInstance()) {
             GraderPoolManager.getInstance().notify();
@@ -90,11 +91,11 @@ public class SubmissionProcessor {
 
     private void cacheTask() throws Exception {
         TaskInternals task = subm.getTask();
-        if (!GrappaServlet.redis.isTaskCached(task.getUuid())) {
-            GrappaServlet.redis.cacheTask(task.getUuid(), task.getProformaTask());
+        if (!RedisController.getInstance().isTaskCached(task.getUuid())) {
+            RedisController.getInstance().cacheTask(task.getUuid(), task.getProformaTask());
         } else {
             // otherwise, refresh existing cached task timeout
-            GrappaServlet.redis.refreshTaskTimeout(task.getUuid());
+            RedisController.getInstance().refreshTaskTimeout(task.getUuid());
         }
     }
 }

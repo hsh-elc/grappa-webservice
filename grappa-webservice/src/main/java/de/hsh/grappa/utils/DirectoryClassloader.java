@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 public class DirectoryClassloader {
-    private static Logger logger = LoggerFactory
+    private static final Logger logger = LoggerFactory
             .getLogger(DirectoryClassloader.class);
 
     /**

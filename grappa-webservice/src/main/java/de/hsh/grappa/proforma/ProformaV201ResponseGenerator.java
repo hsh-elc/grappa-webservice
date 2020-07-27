@@ -5,7 +5,6 @@ import de.hsh.grappa.utils.XmlUtils;
 import org.apache.commons.codec.Charsets;
 
 import java.math.BigDecimal;
-import java.nio.charset.Charset;
 
 public class ProformaV201ResponseGenerator {
 

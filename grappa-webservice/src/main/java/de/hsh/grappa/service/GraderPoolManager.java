@@ -1,8 +1,8 @@
 package de.hsh.grappa.service;
 
 import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GraderConfig;
-import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.exceptions.NotFoundException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable {
-    private static Logger log = LoggerFactory.getLogger(GraderPoolManager.class);
+    private static final Logger log = LoggerFactory.getLogger(GraderPoolManager.class);
     private static GraderPoolManager gwm = null;
     private final AtomicBoolean stopStartingNewGradingProcesses =
         new AtomicBoolean(false);
@@ -34,10 +34,11 @@ public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable 
                 try {
                     this.pools.put(g.getId(), new GraderPool(g, this));
                 } catch (Exception e) {
+                    log.error("Could not load grader '{}'.", g.getId());
                     log.error(e.getMessage());
                     log.error(ExceptionUtils.getStackTrace(e));
                 }
-            } else log.debug("Ignoring grader '{}', since it is configured to be disabled.",
+            } else log.debug("Ignoring disabled grader '{}'.",
                 g.getId());
         }
     }
@@ -59,7 +60,7 @@ public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable 
     }
 
     public boolean cancelGradingProcess(String gradeProcId) throws Exception {
-        String graderId = GrappaServlet.redis.getAssociatedGraderId(gradeProcId);
+        String graderId = RedisController.getInstance().getAssociatedGraderId(gradeProcId);
         GraderPool gp = pools.get(graderId);
         if (null != gp)
             return gp.cancelGradeProcess(gradeProcId);
@@ -84,7 +85,7 @@ public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable 
             for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
                 // Iterate through all grade workers, check if any of them
                 // have queued submissions
-                while (0 < GrappaServlet.redis.getSubmissionQueueCount(e.getKey())
+                while (0 < RedisController.getInstance().getSubmissionQueueCount(e.getKey())
                     && !Thread.currentThread().isInterrupted()) {
                     if (!stopStartingNewGradingProcesses.get()) {
                         if (!e.getValue().tryGrade()) {
@@ -125,9 +126,9 @@ public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable 
 //        if (null != pool) {
 //            int busy = pool.getBusyCount();
 //            int poolSize = pool.getPoolSize();
-//            long avgGradingSeconds = GrappaServlet.redis.getSubmissionAverageGradingDurationSeconds(gradeProcId,
+//            long avgGradingSeconds = RedisController.getInstance().getSubmissionAverageGradingDurationSeconds(gradeProcId,
 //                GrappaServlet.CONFIG.getService().getDefault_estimated_grading_seconds());
-//            long queueCount = GrappaServlet.redis.getSubmissionQueueCount(graderId);
+//            long queueCount = RedisController.getInstance().getSubmissionQueueCount(graderId);
 //            long estimatedSeconds = (queueCount / poolSize) * avgGradingSeconds;
 //            if(busy > 0)
 //                estimatedSeconds += estimatedSeconds;
@@ -137,14 +138,14 @@ public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable 
 //    }
 
     public long getEstimatedSecondsUntilGradeProcIdIsFinished(String gradeProcId) throws NotFoundException {
-        String graderId = GrappaServlet.redis.getAssociatedGraderId(gradeProcId);
+        String graderId = RedisController.getInstance().getAssociatedGraderId(gradeProcId);
         var pool = pools.get(graderId);
         if (null != pool) {
             int poolSize = pool.getPoolSize();
             int freeCount = poolSize - pool.getBusyCount();
-            long avgGradingSeconds = GrappaServlet.redis.getSubmissionAverageGradingDurationSeconds(gradeProcId,
+            long avgGradingSeconds = RedisController.getInstance().getSubmissionAverageGradingDurationSeconds(gradeProcId,
                 GrappaServlet.CONFIG.getService().getDefault_estimated_grading_seconds());
-            int submPos = GrappaServlet.redis.getQueuedSubmissionIndex(gradeProcId);
+            int submPos = RedisController.getInstance().getQueuedSubmissionIndex(gradeProcId);
 
             // Calculating a submission's estimated grading seconds remaining
             // relies heavily on the submission's position/index in a queue:

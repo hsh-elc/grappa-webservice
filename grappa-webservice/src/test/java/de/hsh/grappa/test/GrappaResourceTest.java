@@ -1,12 +1,14 @@
 package de.hsh.grappa.test;
 
 import de.hsh.grappa.utils.TestConfig;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import java.util.Base64;
 
 public class GrappaResourceTest {
     private javax.ws.rs.client.Client client;
@@ -25,12 +27,15 @@ public class GrappaResourceTest {
         try {
             WebTarget target = client.target(TestConfig.getServer()).path("/");
             try (Response response = target
-                .request().get()) {
+                .request()
+                .header("Authorization", "basic "
+                    + Base64.getEncoder().encodeToString("test:test".getBytes()))
+                .get()) {
                 System.out.println(response.getStatus());
                 System.out.println(response.readEntity(String.class));
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(ExceptionUtils.getStackTrace(e));
         }
     }
 }

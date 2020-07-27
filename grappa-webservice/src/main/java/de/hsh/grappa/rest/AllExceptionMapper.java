@@ -14,7 +14,7 @@ import javax.ws.rs.ext.Provider;
 @Provider
 public class AllExceptionMapper implements
     ExceptionMapper<Throwable> {
-    private static Logger log = LoggerFactory.getLogger(AllExceptionMapper.class);
+    private static final Logger log = LoggerFactory.getLogger(AllExceptionMapper.class);
 
     @Override
     @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")

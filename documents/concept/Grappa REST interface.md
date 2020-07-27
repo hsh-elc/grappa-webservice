@@ -17,7 +17,7 @@ Get the service's status information, such as runtime infos.
 * **HTTP Responses**
   
   * **Code:** `200 OK` <br/>
-    **Content**:
+    **Content Example**:
     ```
     {
         "service": {
@@ -31,8 +31,8 @@ Get the service's status information, such as runtime infos.
             "totalAllExceptExecuted": 0,
             "graderRuntimeInfo": {
                 "grader": {
-                    "id": "id",
-                    "name": "human-friendly name",
+                    "id": "String",
+                    "name": "String",
                     "currentlyQueuedSubmissions": 0,
                     "gradingProcessesExecuted": 0,
                     "gradingProcessesSucceeded": 0,
@@ -48,12 +48,12 @@ Get the service's status information, such as runtime infos.
     **Description**: Returns the status of a grader. This data is subject to change.    
        
   * **Code:** `401 Unauthorized` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unauthorized access to this resource.
 
   * **Code:** `500 Internal Server Error` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
 
@@ -87,28 +87,28 @@ Submit a Proforma submission for grading.
 * **HTTP Responses**
   
   * **Code:** `201 Created` <br/>
-     **Content**: `{"gradeProcessId" : "String Id", "estimatedSecondsRemaining": "Integer"}` <br/>
+     **Content Example**: `{"gradeProcessId" : "String Id", "estimatedSecondsRemaining": "Integer"}` <br/>
      **Content Type**: `application/json` <br/>
      **Description**: The Proforma submission has been accepted for grading. Use `gradeProcessId` for subsequent polling
       requests. `estimatedSecondsRemaining` indicates the time remaining until the submission is graded.
      
   * **Code:** `400 Bad Request` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: The incoming Proforma submission document was ill-formatted or missing required information.
        
   * **Code:** `401 Unauthorized` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unauthorized access to this resource.
 
   * **Code:** `404 Not Found` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Parameter `:lmsid` or `:graderId` does not exist.
 
   * **Code:** `500 Internal Server Error` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
   
@@ -141,7 +141,7 @@ Poll for the status of a Proforma submission (queued for grading, being graded, 
 * **HTTP Responses**
   
   * **Code:** `200 OK` <br/>
-     **Content**: A Proforma Response file named `response.(xml|zip)` <br/>
+     **Content Example**: A Proforma Response file named `response.(xml|zip)` <br/>
      **Content Type**: The content depends on the media type of the Proforma response supplied by a grader. In case
       of a Proforma `response.xml` file, Grappa's HTTP response to the client's `GET` request will be of type
        `application
@@ -158,21 +158,21 @@ Poll for the status of a Proforma submission (queued for grading, being graded, 
          grading process, the cancellation will have no effect and the response's content body will be a valid Proforma response.   
      
   * **Code:** `202 Accepted` <br/>
-    **Content**: `{"estimatedSecondsRemaining": "Integer"}` <br/>
+    **Content Example**: `{"estimatedSecondsRemaining": "Integer"}` <br/>
     **Description**: The grading process is either pending or in progress. `estimatedSecondsRemaining` indicates the time remaining until the submission is graded.
        
   * **Code:** `401 Unauthorized` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unauthorized access to this resource.
 
   * **Code:** `404 Not Found` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Parameter `:lmsid` or `:gradeProcessId` does not exist.
     
   * **Code:** `500 Internal Server Error` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
    
@@ -198,28 +198,28 @@ Cancel and delete a Proforma submission that is queued for grading or being curr
 * **HTTP Responses**
   
   * **Code:** `200 OK` <br/>
-     **Content**: 
+     **Content Example**: 
      **Content Type**: The content type depends on the `Content-Type` in the request header. <br/>
      **Description**: The pending submission has been removed from the submission queue, or the grading process has
       been cancelled if the submission was currently being graded. There will be no Proforma response result for a
        cancelled submisison. <br/>
      
   * **Code:** `202 Accepted` <br/>
-    **Content**: *None* <br/>
+    **Content Example**: *No content* <br/>
     **Description**: The grading process is either pending or in progress.
        
   * **Code:** `401 Unauthorized` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unauthorized access to this resource.
 
   * **Code:** `404 Not Found` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Parameter `:lmsid` or `:gradeProcessId` does not exist.
 
   * **Code:** `500 Internal Server Error` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
 
@@ -242,25 +242,25 @@ Get the list of graders that are enabled and online and ready to take on submiss
 * **HTTP Responses**
   
   * **Code:** `200 OK` <br/>
-    **Content**:
+    **Content Example**:
     ```
     {
         "graders": {
-            "graderId": "human-friendly grader name"
-            "graderId": "human-friendly grader name"
+            "graderId0": "String (user-friendly name)"
+            "graderId1": "String (user-friendly name)"
         }
     }
     ```
     **Content Type**: `application/json` <br/>
-    **Description**: Returns a list of graders that are enabled and online.    
+    **Description**: Returns a list of graders that are enabled and online and ready to take on submissions.
        
   * **Code:** `401 Unauthorized` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unauthorized access to this resource.
 
   * **Code:** `500 Internal Server Error` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
 
@@ -283,7 +283,7 @@ Get the status, e.g. grader statistics, of a specific grader.
 * **HTTP Responses**
   
   * **Code:** `200 OK` <br/>
-    **Content**:
+    **Content Example**:
     ```
     {
         "id": "graderId",
@@ -300,17 +300,17 @@ Get the status, e.g. grader statistics, of a specific grader.
     **Description**: Returns the status of a grader. This data is subject to change.    
        
   * **Code:** `401 Unauthorized` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unauthorized access to this resource.
 
   * **Code:** `404 Not Found` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Parameter `graderId` does not exist.
 
   * **Code:** `500 Internal Server Error` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
 
@@ -334,20 +334,20 @@ Check if a specified task is cached by the middleware to avoid including the tas
 * **HTTP Responses**
   
   * **Code:** `200 OK` <br/>
-    **Content**: *None* <br/>
+    **Content Example**: *None* <br/>
     **Description**: The specified task is cached by the middleware.     
        
   * **Code:** `401 Unauthorized` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unauthorized access to this resource.
 
   * **Code:** `404 Not Found` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Parameter `taskUuid` does not exist.
 
   * **Code:** `500 Internal Server Error` <br/>
-    **Content**: `{ error : "message" }` <br/>
+    **Content Example**: `{ error : "String" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  

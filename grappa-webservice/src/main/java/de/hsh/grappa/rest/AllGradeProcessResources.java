@@ -1,6 +1,6 @@
 package de.hsh.grappa.rest;
 
-import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.proforma.MimeType;
 import de.hsh.grappa.proforma.ProformaSubmission;
 import de.hsh.grappa.service.GraderPoolManager;
@@ -60,7 +60,7 @@ public class AllGradeProcessResources {
             log.info("[GraderId: {}] Processing submission: {}", graderId, proformaSubm);
             String gradeProcId = new SubmissionProcessor(proformaSubm, graderId).process(prioritize);
 
-            int queuedSubmPos = GrappaServlet.redis.getQueuedSubmissionIndex(gradeProcId);
+            int queuedSubmPos = RedisController.getInstance().getQueuedSubmissionIndex(gradeProcId);
             log.debug("subm to be graded in queue at pos {}", queuedSubmPos);
             long estimatedSecondsRemaining =
                 GraderPoolManager.getInstance()
