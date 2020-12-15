@@ -25,6 +25,7 @@
         <module>grappa-grader-environment-vagrant</module>
         <module>grappa-grader-backend-starter</module>
         <module>grappa-dummygrader</module>
+        <module>proformaxml</module>
     </modules>
 
 <!--    <dependencies>-->

@@ -4,7 +4,7 @@ package de.hsh.grappa.rest;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.proforma.MimeType;
-import de.hsh.grappa.proforma.ProformaResponse;
+import de.hsh.grappa.proforma.ResponseResource;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.utils.Json;
 import org.slf4j.Logger;
@@ -57,16 +57,16 @@ public class GradeProcessResource {
                 .getDefault_estimated_grading_seconds());
         
         // Check if the submission has been graded and if a response is available result
-        ProformaResponse proformaResponse = RedisController.getInstance().getResponse(gradeProcessId);
-        if (null != proformaResponse) {
+        ResponseResource responseResource = RedisController.getInstance().getResponse(gradeProcessId);
+        if (null != responseResource) {
             log.debug("[GradeProcId: '{}']: ProformaResponse file is available.", gradeProcessId);
-            String responseFileName = "response." +  (proformaResponse.getMimeType()
+            String responseFileName = "response." +  (responseResource.getMimeType()
                 .equals(MimeType.XML) ? "xml" : "zip");
 
             Response.ResponseBuilder resp =
                 Response.status(Response.Status.OK)
                     .header("content-disposition","attachment; filename = " + responseFileName)
-                    .entity(proformaResponse.getContent());
+                    .entity(responseResource.getContent());
 
             var acceptableTypes = headers.getAcceptableMediaTypes();
             if (acceptableTypes.stream().anyMatch(mt -> mt.isCompatible(MediaType.APPLICATION_OCTET_STREAM_TYPE))) {

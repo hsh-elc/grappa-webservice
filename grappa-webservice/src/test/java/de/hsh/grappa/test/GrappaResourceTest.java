@@ -13,6 +13,8 @@ import java.util.Base64;
 public class GrappaResourceTest {
     private javax.ws.rs.client.Client client;
 
+    private String basicAuth = "test:test"; // lmsId:passwd
+
     @Before
     public void loadConfig() throws Exception {
     }
@@ -29,7 +31,7 @@ public class GrappaResourceTest {
             try (Response response = target
                 .request()
                 .header("Authorization", "basic "
-                    + Base64.getEncoder().encodeToString("test:test".getBytes()))
+                    + Base64.getEncoder().encodeToString(basicAuth.getBytes()))
                 .get()) {
                 System.out.println(response.getStatus());
                 System.out.println(response.readEntity(String.class));

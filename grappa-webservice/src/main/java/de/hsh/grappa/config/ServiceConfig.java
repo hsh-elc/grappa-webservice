@@ -4,6 +4,7 @@ public class ServiceConfig {
     private int default_estimated_grading_seconds = 20;
     private int prev_grading_seconds_max_list_size = 10;
     private String logging_level;
+    private int synchronous_submission_timeout_seconds = 600;
     private String default_grading_environment_setup_class_path;
     private String default_grading_environment_setup_class_name;
 
@@ -21,6 +22,14 @@ public class ServiceConfig {
 
     public void setLogging_level(String logging_level) {
         this.logging_level = logging_level;
+    }
+
+    public int getSynchronous_submission_timeout_seconds() {
+        return synchronous_submission_timeout_seconds;
+    }
+
+    public void setSynchronous_submission_timeout_seconds(int synchronous_submission_timeout_seconds) {
+        this.synchronous_submission_timeout_seconds = synchronous_submission_timeout_seconds;
     }
 
     public int getDefault_estimated_grading_seconds() {
@@ -47,13 +56,15 @@ public class ServiceConfig {
         this.default_grading_environment_setup_class_name = default_grading_environment_setup_class_name;
     }
 
-  @Override
-  public String toString() {
-    return "Service{" +
-        "prev_grading_seconds_max_list_size=" + prev_grading_seconds_max_list_size +
-        ", logging_level='" + logging_level + '\'' +
-        ", default_grading_environment_setup_class_path='" + default_grading_environment_setup_class_path + '\'' +
-        ", default_grading_environment_setup_class_name='" + default_grading_environment_setup_class_name + '\'' +
-        '}';
-  }
+    @Override
+    public String toString() {
+        return "ServiceConfig{" +
+            "default_estimated_grading_seconds=" + default_estimated_grading_seconds +
+            ", prev_grading_seconds_max_list_size=" + prev_grading_seconds_max_list_size +
+            ", logging_level='" + logging_level + '\'' +
+            ", synchronous_submission_timeout_seconds=" + synchronous_submission_timeout_seconds +
+            ", default_grading_environment_setup_class_path='" + default_grading_environment_setup_class_path + '\'' +
+            ", default_grading_environment_setup_class_name='" + default_grading_environment_setup_class_name + '\'' +
+            '}';
+    }
 }

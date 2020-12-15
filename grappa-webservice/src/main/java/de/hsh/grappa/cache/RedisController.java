@@ -2,9 +2,9 @@ package de.hsh.grappa.cache;
 
 import de.hsh.grappa.config.CacheConfig;
 import de.hsh.grappa.exceptions.NotFoundException;
-import de.hsh.grappa.proforma.ProformaResponse;
-import de.hsh.grappa.proforma.ProformaSubmission;
-import de.hsh.grappa.proforma.ProformaTask;
+import de.hsh.grappa.proforma.ResponseResource;
+import de.hsh.grappa.proforma.SubmissionResource;
+import de.hsh.grappa.proforma.TaskResource;
 import de.hsh.grappa.utils.StringByteCodec;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
@@ -137,18 +137,18 @@ public class RedisController {
      * Queues a new submission for a given grader, with a specified grader process id.
      * @param graderId
      * @param gradeProcId
-     * @param proformaSubmission
+     * @param submissionBlob
      */
     public synchronized void pushSubmission(String graderId, String gradeProcId,
-                                            String taskUuid, ProformaSubmission proformaSubmission,
+                                            String taskUuid, SubmissionResource submissionBlob,
                                             boolean prioritize) {
         log.debug("[GraderId: '{}', GradeProcId: '{}']: pushSubmission(): {}", graderId, gradeProcId,
-            proformaSubmission);
+            submissionBlob);
         // cache the submission data
         String submKey = SUBMISSION_KEY_PREFIX.concat(gradeProcId);
-        set(submKey, SerializationUtils.serialize(proformaSubmission),
-            cacheConfig.getSubmission_timeout());
-        setTimestamp(submKey, cacheConfig.getSubmission_timeout());
+        set(submKey, SerializationUtils.serialize(submissionBlob),
+            cacheConfig.getSubmission_ttl_seconds());
+        setTimestamp(submKey, cacheConfig.getSubmission_ttl_seconds());
         mapGraderProcIdToGraderId(gradeProcId, graderId);
         mapGraderProcIdToTaskUuid(gradeProcId, taskUuid);
         // push the graderProcId onto the queue
@@ -289,15 +289,15 @@ public class RedisController {
 //        }
 //    }
 
-    public synchronized void setResponse(String gradeProcId, ProformaResponse resp) {
+    public synchronized void setResponse(String gradeProcId, ResponseResource resp) {
         log.debug("[GradeProcId: '{}']: setResponse(): {}", gradeProcId, resp);
         String respKey = RESPONSE_KEY_PREFIX.concat(gradeProcId);
-        set(respKey, SerializationUtils.serialize(resp), cacheConfig.getResponse_timeout());
+        set(respKey, SerializationUtils.serialize(resp), cacheConfig.getResponse_ttl_seconds());
         log.debug("Response with gradeProcId '{}' set.", gradeProcId);
-        setTimestamp(respKey, cacheConfig.getResponse_timeout());
+        setTimestamp(respKey, cacheConfig.getResponse_ttl_seconds());
     }
 
-    public synchronized ProformaResponse getResponse(String gradeProcId) {
+    public synchronized ResponseResource getResponse(String gradeProcId) {
         log.debug("[GradeProcId: '{}']: getResponse()", gradeProcId);
         try (var redis = redisClient.connect(new StringByteCodec())) {
             byte[] respBytes = redis.sync().get(RESPONSE_KEY_PREFIX.concat(gradeProcId));
@@ -318,14 +318,14 @@ public class RedisController {
         return keyExists(TASK_KEY_PREFIX.concat(taskUuid));
     }
 
-    public synchronized void cacheTask(String taskUuid, ProformaTask task) {
+    public synchronized void cacheTask(String taskUuid, TaskResource task) {
         log.debug("[TaskUuid: '{}']: cacheTask(): {}", taskUuid, task);
         String taskKey = TASK_KEY_PREFIX.concat(taskUuid);
-        set(taskKey, SerializationUtils.serialize(task), cacheConfig.getTask_timeout());
-        setTimestamp(taskKey, cacheConfig.getTask_timeout());
+        set(taskKey, SerializationUtils.serialize(task), cacheConfig.getTask_ttl_seconds());
+        setTimestamp(taskKey, cacheConfig.getTask_ttl_seconds());
     }
 
-    public synchronized ProformaTask getCachedTask(String taskUuid) throws NotFoundException {
+    public synchronized TaskResource getCachedTask(String taskUuid) throws NotFoundException {
         log.debug("[TaskUuid: '{}']: getCachedTask()", taskUuid);
         try (var redis = redisClient.connect(new StringByteCodec())) {
             byte[] taskBytes = redis.sync().get(TASK_KEY_PREFIX.concat(taskUuid));
@@ -340,7 +340,7 @@ public class RedisController {
         try (var redis = redisClient.connect()) {
             String prefixedKey = TASK_KEY_PREFIX.concat(taskUuid);
             if (!redis.sync().expire(prefixedKey,
-                cacheConfig.getTask_timeout())) {
+                cacheConfig.getTask_ttl_seconds())) {
                 // Setting the timeout may fail if the key already expired.
                 log.error("Setting timeout for key '{}' failed.", prefixedKey);
             }
@@ -361,7 +361,7 @@ public class RedisController {
 
     private void mapGraderProcIdToGraderId(String gradeProcId, String graderId) {
         set(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId), graderId,
-            cacheConfig.getSubmission_timeout());
+            cacheConfig.getSubmission_ttl_seconds());
     }
 
     public String getAssociatedTaskUuid(String graderProcId) throws NotFoundException {
@@ -374,12 +374,12 @@ public class RedisController {
 
     private void mapGraderProcIdToTaskUuid(String gradeProcId, String taskUuid) {
         set(GRADEPROCID_TO_TASKUUID_MAP.concat(gradeProcId), taskUuid,
-            cacheConfig.getSubmission_timeout());
+            cacheConfig.getSubmission_ttl_seconds());
     }
 
     public synchronized void setTaskAverageGradingDurationSeconds(String taskUuid, long seconds) {
         set(TASK_AVG_GRADING_DURATION_SECONDS_KEY_PREFIX.concat(taskUuid), String.valueOf(seconds),
-            cacheConfig.getTask_timeout());
+            cacheConfig.getTask_ttl_seconds());
     }
 
     public synchronized long getSubmissionAverageGradingDurationSeconds(String gradeProcId, long defaultSeconds) throws NotFoundException {

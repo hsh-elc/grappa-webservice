@@ -11,6 +11,9 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Sets up a vagrant host environment for grappa to run in.
+ */
 public class VagrantHostSetup implements GradingEnvironmentSetup {
     private static final Logger log = LoggerFactory.getLogger(VagrantHostSetup.class);
 

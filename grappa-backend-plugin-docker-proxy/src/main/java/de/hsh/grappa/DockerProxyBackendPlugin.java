@@ -10,8 +10,8 @@ import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
 import com.google.common.base.Strings;
 import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
 import de.hsh.grappa.proforma.MimeType;
-import de.hsh.grappa.proforma.ProformaResponse;
-import de.hsh.grappa.proforma.ProformaSubmission;
+import de.hsh.grappa.proforma.ResponseResource;
+import de.hsh.grappa.proforma.SubmissionResource;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
@@ -62,7 +62,7 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
     }
 
     @Override
-    public ProformaResponse grade(ProformaSubmission proformaSubmission) throws Exception {
+    public ResponseResource grade(SubmissionResource submissionBlob) throws Exception {
         log.debug("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Entering DockerProxyBackendPlugin.grade()...",
             lmsId, graderId, gradeProcId);
         log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Setting up docker connection to: {}",
@@ -90,7 +90,7 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
             log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Container with id '{}' created",
                 lmsId, graderId, gradeProcId, containerId);
 
-            copySubmissionToContainer(dockerClient, containerId, proformaSubmission);
+            copySubmissionToContainer(dockerClient, containerId, submissionBlob);
 
             log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Starting container...",
                 lmsId, graderId, gradeProcId);
@@ -108,7 +108,7 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
                 Thread.currentThread().interrupt(); // preserve interrupt flag
             }
 
-            ProformaResponse proformaResponse = null;
+            ResponseResource responseResource = null;
             String graderStackTrace = null;
             if (0 != exitCode) {
                 log.error("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Grader finished abnormally with exit " +
@@ -128,7 +128,7 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
                 // with the running container and grading process about to be stopped and removed
                 if (!Thread.currentThread().isInterrupted()) {
                     try {
-                        proformaResponse = fetchProformaResponseFile(dockerClient, containerId);
+                        responseResource = fetchProformaResponseFile(dockerClient, containerId);
                     } catch (InterruptedException e) {
                         log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Thread interruption during fetching response result file.",
                             lmsId, graderId, gradeProcId);
@@ -195,12 +195,12 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
 
             // if the grader was interrupted, but shut down gracefully, it should still
             // return a null proforma response, and that's what we will return
-            return proformaResponse;
+            return responseResource;
         }
     }
 
     private void copySubmissionToContainer(DockerClient dockerClient, String containerId,
-                                           ProformaSubmission subm) throws Exception {
+                                           SubmissionResource subm) throws Exception {
         byte[] proformaSubmBytes = SerializationUtils.serialize(subm);
         String submDestFileName = subm.getMimeType()
             .equals(MimeType.XML) ? "submission.xml" : "submission.zip";
@@ -250,7 +250,7 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
         return resp;
     }
 
-    private ProformaResponse fetchProformaResponseFile(DockerClient dockerClient, String containerId) throws Exception {
+    private ResponseResource fetchProformaResponseFile(DockerClient dockerClient, String containerId) throws Exception {
         // We don't know which response mimetype the grader will supply, so we test for both
         // TODO: Grappa should dynamically supply this backend plugin's properties object
         // with a property indicating which mimetype the grader will likely produce based
@@ -260,21 +260,21 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
         String responseZipPath = Paths.get(responseResultDirectoryPath, "response.zip").toString();
         responseZipPath = FilenameUtils.separatorsToUnix(responseZipPath);
 
-        ProformaResponse proformaResponse = null;
+        ResponseResource responseResource = null;
         InputStream resp = tryFetchResponseFile(dockerClient, containerId, responseZipPath);
         if (null != resp) {
             byte[] respBytes = IOUtils.toByteArray(resp);
-            proformaResponse = new ProformaResponse(respBytes, MimeType.ZIP);
+            responseResource = new ResponseResource(respBytes, MimeType.ZIP);
         } else {
             resp = tryFetchResponseFile(dockerClient, containerId, responseXmlPath);
             if (null != resp) { // try for the other one
                 byte[] respBytes = IOUtils.toByteArray(resp);
-                proformaResponse = new ProformaResponse(respBytes, MimeType.XML);
+                responseResource = new ResponseResource(respBytes, MimeType.XML);
             } else
                 throw new FileNotFoundException(String.format("Neither '%s' nor '%s' could be " +
                     "retrieved from the container.", responseZipPath, responseXmlPath));
         }
 
-        return proformaResponse;
+        return responseResource;
     }
 }

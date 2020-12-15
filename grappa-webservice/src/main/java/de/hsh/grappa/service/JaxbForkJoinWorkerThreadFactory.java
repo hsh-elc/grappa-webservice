@@ -3,6 +3,8 @@ package de.hsh.grappa.service;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
 
+// Context, reason, and source of this class:
+// https://stackoverflow.com/questions/51518781/jaxb-not-available-on-tomcat-9-and-java-9-10
 public class JaxbForkJoinWorkerThreadFactory implements ForkJoinPool.ForkJoinWorkerThreadFactory {
     private final ClassLoader classLoader;
 

@@ -1,6 +1,5 @@
 package de.hsh.grappa.service;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
@@ -13,33 +12,43 @@ import de.hsh.grappa.utils.XmlUtils;
 import de.hsh.grappa.utils.Zip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import proforma.ProformaSubmissionZipPathes;
+import proforma.xml.AbstractSubmissionType;
+
+import java.nio.charset.StandardCharsets;
 
 public class SubmissionProcessor {
     private static final Logger log = LoggerFactory.getLogger(SubmissionProcessor.class);
-    private SubmissionInternals subm;
+    private SubmissionWrapper subm;
     private String graderId;
 
-    public SubmissionProcessor(/*GrappaConfig config,*/ ProformaSubmission subm, String graderId) throws Exception {
+    public SubmissionProcessor(/*GrappaConfig config,*/ SubmissionResource subm, String graderId) throws Exception {
         //this.config = config;
         this.subm = createVersionedProformaSubmission(subm);
         this.graderId = graderId;
     }
 
-    private SubmissionInternals createVersionedProformaSubmission(ProformaSubmission proformaSubmission) throws Exception {
+    // TODO: rename? versioned it is not anymore
+    private SubmissionWrapper createVersionedProformaSubmission(SubmissionResource submissionBlob) throws Exception {
         // get the submission xml file bytes, unless it's a zipped submission...
-        byte[] submXmlFileBytes = proformaSubmission.getContent();
-        if (proformaSubmission.getMimeType().equals(MimeType.ZIP)) {
-            String submXmlFileContent = Zip.getTextFileContentFromZip(proformaSubmission.getContent(),
-                ProformaSubmissionZipPathes.SUBMISSION_XML_FILE_NAME, Charsets.UTF_8);
-            submXmlFileBytes = submXmlFileContent.getBytes(Charsets.UTF_8);
+        byte[] submXmlFileBytes = submissionBlob.getContent();
+        if (submissionBlob.getMimeType().equals(MimeType.ZIP)) {
+            String submXmlFileContent = Zip.getTextFileContentFromZip(submissionBlob.getContent(),
+                ProformaSubmissionZipPathes.SUBMISSION_XML_FILE_NAME, StandardCharsets.UTF_8);
+            submXmlFileBytes = submXmlFileContent.getBytes(StandardCharsets.UTF_8);
         }
 
         AbstractSubmissionType abstractSubmType = XmlUtils.unmarshalToObject(submXmlFileBytes,
             AbstractSubmissionType.class);
 
-        if (abstractSubmType instanceof de.hsh.grappa.proformaxml.v201.SubmissionType) {
-            return new SubmissionInternalsV201(proformaSubmission);
-        } /*else if (abstractSubmType instanceof de.hsh.grappa.proformaxml.v2xx.SubmissionType) {
+        // This is is older code that supports different versions of Proforma.
+        // The Proforma XML POJOs have been since moved to a separate proformaxml module that
+        // does not intend to keep multiple versions in one JAR. Rather, one proformaxml JAR
+        // represents one proforma version (currently version 2.1).
+        // The code still works, of course, so it will stay for now as is.
+        if (abstractSubmType instanceof proforma.xml.SubmissionType) {
+            return new SubmissionWrapperImpl(submissionBlob);
+        } /*else if (abstractSubmType instanceof proforma.xml.v2xx.SubmissionType) {
             // add new versions here
         }*/
 
@@ -47,7 +56,7 @@ public class SubmissionProcessor {
     }
 
     /**
-     * @throws BadRequestException when a ill-formatted submission is received
+     * @throws BadRequestException when an ill-formatted submission is received
      * @throws GrappaException     when an internal service error occurs
      */
     private void validateSubmission() throws Exception {
@@ -82,7 +91,7 @@ public class SubmissionProcessor {
         // Queue submission for grading
         String gradeProcId = ObjectId.createObjectId();
         RedisController.getInstance().pushSubmission(graderId, gradeProcId, subm.getTask().getUuid(),
-            subm.getProformaSubmission(), prioritize);
+            subm.getProformaSubmissionBlob(), prioritize);
         synchronized (GraderPoolManager.getInstance()) {
             GraderPoolManager.getInstance().notify();
         }
@@ -90,9 +99,9 @@ public class SubmissionProcessor {
     }
 
     private void cacheTask() throws Exception {
-        TaskInternals task = subm.getTask();
+        TaskWrapper task = subm.getTask();
         if (!RedisController.getInstance().isTaskCached(task.getUuid())) {
-            RedisController.getInstance().cacheTask(task.getUuid(), task.getProformaTask());
+            RedisController.getInstance().cacheTask(task.getUuid(), task.getProformaTaskBlob());
         } else {
             // otherwise, refresh existing cached task timeout
             RedisController.getInstance().refreshTaskTimeout(task.getUuid());

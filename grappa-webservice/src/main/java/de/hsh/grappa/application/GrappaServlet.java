@@ -19,14 +19,11 @@ import java.io.File;
 
 @WebListener
 public class GrappaServlet implements ServletContextListener {
-    //public static RedisClient redisClient;
-//    public static RedisController redis;
     public static GrappaConfig CONFIG;
 
     private static final Logger log = LoggerFactory.getLogger(GrappaServlet.class);
     public static final String CONFIG_FILENAME_PATH = "/etc/grappa/grappa-config.yaml";
 
-    //public static GraderWorkersManager graderWorkersManager;
     private Thread t;
 
     private static String grappaInstanceName = "grappa-webservice";
@@ -51,9 +48,7 @@ public class GrappaServlet implements ServletContextListener {
             readConfigFile();
             setupRedisConnection();
             //loadGradingEnvironmentSetups();
-            //graderWorkersManager = new GraderWorkersManager(CONFIG.getGraders());
             GraderPoolManager.getInstance().init(CONFIG.getGraders());
-            //t = new Thread(graderWorkersManager);
             t = new Thread(GraderPoolManager.getInstance());
             t.start();
         } catch (Exception e) {

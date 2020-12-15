@@ -1,12 +1,12 @@
 package de.hsh.grappa.cache;
 
-import de.hsh.grappa.proforma.ProformaSubmission;
+import de.hsh.grappa.proforma.SubmissionResource;
 
 public class QueuedSubmission {
     private final String gradeProcId;
-    private final ProformaSubmission subm;
+    private final SubmissionResource subm;
 
-    public QueuedSubmission(String gradeProcId, ProformaSubmission subm) {
+    public QueuedSubmission(String gradeProcId, SubmissionResource subm) {
         this.gradeProcId = gradeProcId;
         this.subm = subm;
     }
@@ -15,7 +15,7 @@ public class QueuedSubmission {
         return gradeProcId;
     }
 
-    public ProformaSubmission getSubmission() {
+    public SubmissionResource getSubmission() {
         return subm;
     }
 }

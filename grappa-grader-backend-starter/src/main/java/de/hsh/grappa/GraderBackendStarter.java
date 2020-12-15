@@ -2,8 +2,8 @@ package de.hsh.grappa;
 
 import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
 import de.hsh.grappa.proforma.MimeType;
-import de.hsh.grappa.proforma.ProformaResponse;
-import de.hsh.grappa.proforma.ProformaSubmission;
+import de.hsh.grappa.proforma.ResponseResource;
+import de.hsh.grappa.proforma.SubmissionBlob;
 import de.hsh.grappa.utils.BackendPluginLoadingHelper;
 import de.hsh.grappa.utils.ClassLoaderHelper;
 import org.apache.commons.io.IOUtils;
@@ -63,10 +63,10 @@ public class GraderBackendStarter {
                 System.exit(-1);
             }
 
-            ProformaSubmission proformaSubmission = null;
+            SubmissionBlob submissionBlob = null;
             try {
                 log.info("Loading submission file...");
-                proformaSubmission = loadProformaSubmission();
+                submissionBlob = loadProformaSubmission();
             } catch (Exception e) {
                 log.error("Failed to load submission file.");
                 log.error(ExceptionUtils.getStackTrace(e));
@@ -83,12 +83,12 @@ public class GraderBackendStarter {
                 System.exit(-1);
             }
 
-            ProformaResponse proformaResponse = null;
+            ResponseResource responseResource = null;
             try {
                 log.info("Initializing grader backend...");
                 bp.init(graderConfig);
                 log.info("Starting grading process...");
-                proformaResponse = bp.grade(proformaSubmission);
+                responseResource = bp.grade(submissionBlob);
                 log.info("Grading finished.");
             } catch (Exception e) {
                 log.error("Grading process failed with the following message and stacktrace:");
@@ -109,13 +109,13 @@ public class GraderBackendStarter {
 
             try {
                 Path responseFilePath = null;
-                if(proformaResponse.getMimeType().equals(MimeType.XML))
+                if(responseResource.getMimeType().equals(MimeType.XML))
                     responseFilePath = Paths.get(RESULT_RESPONSE_FILE_PATH_WITHOUT_EXTENSION + ".xml");
                 else
                     responseFilePath = Paths.get(RESULT_RESPONSE_FILE_PATH_WITHOUT_EXTENSION + ".zip");
                 log.info("Writing response file to: {}", responseFilePath);
                 try (OutputStream outputStream = new FileOutputStream(responseFilePath.toString());
-                    ByteArrayInputStream responseStream = new ByteArrayInputStream(proformaResponse.getContent())) {
+                    ByteArrayInputStream responseStream = new ByteArrayInputStream(responseResource.getContent())) {
                     IOUtils.copy(responseStream, outputStream);
                 }
                 log.info("Grading backend starter finished successfully.");
@@ -130,7 +130,7 @@ public class GraderBackendStarter {
         }
     }
 
-    private static ProformaSubmission loadProformaSubmission() throws Exception {
+    private static SubmissionBlob loadProformaSubmission() throws Exception {
         Path submZipPath = Paths.get(TMP_INPUT_PATH, "submission.zip");
         Path submXmlPath = Paths.get(TMP_INPUT_PATH, "submission.xml");
         Path submToLoadPath = null;
@@ -147,7 +147,7 @@ public class GraderBackendStarter {
         }
         log.info("Loading submission file: {}", submToLoadPath);
         byte[] submBytes = Files.readAllBytes(submToLoadPath);
-        return new ProformaSubmission(submBytes, mimeType);
+        return new SubmissionBlob(submBytes, mimeType);
     }
 
     private static BackendPlugin loadBackendPluginAlt(Properties props) throws Exception {

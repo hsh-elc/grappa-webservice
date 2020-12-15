@@ -1,8 +1,8 @@
 package de.hsh.grappa.service;
 
 import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
-import de.hsh.grappa.proforma.ProformaResponse;
-import de.hsh.grappa.proforma.ProformaSubmission;
+import de.hsh.grappa.proforma.ResponseResource;
+import de.hsh.grappa.proforma.SubmissionResource;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,20 +12,20 @@ public class GradingProcess extends Thread {
     private String graderId;
     private String gradeProcId;
     private BackendPlugin backendPlugin;
-    private ProformaSubmission proformaSubmission;
-    private ProformaResponse proformaResponseResult;
+    private SubmissionResource submissionBlob;
+    private ResponseResource responseResourceResult;
 
-    public GradingProcess(BackendPlugin bp, ProformaSubmission proformaSubmission,
+    public GradingProcess(BackendPlugin bp, SubmissionResource submissionBlob,
                           String graderId, String gradeProcId) {
         this.backendPlugin = bp;
-        this.proformaSubmission = proformaSubmission;
-        this.proformaResponseResult = null;
+        this.submissionBlob = submissionBlob;
+        this.responseResourceResult = null;
         this.graderId = graderId;
         this.gradeProcId = gradeProcId;
     }
 
-    public ProformaResponse getProformaResponseResult() {
-        return proformaResponseResult;
+    public ResponseResource getProformaResponseResult() {
+        return responseResourceResult;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class GradingProcess extends Thread {
             log.debug("In GradeProcess... sleeping");
             Thread.sleep(10000);
             log.debug("In GradeProcess... sleep ended");
-            proformaResponseResult = backendPlugin.grade(proformaSubmission);
+            responseResourceResult = backendPlugin.grade(submissionBlob);
         } catch (InterruptedException e) {
             log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process interrupted.",
                 graderId, gradeProcId);

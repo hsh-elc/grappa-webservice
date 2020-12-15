@@ -2,7 +2,9 @@ package de.hsh.grappa.rest;
 
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.proforma.MimeType;
-import de.hsh.grappa.proforma.ProformaSubmission;
+import de.hsh.grappa.proforma.ResponseResource;
+import de.hsh.grappa.proforma.SubmissionResource;
+import de.hsh.grappa.service.GradePoller;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.SubmissionProcessor;
 import de.hsh.grappa.utils.Json;
@@ -18,6 +20,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.concurrent.TimeoutException;
 
 @Path("/{lmsId}/gradeprocesses")
 public class AllGradeProcessResources {
@@ -55,23 +58,66 @@ public class AllGradeProcessResources {
                 throw new de.hsh.grappa.exceptions.BadRequestException("Received grade request with " +
                     "unsupported content type: " + contentType.toString());
 
-            ProformaSubmission proformaSubm = new ProformaSubmission
+            SubmissionResource proformaSubm = new SubmissionResource
                 (IOUtils.toByteArray(submission), mimeType);
             log.info("[GraderId: {}] Processing submission: {}", graderId, proformaSubm);
             String gradeProcId = new SubmissionProcessor(proformaSubm, graderId).process(prioritize);
 
-            int queuedSubmPos = RedisController.getInstance().getQueuedSubmissionIndex(gradeProcId);
-            log.debug("subm to be graded in queue at pos {}", queuedSubmPos);
-            long estimatedSecondsRemaining =
-                GraderPoolManager.getInstance()
-                    .getEstimatedSecondsUntilGradeProcIdIsFinished(gradeProcId);
-            String jsonResp = Json.createJsonKeyValueAsString(new String[][] {
-                {"gradeProcessId", gradeProcId},
-                {"estimatedSecondsRemaining", String.valueOf(estimatedSecondsRemaining)}
-            });
-
-            return Response.status(Response.Status.CREATED).entity(jsonResp).build();
+            if(async)
+                return replyWithTimeRemaining(gradeProcId);
+            return replyWhenResponseIsAvailable(gradeProcId);
         }
+
         throw new de.hsh.grappa.exceptions.BadRequestException("Received grade request with unspecified content type.");
+    }
+
+    /**
+     * Determines the estimated grading time remaining.
+     * @param gradeProcId
+     * @return Status 201 Created and estimated time remaining
+     * @throws Exception
+     */
+    private Response replyWithTimeRemaining(String gradeProcId) throws Exception {
+        int queuedSubmPos = RedisController.getInstance().getQueuedSubmissionIndex(gradeProcId);
+        log.debug("subm to be graded in queue at pos {}", queuedSubmPos);
+        long estimatedSecondsRemaining =
+            GraderPoolManager.getInstance()
+                .getEstimatedSecondsUntilGradeProcIdIsFinished(gradeProcId);
+        String jsonResp = Json.createJsonKeyValueAsString(new String[][] {
+            {"gradeProcessId", gradeProcId},
+            {"estimatedSecondsRemaining", String.valueOf(estimatedSecondsRemaining)}
+        });
+        return Response.status(Response.Status.CREATED).entity(jsonResp).build();
+    }
+
+    /**
+     * Blocks the calling thread until the submission has been graded or a timeout occurred.
+     * @param gradeProcId
+     * @return Status 200 OK and a valid proforma response.
+     * @throws Exception
+     */
+    private Response replyWhenResponseIsAvailable(String gradeProcId) throws Exception {
+        log.debug("Grading submission synchronously...");
+
+        ResponseResource respBlob = null;
+
+        try {
+            respBlob = new GradePoller(gradeProcId).poll();
+        } catch (TimeoutException e) {
+            // Waiting timed out. Fall back to 202 Accepted and time remaining
+            // so that the client may poll at a later time.
+            return replyWithTimeRemaining(gradeProcId);
+        }
+
+        String responseFileName = "response." +  (respBlob.getMimeType()
+            .equals(MimeType.XML) ? "xml" : "zip");
+        MediaType mediaType = respBlob.getMimeType().equals(MimeType.XML)
+            ? MediaType.APPLICATION_XML_TYPE : MediaType.APPLICATION_OCTET_STREAM_TYPE;
+        Response.ResponseBuilder resp =
+            Response.status(Response.Status.OK)
+                .header("content-disposition","attachment; filename = " + responseFileName)
+                .entity(respBlob.getContent());
+
+        return resp.type(mediaType).build();
     }
 }

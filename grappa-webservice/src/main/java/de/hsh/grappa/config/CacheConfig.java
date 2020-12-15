@@ -1,33 +1,33 @@
 package de.hsh.grappa.config;
 
 public class CacheConfig {
-    private long submission_timeout;
-    private long task_timeout;
-    private long response_timeout;
+    private long submission_ttl_seconds;
+    private long task_ttl_seconds;
+    private long response_ttl_seconds;
     private RedisConfig redis;
 
-    public long getSubmission_timeout() {
-        return submission_timeout;
+    public long getSubmission_ttl_seconds() {
+        return submission_ttl_seconds;
     }
 
-    public void setSubmission_timeout(long submission_timeout) {
-        this.submission_timeout = submission_timeout;
+    public void setSubmission_ttl_seconds(long submission_ttl_seconds) {
+        this.submission_ttl_seconds = submission_ttl_seconds;
     }
 
-    public long getTask_timeout() {
-        return task_timeout;
+    public long getTask_ttl_seconds() {
+        return task_ttl_seconds;
     }
 
-    public void setTask_timeout(long task_timeout) {
-        this.task_timeout = task_timeout;
+    public void setTask_ttl_seconds(long task_ttl_seconds) {
+        this.task_ttl_seconds = task_ttl_seconds;
     }
 
-    public long getResponse_timeout() {
-        return response_timeout;
+    public long getResponse_ttl_seconds() {
+        return response_ttl_seconds;
     }
 
-    public void setResponse_timeout(long response_timeout) {
-        this.response_timeout = response_timeout;
+    public void setResponse_ttl_seconds(long response_ttl_seconds) {
+        this.response_ttl_seconds = response_ttl_seconds;
     }
 
     public RedisConfig getRedis() {
@@ -41,9 +41,9 @@ public class CacheConfig {
     @Override
     public String toString() {
         return "Cache{" +
-            "submission_timeout=" + submission_timeout +
-            ", task_timeout=" + task_timeout +
-            ", response_timeout=" + response_timeout +
+            "submission_timeout=" + submission_ttl_seconds +
+            ", task_timeout=" + task_ttl_seconds +
+            ", response_timeout=" + response_ttl_seconds +
             ", redis=" + redis +
             '}';
     }

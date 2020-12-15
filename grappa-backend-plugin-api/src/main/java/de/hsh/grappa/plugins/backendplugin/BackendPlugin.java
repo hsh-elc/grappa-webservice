@@ -1,7 +1,7 @@
 package de.hsh.grappa.plugins.backendplugin;
 
-import de.hsh.grappa.proforma.ProformaResponse;
-import de.hsh.grappa.proforma.ProformaSubmission;
+import de.hsh.grappa.proforma.ResponseResource;
+import de.hsh.grappa.proforma.SubmissionResource;
 
 import java.util.Properties;
 
@@ -16,5 +16,7 @@ public interface BackendPlugin {
      * any result
      * @throws Exception on any grading execution error
      */
-    ProformaResponse grade(ProformaSubmission submission) throws Exception;
+    ResponseResource grade(SubmissionResource submissionBlob) throws Exception;
+
+    //ResponseType grade(proforma.xml.SubmissionType submission) throws Exception;
 }
