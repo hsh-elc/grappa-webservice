@@ -104,7 +104,7 @@ The following building and deployment instructions are for Ubuntu Linux.
   
 5. Run Tomcat (e.g. `sudo systemctl start tomcat`)
 
-  - you may want test the web service locally by using a GET request to the [serivce's status endpoint](get-web-service-status) using  `curl` like so: `curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2.0.0/rest/`, with `test:test` being the LMS ID and password hash, respectively
+  - you may want to test the web service locally by using a GET request to the [serivce's status endpoint](get-web-service-status) using  `curl` like so: `curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2.0.0/rest/`, with `test:test` being the LMS ID and password hash, respectively
 
 6. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2.0.0/rest/`
 
@@ -638,11 +638,11 @@ public class PythonGrader implements de.hsh.grappa.plugins.backendplugin.Backend
 
 ### 4.3 grappa-backend-plugin-docker-proxy module
 
-A grader pool may use a docker proxy backend plugin acting as a layer in between Grappa and the 'real' grader backend plugin that resides within a Docker container. Every submission request delegated to the real grader plugin.
+A grader pool may use a docker proxy backend plugin acting as a layer in between Grappa and the 'real' grader backend plugin that resides within a Docker container. Every submission request is delegated from the proxy plugin to the real grader plugin.
 
-It should be noted that it is not required to use the Docker proxy backend plugin if Docker is not intended to be used. In that case, the properties class_path, class_name, and config_path in Grappa's configuration file should point to the actual grader backend plugin.
+It should be noted that it is not required to use the Docker proxy backend plugin if Docker is not intended to be used. In that case, the properties `class_path`, `class_name`, and `config_path` in Grappa's configuration file should point to the actual grader backend plugin.
 
-If the docker proxy backend plugin is to be used, an additional layer of configuration is required.
+If the docker proxy backend plugin is to be used, an additional layer of configuration is required. In the Grappa configuration file, the property `config_path` would need to point to a dedicated docker proxy configuration file. That configuration file would look something like follows:
 
 **Docker Proxy Configuration File**
 
