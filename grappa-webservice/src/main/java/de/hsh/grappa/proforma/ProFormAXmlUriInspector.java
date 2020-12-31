@@ -6,6 +6,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
 
+/**
+ * This class is obsolete and not used anywhere in this
+ * project anymore.
+ * It is still kept for future reference and/or use.
+ */
 public class ProFormAXmlUriInspector {
   public String getUriFromXml(InputStream is) throws Exception {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

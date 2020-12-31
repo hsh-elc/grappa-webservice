@@ -89,11 +89,9 @@ The following building and deployment instructions are for Ubuntu Linux.
     
 2. Build Docker Images by executing the `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker/build-images.sh` script
 
-3. Navigate to Grappa's root directory `grappa-webservice/` and build the web application resource
+Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker/` directory, specifically its docker, shell and JAR files will require re-executing the `build-images.sh` script to take effect. This includes changes to the `grappa-grader-backend-starter` module, as well as adding and changing grader Backend Plugins.
 
-    mvn install -DskipTests
-    
-    mvn package -DskipTests
+3. Navigate to Grappa's root directory `grappa-webservice/` and build the web application resource using maven.
 
 4. Copy the resulting WAR file (e.g. `grappa-webservice-2.0.0.jar`) in directory `grappa-webservice/grappa-webservice/target` to Tomcat's webapps directory (`CATALINA_BASE/webapps`)
 

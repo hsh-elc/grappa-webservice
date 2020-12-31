@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A convenient wrapper for the com.github.dockerjava API.
+ */
 public class DockerController { // TODO: refactor to ctor(dockerClient, containerId)
     public static void copyFile(byte[] fileBytes, String destinationDirPath, String destinationFileName,
                                 DockerClient client, String containerId, boolean overwrite) throws Exception {

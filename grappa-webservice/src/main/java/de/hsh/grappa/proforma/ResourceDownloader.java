@@ -7,6 +7,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
+/**
+ * This class handles external-task and external-submission
+ * resources. (Refer to the Proforma whitepaper for more information.)
+ */
 public class ResourceDownloader {
     public TaskResource downloadTaskResource(String url) throws Exception {
         MimeType mt = getMimeType(url);

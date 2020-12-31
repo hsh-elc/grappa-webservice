@@ -3,7 +3,7 @@ package de.hsh.grappa;
 import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
 import de.hsh.grappa.proforma.MimeType;
 import de.hsh.grappa.proforma.ResponseResource;
-import de.hsh.grappa.proforma.SubmissionBlob;
+import de.hsh.grappa.proforma.SubmissionResource;
 import de.hsh.grappa.utils.BackendPluginLoadingHelper;
 import de.hsh.grappa.utils.ClassLoaderHelper;
 import org.apache.commons.io.IOUtils;
@@ -17,6 +17,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+/**
+ * This class bootstraps and runs a BackendPlugin within a Docker
+ * container. It's basically the second player to the
+ * grappa-backend-plugin-docker-proxy module.
+ *
+ * The Docker Proxy module deposits the submission resource file
+ * within the Docker container in a specific directory and starts
+ * the GraderBackendStarter, which in turn loads up the actual
+ * grader BackendPlugin and passes that submission resource file
+ * on to the plugin.
+ *
+ * Once the grading process has finished one way or another, the
+ * GraderBackendStarter stores the result in a specific directory
+ * for the Docker Proxy module to retrieve.
+ * In case of a grading success, it'll be the resulting Proforma
+ * response resource file. In case of failure, it'll be the grader's
+ * error stack traces caught by the grader BackendPlugin, if any.
+ */
 public class GraderBackendStarter {
     private static final Logger log = LoggerFactory.getLogger(GraderBackendStarter.class);
 
@@ -63,10 +81,10 @@ public class GraderBackendStarter {
                 System.exit(-1);
             }
 
-            SubmissionBlob submissionBlob = null;
+            SubmissionResource submissionResource = null;
             try {
                 log.info("Loading submission file...");
-                submissionBlob = loadProformaSubmission();
+                submissionResource = loadProformaSubmission();
             } catch (Exception e) {
                 log.error("Failed to load submission file.");
                 log.error(ExceptionUtils.getStackTrace(e));
@@ -88,7 +106,7 @@ public class GraderBackendStarter {
                 log.info("Initializing grader backend...");
                 bp.init(graderConfig);
                 log.info("Starting grading process...");
-                responseResource = bp.grade(submissionBlob);
+                responseResource = bp.grade(submissionResource);
                 log.info("Grading finished.");
             } catch (Exception e) {
                 log.error("Grading process failed with the following message and stacktrace:");
@@ -130,7 +148,7 @@ public class GraderBackendStarter {
         }
     }
 
-    private static SubmissionBlob loadProformaSubmission() throws Exception {
+    private static SubmissionResource loadProformaSubmission() throws Exception {
         Path submZipPath = Paths.get(TMP_INPUT_PATH, "submission.zip");
         Path submXmlPath = Paths.get(TMP_INPUT_PATH, "submission.xml");
         Path submToLoadPath = null;
@@ -147,7 +165,7 @@ public class GraderBackendStarter {
         }
         log.info("Loading submission file: {}", submToLoadPath);
         byte[] submBytes = Files.readAllBytes(submToLoadPath);
-        return new SubmissionBlob(submBytes, mimeType);
+        return new SubmissionResource(submBytes, mimeType);
     }
 
     private static BackendPlugin loadBackendPluginAlt(Properties props) throws Exception {

@@ -16,7 +16,5 @@ public interface BackendPlugin {
      * any result
      * @throws Exception on any grading execution error
      */
-    ResponseResource grade(SubmissionResource submissionBlob) throws Exception;
-
-    //ResponseType grade(proforma.xml.SubmissionType submission) throws Exception;
+    ResponseResource grade(SubmissionResource submission) throws Exception;
 }

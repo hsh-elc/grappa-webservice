@@ -8,7 +8,12 @@ import de.hsh.grappa.exceptions.NotFoundException;
 import proforma.xml.SubmissionType;
 
 /**
- * Downloads a task from a task repository.
+ * This class downloads a task resource from a task repository.
+ * That resource can be either a ZIP or an XML.
+ *
+ * This class is called [..]Extractor for the sake of its base class,
+ * but calling it ExternalTaskDownloader would make more
+ * sense in terms of what it does.
  */
 public class ExternalTaskExtractor extends TaskExtractor {
     private SubmissionType concreteSubmPojo;

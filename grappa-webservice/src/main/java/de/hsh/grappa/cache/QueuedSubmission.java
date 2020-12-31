@@ -2,6 +2,11 @@ package de.hsh.grappa.cache;
 
 import de.hsh.grappa.proforma.SubmissionResource;
 
+/**
+ * This QueuedSubmission class is used to save
+ * incoming and to-be-processed submissions in a
+ * cache store, such as redis.
+ */
 public class QueuedSubmission {
     private final String gradeProcId;
     private final SubmissionResource subm;

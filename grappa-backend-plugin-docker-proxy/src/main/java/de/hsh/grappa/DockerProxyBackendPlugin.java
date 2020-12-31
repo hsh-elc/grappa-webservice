@@ -25,6 +25,18 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * This class acts like a grader Backend Plugin to the Grappa
+ * web service while setting up a Docker container and passing
+ * on the submission to the grappa-grader-backend-starter module.
+ *
+ * This class delivers the submission resource file in a specific
+ * directory for the GraderBackendStarter module to retrieve and
+ * and start grading. After the grading process has finished, it
+ * retrieves the results (a Proforma response resource in case of
+ * success, or a grader error stack trace in case of failure),
+ * and returns it back to the Grappa web service.
+ */
 public class DockerProxyBackendPlugin implements BackendPlugin {
     private static final Logger log = LoggerFactory.getLogger(DockerProxyBackendPlugin.class);
 
@@ -62,7 +74,7 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
     }
 
     @Override
-    public ResponseResource grade(SubmissionResource submissionBlob) throws Exception {
+    public ResponseResource grade(SubmissionResource submission) throws Exception {
         log.debug("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Entering DockerProxyBackendPlugin.grade()...",
             lmsId, graderId, gradeProcId);
         log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Setting up docker connection to: {}",
@@ -90,7 +102,7 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
             log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Container with id '{}' created",
                 lmsId, graderId, gradeProcId, containerId);
 
-            copySubmissionToContainer(dockerClient, containerId, submissionBlob);
+            copySubmissionToContainer(dockerClient, containerId, submission);
 
             log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Starting container...",
                 lmsId, graderId, gradeProcId);

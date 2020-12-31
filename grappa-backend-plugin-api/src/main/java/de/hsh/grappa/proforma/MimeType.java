@@ -1,5 +1,9 @@
 package de.hsh.grappa.proforma;
 
+/**
+ * This type indicates two different Proforma resources types,
+ * ZIP and XML.
+ */
 public enum MimeType {
     XML("text/xml"),
     ZIP("application/zip");

@@ -28,6 +28,11 @@
             <version>0.1</version>
         </dependency>
         <dependency>
+            <groupId>proforma</groupId>
+            <artifactId>proformaxml</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>

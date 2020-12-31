@@ -28,6 +28,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -40,7 +41,7 @@ public class Client {
     private GrappaConfig config;
     private final String basicAuth = "test:test"; // lmsId:password
 
-    private final String submissionFilePath = "C:\\Users\\nudroid\\Desktop\\Grappa\\submission-separate.zip";
+    private final String submissionFilePath = "path/to/example/submission-separate.zip";
 
     @Before
     public void loadConfig() throws Exception {
@@ -112,7 +113,7 @@ public class Client {
     @Ignore
     @Test
     public void poll() throws Exception {
-        String gradeProcId = "3c1d66cd-17df-45c6-a554-274f1d3a4f74";
+        String gradeProcId = "71adb87d-2b78-4c6c-b52e-d18c84ac3ed4";
         try {
             WebTarget target = client.target(TestConfig.getServer()).path("/test/gradeprocesses")
                 .path(gradeProcId);
@@ -128,9 +129,12 @@ public class Client {
                     String json = response.readEntity(String.class);
                     System.out.println("Status: " + response.getStatus() + ", JSON: " + json);
                 } else if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-                    if(response.getMediaType().isCompatible(MediaType.APPLICATION_OCTET_STREAM_TYPE)) {
-                       byte[] b = response.readEntity(byte[].class);
+                    if (response.getMediaType().isCompatible(MediaType.APPLICATION_OCTET_STREAM_TYPE)) {
+                        byte[] b = response.readEntity(byte[].class);
                         System.out.println("Status: " + response.getStatus() + ", byte[].length: " + b.length);
+                        System.out.println("Content: ");
+                        // it'll be plaintext XML, or binary nonesense:
+                        System.out.println(new String(b, StandardCharsets.UTF_8));
                     } else
                         throw new Exception("unexpected media type");
                 } else
@@ -170,7 +174,7 @@ public class Client {
             CompletableFuture.supplyAsync(() -> {
                 return testSubmitSubmission(submissionFilePath, true);
             }, exec).thenAccept((gradeProcId) -> {
-                if(null == gradeProcId)
+                if (null == gradeProcId)
                     return;
 
                 int rand = ThreadLocalRandom.current().nextInt(0, 3 + 1);
@@ -183,7 +187,7 @@ public class Client {
                         System.out.println(ExceptionUtils.getStackTrace(e));
                     }
                 }
-         }); // don't run thenAcceptAsync on the same executor
+            }); // don't run thenAcceptAsync on the same executor
         }
         exec.shutdown();
         exec.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
@@ -205,7 +209,7 @@ public class Client {
 
             try (Response response = target.queryParam("async", async)
                 .queryParam("prioritize", true)
-                .queryParam("graderId", "LocalDummy")
+                .queryParam("graderId", "DummyGrader")
                 .request()
                 .header("Authorization", "basic "
                     + Base64.getEncoder().encodeToString(basicAuth.getBytes()))

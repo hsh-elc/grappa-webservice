@@ -10,6 +10,9 @@ import proforma.xml.SubmissionType;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Retrieves an attached task XML file from within a submission ZIP.
+ */
 public class AttachedXmlTaskExtractor extends TaskExtractor {
     private SubmissionType concreteSubmPojo;
     private SubmissionWrapper submissionWrapper;
@@ -19,7 +22,7 @@ public class AttachedXmlTaskExtractor extends TaskExtractor {
                                     SubmissionWrapper submissionWrapper) {
         this.concreteSubmPojo = concreteSubmPojo;
         // An attached xml task file comes only in a zipped submission
-        if (!submissionWrapper.getProformaSubmissionBlob().getMimeType().equals(MimeType.ZIP))
+        if (!submissionWrapper.getProformasubmissionResource().getMimeType().equals(MimeType.ZIP))
             throw new IllegalArgumentException("ProformaSubmission is not a ZIP archive.");
         this.submissionWrapper = submissionWrapper;
     }
@@ -37,7 +40,7 @@ public class AttachedXmlTaskExtractor extends TaskExtractor {
         String filePath = a.getValue();
         String taskXmlFilePath = FilenameUtils.concat(ProformaSubmissionZipPathes.TASK_DIRECTORY, filePath);
         String taskXmlFileContent =
-            Zip.getTextFileContentFromZip(submissionWrapper.getProformaSubmissionBlob().getContent(), taskXmlFilePath,
+            Zip.getTextFileContentFromZip(submissionWrapper.getProformasubmissionResource().getContent(), taskXmlFilePath,
             StandardCharsets.UTF_8);
         // The task uuid doesn't need to be extracted here. Besides, that attribute is optional anyway.
         // The uuid will be retrieved from the task xml file by the ProformaTask subclass instead.

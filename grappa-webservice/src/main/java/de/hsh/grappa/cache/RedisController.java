@@ -21,6 +21,28 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.IntStream;
 
+/**
+ * This class uses an underlying redis client instance to
+ * cache submission and task resources.
+ *
+ * Task resources are stored for the sole purpose of not having
+ * the client repeatedly send task resources in submission
+ * resources (so as to save on network traffic, for a crude
+ * explanation). See the Grappa documentation for more info on
+ * how a client should handle sending submissions with and without
+ * task resources.
+ *
+ * Submissions are cached for a given amount of time (as specified in
+ * the grappa config).
+ *
+ * Data that is currently cached along with submission resources is notably:
+ * - (the entire submission resource itself)
+ * - the underlying task resource
+ * - the average grading duration in seconds for grading a task
+ * - the date and time of submission
+ * - the corresponding graderId the submission has been submitted to
+ * - the corresponding gradeProcId of the submission
+ */
 public class RedisController {
     private static final Logger log = LoggerFactory.getLogger(RedisController.class);
 
@@ -137,16 +159,16 @@ public class RedisController {
      * Queues a new submission for a given grader, with a specified grader process id.
      * @param graderId
      * @param gradeProcId
-     * @param submissionBlob
+     * @param submissionResource
      */
     public synchronized void pushSubmission(String graderId, String gradeProcId,
-                                            String taskUuid, SubmissionResource submissionBlob,
+                                            String taskUuid, SubmissionResource submissionResource,
                                             boolean prioritize) {
         log.debug("[GraderId: '{}', GradeProcId: '{}']: pushSubmission(): {}", graderId, gradeProcId,
-            submissionBlob);
+            submissionResource);
         // cache the submission data
         String submKey = SUBMISSION_KEY_PREFIX.concat(gradeProcId);
-        set(submKey, SerializationUtils.serialize(submissionBlob),
+        set(submKey, SerializationUtils.serialize(submissionResource),
             cacheConfig.getSubmission_ttl_seconds());
         setTimestamp(submKey, cacheConfig.getSubmission_ttl_seconds());
         mapGraderProcIdToGraderId(gradeProcId, graderId);
@@ -401,7 +423,7 @@ public class RedisController {
     // Don't use UTC time zone
     //private static final TimeZone tz = TimeZone.getTimeZone("UTC");
     //private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
-    // Use localized time
+    // Use localized time instead
     private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
 
     /**

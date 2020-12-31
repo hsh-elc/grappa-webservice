@@ -24,7 +24,7 @@ public abstract class TaskWrapper {
         abstractTaskPojo = createAbstractTaskPojo();
     }
 
-    public TaskResource getProformaTaskBlob() {
+    public TaskResource getProformaTaskResource() {
         return taskResource;
     }
 

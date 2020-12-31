@@ -2,6 +2,10 @@ package de.hsh.grappa.proforma;
 
 import java.io.Serializable;
 
+/**
+ * The base class for the three different Proforma types,
+ * Task, Submission, and Response.
+ */
 public abstract class ProformaResource implements Serializable {
     private final byte[] content;
     private final MimeType mimeType;

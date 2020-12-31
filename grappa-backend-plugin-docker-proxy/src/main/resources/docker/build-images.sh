@@ -23,9 +23,6 @@ docker build -t grappa-remote-backend-base ./grappa-remote-backend-base
 echo "Building grappa-remote-backend-dummygrader..."
 docker build -t grappa-remote-backend-dummygrader ./grappa-remote-backend-dummygrader
 
-echo "Building grappa-remote-backend-dummygrader-alwaysfail..."
-docker build -t grappa-remote-backend-dummygrader-alwaysfail ./grappa-remote-backend-dummygrader-alwaysfail
-
 # Clean Docker
 docker container prune -f
 docker image prune -f

@@ -23,7 +23,7 @@ public class ClassLoaderHelper<C> {
             Constructor<? extends C> constructor = newClass.getConstructor();
             return constructor.newInstance();
         } catch (Exception e) {
-            throw new Exception(String.format("Class with path '%s' and class name  '%s' could not be loaded.",
+            throw new Exception(String.format("Class with path '%s' and class name '%s' could not be loaded.",
                 classPath, className), e);
         }
     }

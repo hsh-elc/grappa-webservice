@@ -2,6 +2,12 @@ package de.hsh.grappa.service;
 
 /**
  * Immutable read only class.
+ *
+ * This class provides data about how many
+ * of the grading processes (i.e. student submissions)
+ * have been submitted in total, and how many have
+ * succeeded, failed, timed out, or have been manually
+ * cancelled by the client.
  */
 public class GraderStatistics {
     private long executed = 0;

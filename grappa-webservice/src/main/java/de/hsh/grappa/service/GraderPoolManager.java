@@ -12,7 +12,12 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable {
+/**
+ * A facade/manager pattern of sorts for GraderPool instances.
+ * Any access and calls to GraderPools are exclusively done
+ * using this manager class.
+ */
+public class GraderPoolManager implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(GraderPoolManager.class);
     private static GraderPoolManager gwm = null;
     private final AtomicBoolean stopStartingNewGradingProcesses =
@@ -69,9 +74,6 @@ public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable 
             graderId, gradeProcId));
     }
 
-//    @Override public void propertyChange(PropertyChangeEvent evt) {
-//    }
-
     @Override
     public synchronized void run() {
         while (!Thread.currentThread().isInterrupted()) {
@@ -114,6 +116,13 @@ public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable 
         throw new NotFoundException(String.format("GraderId '{}' does not exist.", graderId));
     }
 
+    /**
+     * Get the number of currently busy (i.e. in use) grader instances
+     * for a particular graderId.
+     * @param graderId
+     * @return
+     * @throws NotFoundException
+     */
     public int getBusyCount(String graderId) throws NotFoundException {
         var pool = pools.get(graderId);
         if(null != pool)
@@ -137,6 +146,19 @@ public class GraderPoolManager implements /*PropertyChangeListener {*/ Runnable 
 //        throw new NotFoundException(String.format("GraderId '{}' does not exist.", graderId));
 //    }
 
+    /**
+     * Get the estimated remaining seconds remaining until a particular
+     * grading process (which equals a particular submission) is finished.
+     *
+     * This takes into account the number of the total pool size of a grader
+     * that a submission has been submitted to, as well as the number of
+     * currently busy grader instances in that pool, along with the previously
+     * measured time it took to grade the task that the submission has been
+     * submitted for.
+     * @param gradeProcId
+     * @return
+     * @throws NotFoundException
+     */
     public long getEstimatedSecondsUntilGradeProcIdIsFinished(String gradeProcId) throws NotFoundException {
         String graderId = RedisController.getInstance().getAssociatedGraderId(gradeProcId);
         var pool = pools.get(graderId);

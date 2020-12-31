@@ -23,10 +23,10 @@ public class DummyGrader implements de.hsh.grappa.plugins.backendplugin.BackendP
     }
 
     @Override
-    public ResponseResource grade(SubmissionResource submissionBlob) throws Exception {
+    public ResponseResource grade(SubmissionResource submission) throws Exception {
         TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(2, 6));
 
-        SubmissionType submPojo = ProformaConverter.convertToPojo(submissionBlob);
+        SubmissionType submPojo = ProformaConverter.convertToPojo(submission);
         log.debug("DummyGrader SubmType pojo: {}", submPojo);
 
         //throw new Exception("DummyGrader is simulating a grading error.");

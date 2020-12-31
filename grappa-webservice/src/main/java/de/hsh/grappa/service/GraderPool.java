@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Manages worker threads for a specific graderId.
+ * A grader pool consists of a configured number
+ * of grader instances of a specific grader type.
  */
 public class GraderPool {
     private static final Logger log = LoggerFactory.getLogger(GraderPool.class);
