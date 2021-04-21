@@ -16,7 +16,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp;[Cancel a Proforma submission](#cancel-a-proforma-submission)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[Get list of all online graders](#get-list-of-all-online-graders)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[Get grader status](#get-grader-status)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[Check if a Proforma task is chached](#check-if-a-proforma-task-is-chached)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Check if a Proforma task is cached](#check-if-a-proforma-task-is-cached)<br>
 4 [Backend Plugin](#4-backend-plugin)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;4.1 [proformaxml module](#41-proformaxml-module)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;4.2 [grappa-backend-plugin-api module](#42-grappa-backend-plugin-api-module)<br>
@@ -74,8 +74,7 @@ Install the software listed in the [System Requirements](21-system-requirements)
       - `sudo systemctl daemon-reload`
       - `sudo systemctl restart docker`
       - Note that you may need to reboot the entire machine after these changes if remote API calls to Docker cause the following exception: `com.github.dockerjava.api.exception.InternalServerErrorException:
-    Status 500: failed to create endpoint gracious_williamson on
-    network bridge`
+    Status 500: failed to create endpoint <containerName> on network bridge`
 
 ### 2.3 Building and Deployment
 
@@ -102,15 +101,15 @@ Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-pro
   
 5. Run Tomcat (e.g. `sudo systemctl start tomcat`)
 
-  - you may want to test the web service locally by using a GET request to the [serivce's status endpoint](get-web-service-status) using  `curl` like so: `curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2.0.0/rest/`, with `test:test` being the LMS ID and password hash, respectively
+  - you may want to test the web service locally by using a GET request to the [serivce's status endpoint](get-web-service-status) using  `curl` like so: `curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2.0.0/rest`, with `test:test` being the LMS ID and password hash, respectively
 
 6. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2.0.0/rest/`
 
 ### 2.4 Configuration
 
-Any changes to Grappa's configuration file require a web service restart.
+Any changes to Grappa's configuration file require a web service restart to take effect.
 
-Grappa's configuration file's location and name must be `/etc/grappa/grappa-config.yaml`.
+Grappa's configuration file's location and file name must be `/etc/grappa/grappa-config.yaml`.
 
 ```
 # Service part
@@ -143,7 +142,7 @@ service:
   # While asynchronous request calls return immediately to the client,
   # synchronous calls block until a submission result is available.
   # synchronous_submission_timeout_seconds sets the timeout in
-  # seconds for for synchronous submission requests.
+  # seconds for synchronous submission requests.
   synchronous_submission_timeout_seconds: 600 # 10 minutes
 
   # The class path and name to the module used to setup a vagrant
@@ -255,32 +254,46 @@ Get the web service's status information, such as runtime infos.
     **Content**:
     ```
     {
-        "service": {
-            "webappName": "grappa-webservice",
-            "staticConfigPath": "/etc/grappa/grappa-config.yaml",
-            "totalGradingProcessesExecuted": 0,
-            "totalGradingProcessesSucceeded": 0,
-            "totalGradingProcessesFailed": 0,
-            "totalGradingProcessesCancelled": 0,
-            "totalGradingProcessesTimedOut": 0,
-            "totalAllExceptExecuted": 0,
-            "graderRuntimeInfo": {
-                "grader": {
-                    "id": "id",
-                    "name": "human-friendly name",
-                    "currentlyQueuedSubmissions": 0,
-                    "gradingProcessesExecuted": 0,
-                    "gradingProcessesSucceeded": 0,
-                    "gradingProcessesFailed": 0,
-                    "gradingProcessesCancelled": 0,
-                    "gradingProcessesTimedOut": 0
-                }
-            }
-        }
+      "service": {
+        "webappName": "grappa-webservice-2.0.0",
+        "staticConfigPath": "/etc/grappa/grappa-config.yaml",
+        "totalGradingProcessesExecuted": 0,
+        "totalGradingProcessesSucceeded": 0,
+        "totalGradingProcessesFailed": 0,
+        "totalGradingProcessesCancelled": 0,
+        "totalGradingProcessesTimedOut": 0,
+        "totalAllExceptExecuted": 0,
+        "graderRuntimeInfo": [
+          {
+            "id": "javaGrader-v1.0",
+            "name": "Java Grader",
+            "poolSize": 10,
+            "busyInstances": 0,
+            "queuedSubmissions": 0,
+            "gradingProcessesExecuted": 0,
+            "gradingProcessesSucceeded": 0,
+            "gradingProcessesFailed": 0,
+            "gradingProcessesCancelled": 0,
+            "gradingProcessesTimedOut": 0
+          },
+          {
+            "id": "sqlGrader-v1.42",
+            "name": "SQL Grader",
+            "poolSize": 10,
+            "busyInstances": 0,
+            "queuedSubmissions": 0,
+            "gradingProcessesExecuted": 0,
+            "gradingProcessesSucceeded": 0,
+            "gradingProcessesFailed": 0,
+            "gradingProcessesCancelled": 0,
+            "gradingProcessesTimedOut": 0
+          }
+        ]
+      }
     }
     ```
     **Content Type**: `application/json` <br/>
-    **Description**: Returns the status of a grader. This data is subject to change.    
+    **Description**: Returns the status of a grader. This data is subject to change. It is not intended to be processed by a machine, but rather serves to provide an overview for debugging or statistical purposes.
        
   * **Code:** `401 Unauthorized` <br/>
     **Content**: `{ error : "message" }` <br/>
@@ -290,7 +303,7 @@ Get the web service's status information, such as runtime infos.
   * **Code:** `500 Internal Server Error` <br/>
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
-    **Description**: Unexpected server error.  
+    **Description**: Unexpected server error.
 
 ### Grade a Proforma submission
 
@@ -322,7 +335,13 @@ Submit a Proforma submission for grading.
 * **HTTP Responses**
   
   * **Code:** `201 Created` <br/>
-     **Content**: `{"gradeProcessId" : "String Id", "estimatedSecondsRemaining": "Integer"}` <br/>
+     **Content**:
+    ```
+    {
+        "gradeProcessId" : "String Id",
+        "estimatedSecondsRemaining": "Integer"
+    }
+    ```
      **Content Type**: `application/json` <br/>
      **Description**: The Proforma submission has been accepted for grading. Use `gradeProcessId` for subsequent polling
       requests. `estimatedSecondsRemaining` indicates the time remaining until the submission is graded.
@@ -518,16 +537,18 @@ Get the status, e.g. grader statistics, of a specific grader.
     **Content**:
     ```
     {
-        "id": "graderId",
-        "name": "human-friendly name",
-        "currentlyQueuedSubmissions": 0,
-        "gradingProcessesExecuted": 0,
-        "gradingProcessesSucceeded": 0,
-        "gradingProcessesFailed": 0,
-        "gradingProcessesCancelled": 0,
-        "gradingProcessesTimedOut": 0
+      "id": "sqlGrader",
+      "name": "SQL Grader",
+      "poolSize": 10,
+      "busyInstances": 0,
+      "queuedSubmissions": 0,
+      "gradingProcessesExecuted": 0,
+      "gradingProcessesSucceeded": 0,
+      "gradingProcessesFailed": 0,
+      "gradingProcessesCancelled": 0,
+      "gradingProcessesTimedOut": 0
     }
-    ```    
+    ```
     **Content Type**: `application/json` <br/>
     **Description**: Returns the status of a grader. This data is subject to change.    
        
@@ -546,7 +567,7 @@ Get the status, e.g. grader statistics, of a specific grader.
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.
 
-### Check if a Proforma task is chached 
+### Check if a Proforma task is cached 
 
 Check if a particular task is cached by the middleware to avoid including the task in Proforma
  submissions when doing repeated grading requests for the same Proforma task.
@@ -567,7 +588,7 @@ Check if a particular task is cached by the middleware to avoid including the ta
   
   * **Code:** `200 OK` <br/>
     **Content**: *None* <br/>
-    **Description**: The specified task is cached by the middleware.     
+    **Description**: The specified task is cached by the middleware.
        
   * **Code:** `401 Unauthorized` <br/>
     **Content**: `{ error : "message" }` <br/>
@@ -577,7 +598,7 @@ Check if a particular task is cached by the middleware to avoid including the ta
   * **Code:** `404 Not Found` <br/>
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
-    **Description**: Parameter `taskUuid` does not exist.
+    **Description**: Parameter `taskUuid` does not exist, meaning the task is not cached by the middleware.
 
   * **Code:** `500 Internal Server Error` <br/>
     **Content**: `{ error : "message" }` <br/>
