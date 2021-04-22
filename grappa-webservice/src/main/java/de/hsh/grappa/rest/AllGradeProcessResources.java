@@ -41,7 +41,7 @@ public class AllGradeProcessResources {
     @Consumes({MediaType.APPLICATION_XML, MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM})
     @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")
     public Response grade(InputStream submission, @QueryParam("graderId") String graderId,
-                          @DefaultValue("true") @QueryParam("async") boolean async,
+                          @DefaultValue("true") @QueryParam("async") String async,
                           @DefaultValue("false") @QueryParam("prioritize") boolean prioritize,
                           @Context HttpHeaders headers) throws Exception {
         log.debug("[GraderId: '{}']: grade() with async={} called.", graderId, async);
@@ -63,7 +63,7 @@ public class AllGradeProcessResources {
             log.info("[GraderId: {}] Processing submission: {}", graderId, proformaSubm);
             String gradeProcId = new SubmissionProcessor(proformaSubm, graderId).process(prioritize);
 
-            if(async)
+            if(Boolean.parseBoolean(async) || async.equals("1"))
                 return replyWithTimeRemaining(gradeProcId);
             return replyWhenResponseIsAvailable(gradeProcId);
         }
