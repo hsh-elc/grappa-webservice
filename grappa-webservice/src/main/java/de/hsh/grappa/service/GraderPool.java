@@ -309,7 +309,7 @@ public class GraderPool {
     }
 
     private BackendPlugin loadBackendPlugin(GraderConfig grader) throws Exception {
-        log.info("Loading grader '{}' from file '{}'...",
+        log.info("Loading grader plugin '{}' from file '{}'...",
             grader.getId(), grader.getClass_path());
         BackendPlugin bp = new ClassLoaderHelper<BackendPlugin>().LoadClass(grader.getClass_path(),
             grader.getClass_name(),

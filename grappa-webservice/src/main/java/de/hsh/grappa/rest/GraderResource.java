@@ -53,8 +53,8 @@ public class GraderResource {
         graderStatus.addProperty("id", graderId);
         graderStatus.addProperty("name", gc.getName());
         graderStatus.addProperty("poolSize", GraderPoolManager.getInstance().getPoolSize(graderId));
-        graderStatus.addProperty("busyCount", GraderPoolManager.getInstance().getBusyCount(graderId));
-        graderStatus.addProperty("queuedSubmissionCount",
+        graderStatus.addProperty("busyInstances", GraderPoolManager.getInstance().getBusyCount(graderId));
+        graderStatus.addProperty("queuedSubmissions",
             RedisController.getInstance().getSubmissionQueueCount(graderId));
 //        graderStatus.addProperty("estimatedGradingSecondsTillQueueProcessed",
 //            GraderPoolManager.getInstance().getEstimatedSecondsUntilQueueIsGraded(graderId));

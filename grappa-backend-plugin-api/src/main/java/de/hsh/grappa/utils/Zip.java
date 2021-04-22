@@ -39,7 +39,6 @@ public class Zip {
             while (null != (ze = zip.getNextEntry())) {
                 Path zePath = Paths.get(ze.getName());
                 //System.out.println("Checking file/derectory in ZIP: " + zePath);
-                System.out.println("teststest");
                 if(zePath.equals(filePath)) {
                     fileNotFound = false;
                     byte[] buffer = new byte[10000000]; // 10Mb file
