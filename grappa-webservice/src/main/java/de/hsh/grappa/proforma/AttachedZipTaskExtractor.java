@@ -39,10 +39,7 @@ public class AttachedZipTaskExtractor extends TaskExtractor {
             taskZipPath);
         ByteArrayInputStream taskZipFileInputStream = new ByteArrayInputStream(taskZipFileBytes);
 
-        String taskXmlFilePath = FilenameUtils.concat(ProformaSubmissionZipPathes.TASK_DIRECTORY,
-            ProformaSubmissionZipPathes.TASK_XML_FILE_NAME);
-        //byte[] taskBytes = Zip.getFileFromZip(taskZipFileInputStream, ProformaSubmissionZipPathes.TASK_XML_FILE_NAME);
-        byte[] taskBytes = Zip.getFileFromZip(taskZipFileInputStream, taskXmlFilePath);
+        byte[] taskBytes = Zip.getFileFromZip(taskZipFileInputStream, ProformaSubmissionZipPathes.TASK_XML_FILE_NAME);
         //String taskXml = new String(taskXmlBytes, StandardCharsets.UTF_8);
 
         // MimeType.XML, because the task.xml has already been retrieved
