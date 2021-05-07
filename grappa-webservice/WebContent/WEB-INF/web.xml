@@ -31,30 +31,5 @@
     <listener-class>    
        de.hsh.grappa.application.GrappaServlet
     </listener-class>
-<!--  </listener>-->
-<!--   <listener>-->
-<!--    <display-name>GrappaCache</display-name>-->
-<!--    <listener-class>   -->
-<!--       de.hsh.grappa.application.GrappaCache-->
-<!--    </listener-class>-->
-<!--  </listener>-->
-<!--  <listener>-->
-<!--    <display-name>EntityManagerFactory</display-name>-->
-<!--    <listener-class>   -->
-<!--       de.hsh.grappa.application.EMF-->
-<!--    </listener-class>-->
-<!--  </listener>-->
-<!--  <listener>-->
-<!--    <display-name>GradingQueueSchedulerServlet</display-name>-->
-<!--    <listener-class>   -->
-<!--       de.hsh.grappa.application.GradingQueueSchedulerServlet-->
-<!--    </listener-class>-->
-<!--  </listener>-->
-<!--  <listener>-->
-<!--    <display-name>PurgeTaskServlet</display-name>-->
-<!--    <listener-class>   -->
-<!--       de.hsh.grappa.application.PurgeTaskServlet-->
-<!--    </listener-class>-->
   </listener>
-
 </web-app>
