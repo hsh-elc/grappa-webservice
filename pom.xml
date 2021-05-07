@@ -22,7 +22,7 @@
         <module>grappa-webservice</module>
         <module>grappa-backend-plugin-api</module>
         <module>grappa-backend-plugin-docker-proxy</module>
-        <module>grappa-grader-environment-vagrant</module>
+<!--        <module>grappa-grader-environment-vagrant</module>-->
         <module>grappa-grader-backend-starter</module>
         <module>grappa-dummygrader</module>
         <module>proformaxml</module>
