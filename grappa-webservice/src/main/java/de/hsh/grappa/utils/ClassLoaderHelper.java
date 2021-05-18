@@ -22,7 +22,7 @@ public class ClassLoaderHelper<C> {
             Class<? extends C> newClass = clazz.asSubclass(parentClass);
             Constructor<? extends C> constructor = newClass.getConstructor();
             return constructor.newInstance();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new Exception(String.format("Class with path '%s' and class name '%s' could not be loaded.",
                 classPath, className), e);
         }
