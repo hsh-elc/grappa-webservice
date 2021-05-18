@@ -29,48 +29,20 @@ import java.math.BigDecimal;
  * the grading system.
  */
 public class ProformaResponseGenerator {
-
     private ProformaResponseGenerator() {
     }
 
-    /**
-     * @param errorMessage
-     * @return
-     * @throws Exception
-     */
     public static ResponseResource createInternalErrorResponse(String errorMessage) {
-        FeedbackListType feedbackList = new FeedbackListType();
-        FeedbackType fb = new FeedbackType();
-        fb.setLevel(FeedbackLevelType.ERROR);
-        fb.setTitle("Error");
-        FeedbackType.Content content = new FeedbackType.Content();
-        content.setValue(errorMessage);
-        content.setFormat("plaintext");
-        fb.setContent(content);
-        feedbackList.getTeacherFeedback().add(fb);
-        feedbackList.getStudentFeedback().add(fb);
+        final String finalMsg = "Grappa encountered a fatal error: " + errorMessage;
 
-        ResultType result = new ResultType();
+        OverallResultType result = new OverallResultType();
         result.setIsInternalError(true);
         result.setScore(BigDecimal.ZERO);
         result.setValidity(BigDecimal.ZERO);
 
-        TestResultType testResult = new TestResultType();
-        testResult.setResult(result);
-        testResult.setFeedbackList(feedbackList);
-
-        TestResponseType testResp = new TestResponseType();
-        testResp.setId("N/A");
-        testResp.setTestResult(testResult);
-
-        TestsResponseType testsResponse = new TestsResponseType();
-        testsResponse.getTestResponse().add(testResp);
-
-        FeedbackListType emptyFblist = new FeedbackListType();
-
-        SeparateTestFeedbackType separateTestFeedback = new SeparateTestFeedbackType();
-        separateTestFeedback.setTestsResponse(testsResponse);
-        separateTestFeedback.setSubmissionFeedbackList(new FeedbackListType());
+        MergedTestFeedbackType merged = new MergedTestFeedbackType();
+        merged.setOverallResult(result);
+        merged.setTeacherFeedback(finalMsg);
 
         GraderEngineType graderEngine = new GraderEngineType();
         graderEngine.setName("N/A");
@@ -80,12 +52,71 @@ public class ProformaResponseGenerator {
         responseMetaData.setGraderEngine(graderEngine);
 
         ResponseType resp = new ResponseType();
-        resp.setSeparateTestFeedback(separateTestFeedback);
+        resp.setMergedTestFeedback(merged);
         resp.setLang("en");
         resp.setFiles(new ResponseFilesType());
         resp.setResponseMetaData(responseMetaData);
 
         String responseXml = XmlUtils.marshalToXml(resp, ResponseType.class);
+        System.out.println(responseXml);
         return new ResponseResource(responseXml.getBytes(Charsets.UTF_8), MimeType.XML);
     }
+
+    /**
+     * Creates a proforma response that indicates an internal error.
+     * This one is currently not quite Proforma compliant.
+     * @param errorMessage
+     * @return
+     * @throws Exception
+     */
+//    public static ResponseResource createInternalErrorResponse(String errorMessage) {
+//        FeedbackListType feedbackList = new FeedbackListType();
+//        FeedbackType fb = new FeedbackType();
+//        fb.setLevel(FeedbackLevelType.ERROR);
+//        fb.setTitle("Error");
+//        FeedbackType.Content content = new FeedbackType.Content();
+//        content.setValue(errorMessage);
+//        content.setFormat("plaintext");
+//        fb.setContent(content);
+//        feedbackList.getTeacherFeedback().add(fb);
+//        feedbackList.getStudentFeedback().add(fb);
+//
+//        ResultType result = new ResultType();
+//        result.setIsInternalError(true);
+//        result.setScore(BigDecimal.ZERO);
+//        result.setValidity(BigDecimal.ZERO);
+//
+//        TestResultType testResult = new TestResultType();
+//        testResult.setResult(result);
+//        testResult.setFeedbackList(feedbackList);
+//
+//        TestResponseType testResp = new TestResponseType();
+//        testResp.setId("N/A");
+//        testResp.setTestResult(testResult);
+//
+//        TestsResponseType testsResponse = new TestsResponseType();
+//        testsResponse.getTestResponse().add(testResp);
+//
+//        FeedbackListType emptyFblist = new FeedbackListType();
+//
+//        SeparateTestFeedbackType separateTestFeedback = new SeparateTestFeedbackType();
+//        separateTestFeedback.setTestsResponse(testsResponse);
+//        separateTestFeedback.setSubmissionFeedbackList(new FeedbackListType());
+//
+//        GraderEngineType graderEngine = new GraderEngineType();
+//        graderEngine.setName("N/A");
+//        graderEngine.setVersion("N/A");
+//
+//        ResponseMetaDataType responseMetaData = new ResponseMetaDataType();
+//        responseMetaData.setGraderEngine(graderEngine);
+//
+//        ResponseType resp = new ResponseType();
+//        resp.setSeparateTestFeedback(separateTestFeedback);
+//        resp.setLang("en");
+//        resp.setFiles(new ResponseFilesType());
+//        resp.setResponseMetaData(responseMetaData);
+//
+//        String responseXml = XmlUtils.marshalToXml(resp, ResponseType.class);
+//        return new ResponseResource(responseXml.getBytes(Charsets.UTF_8), MimeType.XML);
+//    }
 }
