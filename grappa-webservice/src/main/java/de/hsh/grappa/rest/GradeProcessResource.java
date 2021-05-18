@@ -118,7 +118,7 @@ public class GradeProcessResource {
                 return Response.status(Response.Status.OK).build();
             }
         }
-        throw new de.hsh.grappa.exceptions.NotFoundException(String.format("gradeProcessId '%s' was neither found in " +
-            "the submission queue nor in an active grading process.", gradeProcessId));
+         throw new de.hsh.grappa.exceptions.NotFoundException(String.format("gradeProcessId '%s' was neither found in" +
+             " the submission queue nor in an active grading process.", gradeProcessId));
     }
 }

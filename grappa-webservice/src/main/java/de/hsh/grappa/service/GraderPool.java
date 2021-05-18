@@ -7,7 +7,7 @@ import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GraderConfig;
 import de.hsh.grappa.exceptions.NoResultGraderExecption;
 import de.hsh.grappa.exceptions.NotFoundException;
-import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
+import de.hsh.grappa.plugin.BackendPlugin;
 import de.hsh.grappa.proforma.ProformaResponseGenerator;
 import de.hsh.grappa.proforma.ResponseResource;
 import de.hsh.grappa.utils.ClassLoaderHelper;
@@ -46,6 +46,10 @@ public class GraderPool {
     private BackendPlugin backendPlugin;
     private GraderConfig graderConfig;
 
+    private static final String GRAPPA_CONTEXT_GRADER_ID = "Grappa.Context.GraderId";
+    private static final String GRAPPA_CONTEXT_GRADE_PROCESS_ID = "Grappa.Context.GraderProcessId";
+    private Properties graderConfigInitProps;
+
     private ConcurrentHashMap<String /*gradeProcId*/, Future<ResponseResource>> gpMap =
         new ConcurrentHashMap<>();
 
@@ -63,6 +67,8 @@ public class GraderPool {
                 "for graderId '%s'.", graderConfig.getConcurrent_grading_processes()));
 
         this.backendPlugin = loadBackendPlugin(graderConfig);
+        this.loadGraderConfig(graderConfig);
+
         log.debug("Using grader '{}' with {} concurrent instances.",
             graderConfig.getId(), graderConfig.getConcurrent_grading_processes());
         this.semaphore = new Semaphore(graderConfig.getConcurrent_grading_processes());
@@ -133,26 +139,34 @@ public class GraderPool {
     }
 
     /**
-     * Set graderId and gradeProcessId for the docker proxy plugin, so
-     * the Ids can be used in the plugin's logging context
+     * Sets additional grading context properties for the plugin.
+     *
+     * Sets the graderId and gradeProcessId, so plugins, such as the docker proxy plugin,
+     * can use these ids in the plugin's logging context.
      * @param graderId
      * @param gradeProcId
      */
-    private void setLoggingContextIdsForDockerProxy(String graderId, String gradeProcId) {
-        try {
-
-        } catch (Exception e) {
-            log.error("Could not set logging context ids for docker proxy plugin.");
-            log.error(ExceptionUtils.getStackTrace(e));
+    private Properties getGraderConfigWithContextIds(String graderId, String gradeProcId) {
+        Properties propsWithLoggingContext = new Properties();
+        synchronized (graderConfigInitProps) {
+            graderConfigInitProps.forEach((key, value) -> {
+                String k = (String)key;
+                String v = (String)value;
+                propsWithLoggingContext.setProperty((String)key, (String)value);
+            });
         }
+        propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_GRADER_ID, graderId);
+        propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_GRADE_PROCESS_ID, gradeProcId);
+        return propsWithLoggingContext;
     }
 
     public ResponseResource runGradingProcess(QueuedSubmission subm) {
         LocalDateTime beginTime = LocalDateTime.now();
         try {
+            Properties props = getGraderConfigWithContextIds(graderConfig.getId(), subm.getGradeProcId());
+            backendPlugin.init(props);
             FutureTask<ResponseResource> futureTask = null;
             int timeoutSeconds = graderConfig.getTimeout_seconds();
-            setLoggingContextIdsForDockerProxy(graderConfig.getId(), subm.getGradeProcId());
             try {
                 log.debug("GRADE START: {}", subm.getGradeProcId());
                 futureTask = new FutureTask<ResponseResource>(() -> {
@@ -314,18 +328,16 @@ public class GraderPool {
         BackendPlugin bp = new ClassLoaderHelper<BackendPlugin>().LoadClass(grader.getClass_path(),
             grader.getClass_name(),
             BackendPlugin.class);
-        //setLoggingContextIdsForDockerProxy();
         log.debug("Grader JAR loaded.");
-        // TODO: if grader config file is an empty path,
-        // don't load it, and don't call backendPlugin.init(),
-        // and print a warning about it
-        log.info("Loading grader config file '{}'...", grader.getConfig_path());
-        try (InputStream is = new FileInputStream(new File(grader.getConfig_path()))) {
-            Properties props = new Properties();
-            props.load(is);
-            bp.init(props);
-        }
         return bp;
+    }
+
+    private void loadGraderConfig(GraderConfig grader) throws Exception {
+        log.info("Loading grader config file '{}'...", grader.getConfig_path());
+        graderConfigInitProps = new Properties();
+        try (InputStream is = new FileInputStream(new File(grader.getConfig_path()))) {
+            graderConfigInitProps.load(is);
+        }
     }
 
     public long getTotalGradingProcessesExecuted() {
