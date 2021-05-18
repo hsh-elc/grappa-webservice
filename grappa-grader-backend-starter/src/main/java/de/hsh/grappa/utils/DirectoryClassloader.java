@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.hsh.grappa.utils;
 
 import org.slf4j.Logger;
@@ -15,14 +12,13 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 public class DirectoryClassloader {
-    private static final Logger logger = LoggerFactory
-            .getLogger(DirectoryClassloader.class);
+    private static final Logger log = LoggerFactory.getLogger(DirectoryClassloader.class);
 
     public DirectoryClassloader(String[] pathes, String[] extensions)
             throws Exception {
-        logger.debug("Starting DirectoryClassloader");
+        log.debug("Starting DirectoryClassloader");
         for (String string : pathes) {
-            logger.debug("Path-Element Iterator: {}", string);
+            log.debug("Path-Element Iterator: {}", string);
             this.findAndAdd(string, extensions);
         }
     }
@@ -33,33 +29,31 @@ public class DirectoryClassloader {
         final Stack<File> dirs = new Stack<File>();
         final File startdir = new File(start);
         if (startdir.isDirectory()) {
-            logger.debug("Found Path ({})", startdir);
+            log.debug("Found Path ({})", startdir);
             dirs.push(startdir);
         } else if (match(startdir.getName(), extensions)) {
-            logger.debug("Found File ({})", startdir);
+            log.debug("Found File ({})", startdir);
             files.add(startdir);
         }
         while (dirs.size() > 0) {
             for (File file : dirs.pop().listFiles()) {
                 if (file.isDirectory()) {
-                    logger.debug("Found Path ({})", startdir);
+                    log.debug("Found Path ({})", startdir);
                     dirs.push(file);
                 } else if (match(file.getName(), extensions)) {
-                    logger.debug("Found File ({})", startdir);
+                    log.debug("Found File ({})", startdir);
                     files.add(file);
                 }
             }
         }
         for (File e : files) {
-            logger.debug("Adding ({}) to Classpath", e.getPath());
+            log.debug("Adding ({}) to Classpath", e.getPath());
             this.addToClasspath(e);
         }
     }
 
     private boolean match(String s, String[] suffixes) {
-        logger.debug(
-                "Checking File-Extension of ({}) against valid extensions ({})",
-                s, suffixes);
+        log.debug("Checking File-Extension of ({}) against valid extensions ({})", s, suffixes);
         for (String suffix : suffixes)
             if (s.length() >= suffix.length()
                     && s.substring(s.length() - suffix.length(), s.length())
