@@ -1,33 +1,31 @@
 package de.hsh.grappa.utils;
 
-import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
+import de.hsh.grappa.plugin.BackendPlugin;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Properties;
 
-
-
-
 public class BackendPluginLoadingHelper {
+    private static final Logger log = LoggerFactory.getLogger(BackendPluginLoadingHelper.class);
 	
-	public static void loadClasspathLibs(Properties config , Logger logger) throws Exception{
+	public static void loadClasspathLibs(Properties config/*, Logger logger*/) throws Exception{
 		String classpathes = config
                 .getProperty("grappa.plugin.grader.classpathes");
         String[] classpathParts = classpathes.split(";");
-        logger.debug("Current Classpathes: {}", classpathes);
+        log.debug("Current Classpathes: {}", classpathes);
         String extensions = config
                 .getProperty("grappa.plugin.grader.fileextensions");
         String[] extensionsParts = extensions.split(";");
-        logger.debug("Current extensions: {}", extensions);
-        @SuppressWarnings("unused")
+        log.debug("Current extensions: {}", extensions);
         DirectoryClassloader dc = new DirectoryClassloader(classpathParts, extensionsParts);
 	}
 	
-    public static BackendPlugin loadGraderPlugin(Properties config , Logger logger) throws Exception {
+    public static BackendPlugin loadGraderPlugin(Properties config/*, Logger logger*/) throws Exception {
     	BackendPlugin graderPlugin = null;
     	
         Properties backendConf = new Properties();
@@ -38,14 +36,14 @@ public class BackendPluginLoadingHelper {
             try {
                 backendConf.load(new FileInputStream(graderConfPath));
             } catch (IOException e2) {
-                logger.error("Error while loading grader config file: {}",
+                log.error("Error while loading grader config file: {}",
                         graderConfPath);
-                logger.error(e2.getMessage());
-                logger.error(ExceptionUtils.getStackTrace(e2));
+                log.error(e2.getMessage());
+                log.error(ExceptionUtils.getStackTrace(e2));
                 throw e2;
             }
         } else {
-            logger.warn("Grader config file not configured.");
+            log.warn("Grader config file not configured.");
         }
         // find BackendPlugin
         Class<?> clazz = null;
@@ -62,16 +60,16 @@ public class BackendPluginLoadingHelper {
             try {
             	graderPlugin.init(backendConf);
             } catch (Exception e) {
-                logger.error(
+                log.error(
                         "Error while initializing the grader plugin with config file: {}",
                         graderConfPath);
-                logger.error(e.getMessage());
-                logger.error(ExceptionUtils.getStackTrace(e));
+                log.error(e.getMessage());
+                log.error(ExceptionUtils.getStackTrace(e));
                 throw e;
             }
         }
 
-        logger.info("Grader plugin loaded successfully");
+        log.info("Grader plugin loaded successfully");
         
         return graderPlugin;
     }

@@ -1,6 +1,6 @@
 package de.hsh.grappa.utils;
 
-import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
+import de.hsh.grappa.plugin.BackendPlugin;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 

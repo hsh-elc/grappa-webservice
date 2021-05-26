@@ -1,6 +1,6 @@
 package de.hsh.grappa;
 
-import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
+import de.hsh.grappa.plugin.BackendPlugin;
 import de.hsh.grappa.proforma.MimeType;
 import de.hsh.grappa.proforma.ResponseResource;
 import de.hsh.grappa.proforma.SubmissionResource;
@@ -61,7 +61,6 @@ public class GraderBackendStarter {
             log.info("Loading config file: {}", configPath);
             try (InputStream input = new FileInputStream(configPath.toFile().getAbsolutePath())) {
                 bpStarterConfig.load(input);
-                log.info("Config file loaded.");
             } catch(Exception e) {
                 log.error("Failed to load config file for backend starter: {}", configPath);
                 throw e;
@@ -73,8 +72,6 @@ public class GraderBackendStarter {
                 String className = bpStarterConfig.getProperty(CONFIG_CLASS_NAME);
                 log.info("Loading backend plugin '{}'...", classPath);
                 bp = loadBackendPlugin(classPath, className);
-                //BackendPlugin bp = loadBackendPluginAlt(bpStarterConfig);
-                log.info("{} loaded.", bp);
             } catch (Exception e) {
                 log.error("Failed to load backend plugin.");
                 log.error(ExceptionUtils.getStackTrace(e));
@@ -141,6 +138,7 @@ public class GraderBackendStarter {
 
             }
         } catch (Exception e) {
+            System.err.println(ExceptionUtils.getStackTrace(e));
             log.error(e.getMessage());
             log.error(ExceptionUtils.getStackTrace(e));
             // status indicates that the grading starter finished abnormally
@@ -163,13 +161,12 @@ public class GraderBackendStarter {
             throw new FileNotFoundException(String.format("Neither '%s' nor '%s' exist.",
                 submZipPath, submZipPath));
         }
-        log.info("Loading submission file: {}", submToLoadPath);
         byte[] submBytes = Files.readAllBytes(submToLoadPath);
         return new SubmissionResource(submBytes, mimeType);
     }
 
     private static BackendPlugin loadBackendPluginAlt(Properties props) throws Exception {
-        return BackendPluginLoadingHelper.loadGraderPlugin(props, log);
+        return BackendPluginLoadingHelper.loadGraderPlugin(props/*, log*/);
     }
 
     private static BackendPlugin loadBackendPlugin(String jarPath, String classPath) throws Exception {
