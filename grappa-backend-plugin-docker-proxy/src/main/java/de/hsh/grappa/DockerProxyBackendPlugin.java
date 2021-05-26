@@ -1,20 +1,18 @@
 package de.hsh.grappa;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.DockerCmdExecFactory;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
+import com.github.dockerjava.core.DockerClientImpl;
+import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
 import com.google.common.base.Strings;
-import de.hsh.grappa.plugins.backendplugin.BackendPlugin;
+import de.hsh.grappa.plugin.BackendPlugin;
 import de.hsh.grappa.proforma.MimeType;
 import de.hsh.grappa.proforma.ResponseResource;
 import de.hsh.grappa.proforma.SubmissionResource;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +41,6 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
     private static final String GRADER_EXCEPTION_STACKTRACE_FILE_PATH =
         "/var/grb_starter/tmp/grader_exception_stacktrace";
 
-    private String lmsId = "N/A";
     private String graderId = "N/A";
     private String gradeProcId = "N/A";
     private String dockerContainerImage;
@@ -51,21 +48,18 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
     private String copySubmissionToDirectoryPath;
     private String responseResultDirectoryPath;
 
-    public void setLmsId(String lmsId) {
-        this.lmsId = lmsId;
-    }
-
-    public void setGraderId(String graderId) {
-        this.graderId = graderId;
-    }
-
-    public void setGradeProcId(String gradeProcId) {
-        this.gradeProcId = gradeProcId;
-    }
+    private static final String GRAPPA_CONTEXT_GRADER_ID = "Grappa.Context.GraderId";
+    private static final String GRAPPA_CONTEXT_GRADE_PROCESS_ID = "Grappa.Context.GraderProcessId";
 
     @Override
     public void init(Properties props) throws Exception {
         log.debug("Entering DockerProxyBackendPlugin.init()...");
+        try {
+            graderId = props.get(GRAPPA_CONTEXT_GRADER_ID).toString();
+            gradeProcId = props.get(GRAPPA_CONTEXT_GRADE_PROCESS_ID).toString();
+        } catch (Exception e) {
+            log.warn("No context logging IDs available.");
+        }
         dockerContainerImage = props.get("dockerproxybackendplugin.container_image").toString();
         dockerHost = props.get("dockerproxybackendplugin.docker_host").toString();
         copySubmissionToDirectoryPath =
@@ -75,64 +69,63 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
 
     @Override
     public ResponseResource grade(SubmissionResource submission) throws Exception {
-        log.debug("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Entering DockerProxyBackendPlugin.grade()...",
-            lmsId, graderId, gradeProcId);
-        log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Setting up docker connection to: {}",
-            lmsId, graderId, gradeProcId, dockerHost);
+        log.debug("[GraderId: '{}', GradeProcId: '{}']: Entering DockerProxyBackendPlugin.grade()...",
+            graderId, gradeProcId);
+        log.info("[GraderId: '{}', GradeProcId: '{}']: Setting up docker connection to: {}",
+            graderId, gradeProcId, dockerHost);
 
         DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
             .withDockerHost(dockerHost)
             .withDockerTlsVerify(false)
             .build();
 
-        try (DockerCmdExecFactory dockerCmdExecFactory = new JerseyDockerCmdExecFactory();
-             DockerClient dockerClient = DockerClientBuilder.getInstance(config)
-                 .withDockerCmdExecFactory(dockerCmdExecFactory)
-                 .build()) {
+        try (JerseyDockerHttpClient httpClient = new JerseyDockerHttpClient.Builder()
+            .dockerHost(config.getDockerHost())
+            .build(); DockerClient dockerClient = DockerClientImpl.getInstance(config, httpClient)) {
 
-            log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Pinging docker daemon...",
-                lmsId, graderId, gradeProcId);
+            log.info("[GraderId: '{}', GradeProcId: '{}']: Pinging docker daemon...",
+                graderId, gradeProcId);
             dockerClient.pingCmd().exec();
-            log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Ping successful.",
-                lmsId, graderId, gradeProcId);
+            log.info("[GraderId: '{}', GradeProcId: '{}']: Ping successful.",
+                graderId, gradeProcId);
 
-            log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Creating container from image '{}'...",
-                lmsId, graderId, gradeProcId, dockerContainerImage);
-            String containerId = DockerController.createContainer(dockerClient, dockerContainerImage);
-            log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Container with id '{}' created",
-                lmsId, graderId, gradeProcId, containerId);
+             log.info("[GraderId: '{}', GradeProcId: '{}']: Creating container from image '{}'...",
+                graderId, gradeProcId, dockerContainerImage);
+             String containerId = DockerController.createContainer(dockerClient, dockerContainerImage);
+             log.info("[GraderId: '{}', GradeProcId: '{}']: Container with id '{}' created",
+                graderId, gradeProcId, containerId);
 
-            copySubmissionToContainer(dockerClient, containerId, submission);
+             copySubmissionToContainer(dockerClient, containerId, submission);
 
-            log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Starting container...",
-                lmsId, graderId, gradeProcId);
-            // Starts container and subsequentlly the grading process
-            DockerController.startContainer(dockerClient, containerId);
+             log.info("[GraderId: '{}', GradeProcId: '{}']: Starting container...",
+                graderId, gradeProcId);
+             // Starts container and subsequentlly the grading process
+             DockerController.startContainer(dockerClient, containerId);
 
-            long exitCode = -1;
+             long exitCode = -1;
             try {
                 exitCode = waitForContainerToFinishGrading(dockerClient, containerId);
-                log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Container finished with exit code {}",
-                    lmsId, graderId, gradeProcId, exitCode);
+                log.info("[GraderId: '{}', GradeProcId: '{}']: Container finished with exit code {}",
+                    graderId, gradeProcId, exitCode);
             } catch (InterruptedException e) {
-                log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Thread interrupted while waiting for the grading result, proceeding to deleting docker " +
-                    "container...", lmsId, graderId, gradeProcId);
+                log.info("[GraderId: '{}', GradeProcId: '{}']: Thread interrupted while waiting for the grading result, proceeding to deleting docker " +
+                    "container...", graderId, gradeProcId);
                 Thread.currentThread().interrupt(); // preserve interrupt flag
             }
 
             ResponseResource responseResource = null;
             String graderStackTrace = null;
             if (0 != exitCode) {
-                log.error("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Grader finished abnormally with exit " +
-                    "code {}", lmsId, graderId, gradeProcId, exitCode);
-                log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Fetching grader stack trace file: {}",
-                    lmsId, graderId, gradeProcId, GRADER_EXCEPTION_STACKTRACE_FILE_PATH);
+                log.error("[GraderId: '{}', GradeProcId: '{}']: Grader finished abnormally with exit " +
+                    "code {}", graderId, gradeProcId, exitCode);
+                log.info("[GraderId: '{}', GradeProcId: '{}']: Fetching grader stack trace file: {}",
+                    graderId, gradeProcId, GRADER_EXCEPTION_STACKTRACE_FILE_PATH);
                 try (InputStream is = DockerController.fetchFile(dockerClient, containerId,
                     GRADER_EXCEPTION_STACKTRACE_FILE_PATH)) {
                     graderStackTrace = IOUtils.toString(is, "utf8");
                 } catch (Exception e) {
-                    log.error("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Could not load grader stack trace file '{}'.",
-                        lmsId, graderId, gradeProcId, GRADER_EXCEPTION_STACKTRACE_FILE_PATH);
+                    log.error("[GraderId: '{}', GradeProcId: '{}']: Could not load grader stack trace file '{}'.",
+                        graderId, gradeProcId, GRADER_EXCEPTION_STACKTRACE_FILE_PATH);
                     log.error(ExceptionUtils.getStackTrace(e));
                 }
             } else {
@@ -142,12 +135,12 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
                     try {
                         responseResource = fetchProformaResponseFile(dockerClient, containerId);
                     } catch (InterruptedException e) {
-                        log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Thread interruption during fetching response result file.",
-                            lmsId, graderId, gradeProcId);
+                        log.info("[GraderId: '{}', GradeProcId: '{}']: Thread interruption during fetching response result file.",
+                            graderId, gradeProcId);
                         Thread.currentThread().interrupt();
                     } catch (Exception e) {
-                        log.error("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Failed to fetch response file from container.",
-                            lmsId, graderId, gradeProcId);
+                        log.error("[GraderId: '{}', GradeProcId: '{}']: Failed to fetch response file from container.",
+                            graderId, gradeProcId);
                         log.error(e.getMessage());
                         log.error(ExceptionUtils.getStackTrace(e));
                     }
@@ -155,53 +148,53 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
             }
 
             if (!Thread.currentThread().isInterrupted()) {
-                log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Fetching container log...",
-                    lmsId, graderId, gradeProcId);
+                log.info("[GraderId: '{}', GradeProcId: '{}']: Fetching container log...",
+                    graderId, gradeProcId);
                 try {
                     List<String> logs = DockerController.getContainerLog(dockerClient, containerId);
                     for (String s : logs)
-                        log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: [CONTAINER LOG] {}",
-                            lmsId, graderId, gradeProcId, s);
+                        log.info("[GraderId: '{}', GradeProcId: '{}']: [CONTAINER LOG] {}",
+                            graderId, gradeProcId, s);
                 } catch (InterruptedException e) {
-                    log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Thread interruption during fetching response result file.",
-                        lmsId, graderId, gradeProcId);
+                    log.info("[GraderId: '{}', GradeProcId: '{}']: Thread interruption during fetching response result file.",
+                        graderId, gradeProcId);
                     Thread.currentThread().interrupt();
                 } catch (Exception e) {
-                    log.error("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Fetching container log failed.",
-                        lmsId, graderId, gradeProcId);
+                    log.error("[GraderId: '{}', GradeProcId: '{}']: Fetching container log failed.",
+                        graderId, gradeProcId);
                     log.error(e.getMessage());
                     log.error(ExceptionUtils.getStackTrace(e));
                 }
             }
 
             try {
-                log.debug("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Stopping container '{}'...",
-                    lmsId, graderId, gradeProcId, containerId);
+                log.debug("[GraderId: '{}', GradeProcId: '{}']: Stopping container '{}'...",
+                    graderId, gradeProcId, containerId);
                 DockerController.stopContainer(dockerClient, containerId);
-                log.debug("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Container stopped: '{}'",
-                    lmsId, graderId, gradeProcId, containerId);
+                log.debug("[GraderId: '{}', GradeProcId: '{}']: Container stopped: '{}'",
+                    graderId, gradeProcId, containerId);
             } catch (Exception e) {
-                log.warn("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Failed to stop container (it may already " +
-                    "have stopped): '{}'", lmsId, graderId, gradeProcId, containerId);
+                log.warn("[GraderId: '{}', GradeProcId: '{}']: Failed to stop container (it may already " +
+                    "have stopped): '{}'", graderId, gradeProcId, containerId);
             }
 
             try {
-                log.debug("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Removing container '{}'...",
-                    lmsId, graderId, gradeProcId, containerId);
+                log.debug("[GraderId: '{}', GradeProcId: '{}']: Removing container '{}'...",
+                    graderId, gradeProcId, containerId);
                 DockerController.removeContainer(dockerClient, containerId);
-                log.debug("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Container removed: '{}'",
-                    lmsId, graderId, gradeProcId, containerId);
+                log.debug("[GraderId: '{}', GradeProcId: '{}']: Container removed: '{}'",
+                    graderId, gradeProcId, containerId);
             } catch (Exception e) {
-                log.error("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Failed to remove container '{}'",
-                    lmsId, graderId, gradeProcId, containerId);
+                log.error("[GraderId: '{}', GradeProcId: '{}']: Failed to remove container '{}'",
+                    graderId, gradeProcId, containerId);
                 log.error(e.getMessage());
             }
 
-            log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: DockerProxyBackendPlugin finished.",
-                lmsId, graderId, gradeProcId);
+            log.info("[GraderId: '{}', GradeProcId: '{}']: DockerProxyBackendPlugin finished.",
+                graderId, gradeProcId);
             if (!Strings.isNullOrEmpty(graderStackTrace)) {
-                log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Re-throwing grader exception stack trace.",
-                    lmsId, graderId, gradeProcId);
+                log.info("[GraderId: '{}', GradeProcId: '{}']: Re-throwing grader exception stack trace.",
+                    graderId, gradeProcId);
                 throw new GraderException(graderStackTrace);
             }
 
@@ -213,13 +206,12 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
 
     private void copySubmissionToContainer(DockerClient dockerClient, String containerId,
                                            SubmissionResource subm) throws Exception {
-        byte[] proformaSubmBytes = SerializationUtils.serialize(subm);
         String submDestFileName = subm.getMimeType()
             .equals(MimeType.XML) ? "submission.xml" : "submission.zip";
-        log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Copying submission file '{}' to docker container.",
-            lmsId, graderId, gradeProcId, FilenameUtils.separatorsToUnix
+        log.info("[GraderId: '{}', GradeProcId: '{}']: Copying submission file '{}' to docker container.",
+            graderId, gradeProcId, FilenameUtils.separatorsToUnix
                 (Paths.get(copySubmissionToDirectoryPath, submDestFileName).toString()));
-        DockerController.copyFile(proformaSubmBytes, copySubmissionToDirectoryPath,
+        DockerController.copyFile(subm.getContent(), copySubmissionToDirectoryPath,
             submDestFileName, dockerClient, containerId, true);
     }
 
@@ -229,8 +221,8 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
         for (int i = 3; !Thread.currentThread().isInterrupted()
             && state.getStatus().toUpperCase().equals("RUNNING"); ++i) {
             if (i % 4 == 0) // Don't spam the log with waiting messages
-                log.debug("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Waiting for the grading process to finish...",
-                    lmsId, graderId, gradeProcId);
+                log.debug("[GraderId: '{}', GradeProcId: '{}']: Waiting for the grading process to finish...",
+                    graderId, gradeProcId);
             Thread.sleep(1000);
             state = dockerClient.inspectContainerCmd(containerId).exec().getState();
         }
@@ -248,15 +240,15 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
      */
     private InputStream tryFetchResponseFile(DockerClient dockerClient, String containerId,
                                              String respFilePath) throws Exception {
-        log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Fetching response file: {}",
-            lmsId, graderId, gradeProcId, respFilePath);
+        log.info("[GraderId: '{}', GradeProcId: '{}']: Fetching response file: {}",
+            graderId, gradeProcId, respFilePath);
         InputStream resp = null;
         try {
             resp = DockerController.fetchFile(dockerClient, containerId,
                 respFilePath);
         } catch (com.github.dockerjava.api.exception.NotFoundException e) {
-            log.info("[LmsId: '{}', GraderId: '{}', GradeProcId: '{}']: Response file '{}' does not exist.",
-                lmsId, graderId, gradeProcId, respFilePath);
+            log.info("[GraderId: '{}', GradeProcId: '{}']: Response file '{}' does not exist.",
+                graderId, gradeProcId, respFilePath);
             return null;
         }
         return resp;
