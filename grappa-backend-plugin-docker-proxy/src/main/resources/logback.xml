@@ -3,29 +3,16 @@
 <configuration scan="true" scanPeriod="30 seconds">
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 	    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<!-- Do not log anything below the INFO level on STDOUT (which is redirected to catalina.out) -->
-			<!-- Disable this line (by commenting it out) or set it to DEBUG on your local machine if you want DEBUG messages to be logged to STDOUT (in your console, for example) --><!-- Do not log anything below the INFO level on STDOUT (which is redirected to catalina.out) -->
-	        <!-- <level>INFO</level> -->
 	    </filter>
 		<encoder>
-			<!-- <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern> -->
 			<pattern>%date %-5level %logger{5} - %msg%n</pattern>
 		</encoder>
 	</appender>
-	
-	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
-      <file>/var/grb_starter/grb_starter.log</file>
-      <append>false</append>
-      <encoder>
-         <pattern>%date %-5level %logger{5} - %msg%n</pattern>
-      </encoder>
-   </appender>
 
 	<logger name="com.github" level="INFO" />
 	<logger name="org.apache.http" level="INFO" />
 	<logger name="de.hsh.grappa" level="DEBUG" />
 	<root level="DEBUG">
 	    <appender-ref ref="STDOUT" />
-	    <appender-ref ref="FILE" />
 	</root>
 </configuration>
