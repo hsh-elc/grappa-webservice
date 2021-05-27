@@ -65,4 +65,7 @@ sh /opt/grader/bootstrap_grader-backend.sh
 #fi
 #
 #
-#tail -f /dev/null
+
+
+#ENTRYPOINT ["tail"]
+#CMD ["-f","/dev/null"]

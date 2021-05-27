@@ -2,7 +2,7 @@
 # An image for the grader 'graja'.
 
 # Base is latest grappa-remote-backend-base image
-FROM grappa-remote-backend-base:latest
+FROM grappa-backend-base:latest
 
 
 ### Install additional software
@@ -25,3 +25,9 @@ COPY ["DummyGraderGrappaV2.properties", "/opt/grader/dummy-grader/DummyGraderGra
 ENTRYPOINT ["/bin/bash", "/setup.sh"]
 
 #CMD tail -f /dev/null
+
+
+
+#ENTRYPOINT ["tail"]
+#CMD ["-f","/dev/null"]
+

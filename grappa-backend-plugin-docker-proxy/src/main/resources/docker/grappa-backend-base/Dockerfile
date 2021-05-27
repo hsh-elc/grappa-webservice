@@ -36,7 +36,7 @@ RUN ["apt-get", "-yq", "install", "dos2unix"]
 # Install iproute2
 #RUN ["apt-get", "-yq", "install", "iproute2"]
 
-# Install OpenJDK 8
+# Install OpenJDK
 RUN ["apt-get", "-yq", "install", "default-jdk"]
 
 
