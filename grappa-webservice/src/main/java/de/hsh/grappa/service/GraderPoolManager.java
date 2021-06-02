@@ -113,7 +113,7 @@ public class GraderPoolManager implements Runnable {
         var pool = pools.get(graderId);
         if(null != pool)
             return pool.getPoolSize();
-        throw new NotFoundException(String.format("GraderId '{}' does not exist.", graderId));
+        throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId));
     }
 
     /**
@@ -127,7 +127,7 @@ public class GraderPoolManager implements Runnable {
         var pool = pools.get(graderId);
         if(null != pool)
             return pool.getBusyCount();
-        throw new NotFoundException(String.format("GraderId '{}' does not exist.", graderId));
+        throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId));
     }
 
 //    public long getEstimatedSecondsUntilQueueIsGraded(String graderId) throws NotFoundException {
@@ -143,7 +143,7 @@ public class GraderPoolManager implements Runnable {
 //                estimatedSeconds += estimatedSeconds;
 //            return estimatedSeconds;
 //        }
-//        throw new NotFoundException(String.format("GraderId '{}' does not exist.", graderId));
+//        throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId));
 //    }
 
     /**
@@ -191,7 +191,7 @@ public class GraderPoolManager implements Runnable {
                 gradeProcId, submPos, groupIndex, noGraderAvailableToGradeMe, estimatedSeconds);
             return estimatedSeconds;
         }
-        throw new NotFoundException(String.format("GraderId '{}' does not exist.", graderId));
+        throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId));
     }
 
     public Map<String, GraderStatistics> getGraderStatistics() {
