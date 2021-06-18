@@ -41,9 +41,9 @@ public class CacheConfig {
     @Override
     public String toString() {
         return "Cache{" +
-            "submission_timeout=" + submission_ttl_seconds +
-            ", task_timeout=" + task_ttl_seconds +
-            ", response_timeout=" + response_ttl_seconds +
+            "submission_ttl_seconds=" + submission_ttl_seconds +
+            ", task_ttl_seconds=" + task_ttl_seconds +
+            ", response_ttl_seconds=" + response_ttl_seconds +
             ", redis=" + redis +
             '}';
     }

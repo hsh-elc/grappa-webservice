@@ -86,7 +86,7 @@ The following building and deployment instructions are for Ubuntu Linux.
 
     git clone https://github.com/hsh-elc/grappa-webservice.git
     
-2. Build Docker Images by executing the `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker/build-images.sh` script
+2. Build Docker Images by changing to directory `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker` and then executing the `build-images.sh` script
 
 Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker/` directory, specifically its docker, shell and JAR files will require re-executing the `build-images.sh` script to take effect. This includes changes to the `grappa-grader-backend-starter` module, as well as adding and changing grader Backend Plugins.
 
