@@ -152,9 +152,18 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
                     graderId, gradeProcId);
                 try {
                     List<String> logs = DockerController.getContainerLog(dockerClient, containerId);
-                    for (String s : logs)
-                        log.info("[GraderId: '{}', GradeProcId: '{}']: [CONTAINER LOG] {}",
-                            graderId, gradeProcId, s);
+                    // display the logs as a single transactional text block so the
+                    // lines don't get mixed up with other concurrent logging events
+                    StringBuilder sb = new StringBuilder("[START] ======================================================");
+                    sb.append(System.getProperty("line.separator"));
+                    //logs.forEach(sb::append);
+                    for(String s : logs) {
+                        sb.append("\t" + s);
+                        sb.append(System.getProperty("line.separator"));
+                    }
+                    sb.append("[END] ======================================================");
+                    log.info("[GraderId: '{}', GradeProcId: '{}']: [CONTAINER LOG]:{}{}",
+                        graderId, gradeProcId, System.getProperty("line.separator"), sb.toString());
                 } catch (InterruptedException e) {
                     log.info("[GraderId: '{}', GradeProcId: '{}']: Thread interruption during fetching response result file.",
                         graderId, gradeProcId);
