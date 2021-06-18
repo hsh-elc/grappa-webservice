@@ -1,6 +1,14 @@
+# Eclipse Project Files
+.classpath
+.project
+.settings/
+
+# Intellij Project Files
 .idea/
+*.iml
+
+
 catalina*
 target/
 out/
-*.iml
 classes/
