@@ -107,7 +107,7 @@ Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-pro
 
   - you may want to test the web service locally by using a GET request to the [serivce's status endpoint](get-web-service-status) using  `curl` like so: `curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2.0.0/rest`, with `test:test` being the LMS ID and password hash, respectively
 
-6. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2.0.0/rest/`
+6. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2.0.0/rest`
 
 ### 2.4 Configuration
 
