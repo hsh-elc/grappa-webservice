@@ -5,6 +5,7 @@ public class GraderConfig {
   private String name;
   private boolean enabled;
   private String class_path;
+  private String file_extension;
   private String class_name;
   private String config_path;
   private int timeout_seconds = 120;
@@ -36,6 +37,14 @@ public class GraderConfig {
 
   public void setClass_path(String class_path) {
     this.class_path = class_path;
+  }
+
+  public String getFile_extension() {
+    return file_extension;
+  }
+
+  public void setFile_extension(String file_extension) {
+    this.file_extension = file_extension;
   }
 
   public String getClass_name() {
@@ -77,6 +86,7 @@ public class GraderConfig {
             ", name=" + name + '\'' +
             ", enabled='" + enabled + '\'' +
             ", class_path=" + class_path + '\'' +
+            ", file_extension=" + file_extension + '\'' +
             ", class_name='" + class_name + '\'' +
             ", config_path='" + config_path + '\'' +
             ", max_runtime_seconds=" + timeout_seconds +

@@ -10,7 +10,7 @@ import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.plugin.BackendPlugin;
 import de.hsh.grappa.proforma.ProformaResponseGenerator;
 import de.hsh.grappa.proforma.ResponseResource;
-import de.hsh.grappa.utils.ClassLoaderHelper;
+import de.hsh.grappa.utils.BackendPluginLoadingHelper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,7 @@ public class GraderPool {
                 "for graderId '%s'.", graderConfig.getConcurrent_grading_processes()));
 
         this.backendPlugin = loadBackendPlugin(graderConfig);
-        this.loadGraderConfig(graderConfig);
+        //this.loadGraderConfig(graderConfig);
 
         log.debug("Using grader '{}' with {} concurrent instances.",
             graderConfig.getId(), graderConfig.getConcurrent_grading_processes());
@@ -81,13 +81,13 @@ public class GraderPool {
      * <p>
      * Runs asynchronously.
      *
-     * @return Frue, if a grade process has started. False, if all workers are busy
+     * @return True, if a grade process has started. False, if all workers are busy
      */
     public boolean tryGrade(/*boolean async*/) {
         // We need to acquire the semaphore this soon already, since we
         // pop a submission from the queue in the next step and commit
         // ourselves to grading it. Otherwise, we'd have to put the submission
-        // back into the queue.
+        // back into the queue if no available grader instances are available.
         if (semaphore.tryAcquire()) {
             log.debug("Grader '{}': semaphore aquired, {} left", graderConfig.getId(), semaphore.availablePermits());
             boolean releaseSemaphore = true; // release in current thread if we can't start a grading process
@@ -97,31 +97,14 @@ public class GraderPool {
                     releaseSemaphore = false; // starting another thread that will release the semaphore eventually
                     log.info("[GraderId: '{}', GradeProcessId: '{}']: Starting grading process...",
                         graderConfig.getId(), queuedSubm.getGradeProcId());
-
-                    if (true/*async*/) {
-                        CompletableFuture.supplyAsync(() -> {
-                            return runGradingProcess(queuedSubm);
-                        }, getJaxbExecutor()).thenAccept(resp -> {
-                            cacheProformaResponseResult(resp, queuedSubm.getGradeProcId());
-                        }).thenRun(() -> {
-                            // Grading slot has become free, try grading if there's anything queued.
-                            //tryGrade(false); // reuse future's async thread
-                            tryGrade();
-                        });
-                    } /*else {
-                        var future = CompletableFuture.supplyAsync(() -> {
-                            return runGradingProcess(queuedSubm);
-                        }).thenAccept(resp -> {
-                            processProformaResponseResult(resp, queuedSubm.getGradeProcId());
-                        });
-                        // No timeout. Timeout and subsequent cancellation
-                        // handled in runGradingProcess()
-                        future.get();
-                        CompletableFuture.runAsync(() -> {
-                            // Grading slot has become free, try grading if there's anything queued.
-                            tryGrade(false); // reuse future's async thread
-                        });
-                    }*/
+                    CompletableFuture.supplyAsync(() -> {
+                        return runGradingProcess(queuedSubm);
+                    }, getJaxbExecutor()).thenAccept(resp -> {
+                        cacheProformaResponseResult(resp, queuedSubm.getGradeProcId());
+                    }).thenRun(() -> {
+                        // Grading slot has become free, try grading if there's anything queued.
+                        tryGrade(); // reuse future's async thread
+                    });
                 } else
                     log.debug("[GraderID: '{}']: This grader's submission queue is empty.", graderConfig.getId());
             } catch (Exception e) {
@@ -236,7 +219,7 @@ public class GraderPool {
                     subm.getGradeProcId());
             }
         } catch (Exception e) {
-            log.error("Code hadling grading process exceptions failed with: {}", e.getMessage());
+            log.error("Code handling grading process exceptions failed with: {}", e.getMessage());
             log.error(ExceptionUtils.getStackTrace(e));
         }
         return null;
@@ -323,22 +306,34 @@ public class GraderPool {
     }
 
     private BackendPlugin loadBackendPlugin(GraderConfig grader) throws Exception {
-        log.info("Loading grader plugin '{}' from file '{}'...",
-            grader.getId(), grader.getClass_path());
-        BackendPlugin bp = new ClassLoaderHelper<BackendPlugin>().LoadClass(grader.getClass_path(),
-            grader.getClass_name(),
-            BackendPlugin.class);
-        log.debug("Grader JAR loaded.");
-        return bp;
-    }
+        log.info("Loading grader plugin '{}' with classpathes '{}'...", grader.getId(), grader.getClass_path());
+        BackendPluginLoadingHelper.loadClasspathLibs(grader.getClass_path(), grader.getFile_extension());
+        BackendPlugin bp = BackendPluginLoadingHelper.loadGraderPlugin(graderConfig.getClass_name(), graderConfig.getConfig_path());
+        log.debug("BackendPlugin loaded.");
 
-    private void loadGraderConfig(GraderConfig grader) throws Exception {
         log.info("Loading grader config file '{}'...", grader.getConfig_path());
         graderConfigInitProps = new Properties();
         try (InputStream is = new FileInputStream(new File(grader.getConfig_path()))) {
             graderConfigInitProps.load(is);
         }
+
+        return bp;
+//        log.info("Loading grader plugin '{}' from file '{}'...",
+//            grader.getId(), grader.getClass_path());
+//        BackendPlugin bp = new ClassLoaderHelper<BackendPlugin>().LoadClass(grader.getClass_path(),
+//            grader.getClass_name(),
+//            BackendPlugin.class);
+//        log.debug("Grader JAR loaded.");
+//        return bp;
     }
+
+//    private void loadGraderConfig(GraderConfig grader) throws Exception {
+//        log.info("Loading grader config file '{}'...", grader.getConfig_path());
+//        graderConfigInitProps = new Properties();
+//        try (InputStream is = new FileInputStream(new File(grader.getConfig_path()))) {
+//            graderConfigInitProps.load(is);
+//        }
+//    }
 
     public long getTotalGradingProcessesExecuted() {
         return totalGradingProcessesExecuted.get();
