@@ -65,7 +65,7 @@ Install the software listed in the [System Requirements](21-system-requirements)
 
 #### 2.2.2 Installing Docker
 
-  - Install Docker, e.g. `sudo apt install docker-ce`
+  - Install Docker, e.g. https://docs.docker.com/engine/install/ubuntu/
   - if Grappa and Docker are intended to run on different servers, you may need to expose the Docker API over TCP so a connection can be established remotely
     - edit file `/lib/systemd/system/docker.service`
     - comment out line `ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock`
@@ -92,12 +92,16 @@ Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-pro
 
 3. Navigate to Grappa's root directory `grappa-webservice/` and build the web application resource using maven.
 
-4. Copy the resulting WAR file (e.g. `grappa-webservice-2.0.0.jar`) in directory `grappa-webservice/grappa-webservice/target` to Tomcat's webapps directory (`CATALINA_BASE/webapps`)
+    mvn install package -DskipTests
+    
+*Note: skipping tests is recommended at this point, since running the tests requires the web service to be already deployed and running in Tomcat. Not skipping the tests will not affect the build process in any way, but it will result in additional error messages on part of the maven-test-plugin.* 
+
+4. Copy the resulting WAR file `grappa-webservice/grappa-webservice/target/grappa-webservice-2.0.0.jar`  to Tomcat's webapps directory (`CATALINA_BASE/webapps/`)
 
 5. Configure Grappa
 
   - copy file `grappa-webservice/grappa-webservice/src/main/resources/grappa-config.yaml.example` to `/etc/grappa/` (or `C:/etc/grappa/` on a Windows-based system) and remove the `.example` part
-  -  refer to section [Configuration](TODO) for more details
+  -  refer to section [Configuration](#24-configuration) for more details
   
 5. Run Tomcat (e.g. `sudo systemctl start tomcat`)
 
@@ -122,15 +126,15 @@ service:
   # default_estimated_grading_seconds property sets the initial
   # value for every submission request. After the first submission
   # has been graded and the time measured, every subsequent
-  # task-specific submission request will receive the actual,
-  # estimated time remaining for a task-specific submission to be
-  # finished grading.
+  # task-specific submission request will receive the actual
+  # estimated time remaining for a task-specific submission to
+  # finish its grade process.
   default_estimated_grading_seconds: 20
 
   # A task-specific submission's estimated grading time is based on
-  # the arithmetic mean of previously measured grading time spans.
-  # Limiting the amount of the most recent (previous) grading time
-  # spans dictates the amount of task-specific submissions taken into
+  # the arithmetic mean of previously measured grading processes.
+  # The amount of the most recent grading processes indicates
+  # the number of task-specific submissions taken into
   # account when estimating a submission's new grading time.
   prev_grading_seconds_max_list_size: 10
 
@@ -138,12 +142,13 @@ service:
   # (possible values: OFF, ERROR, WARN, INFO, DEBUG, TRACE and ALL)
   logging_level: "DEBUG"
 
-  # Submission requests can be either synchronous or asynchronous.
-  # While asynchronous request calls return immediately to the client,
-  # synchronous calls block until a submission result is available.
-  # synchronous_submission_timeout_seconds sets the timeout in
-  # seconds for synchronous submission requests.
-  synchronous_submission_timeout_seconds: 600 # 10 minutes
+  # Grading requests to Grappa can be either synchronous or
+  # asynchronous. Synchronous requests will block the calling function
+  # while asynchronous requests will return immediately for the caller
+  # to retrieve the grading result at a later time.
+  # This property sets the wait timeout for Grappa for synchronous
+  # submission requests by clients.
+  synchronous_submission_timeout_seconds: 120
 
   # The class path and name to the module used to setup a vagrant
   # environment for the web service
@@ -160,8 +165,8 @@ lms:
     password_hash: "test"
 
 # The graders part
-# Every grader represents a "grader pool" with a certain amount of
-# grader instances.
+# Every grader definition here represents a grader pool
+# with a specified number of grader instances in that pool.
 graders:
 
   # Submission requests must supply the target grader pool's ID
@@ -449,16 +454,10 @@ Cancel and delete a Proforma submission that is queued for grading or being curr
 * **HTTP Responses**
   
   * **Code:** `200 OK` <br/>
-     **Content**: 
-     **Content Type**: The content type depends on the `Content-Type` in the request header. <br/>
-     **Description**: The pending submission has been removed from the submission queue, or the grading process has
-      been cancelled if the submission was currently being graded. There will be no Proforma response result for a
-       cancelled submisison. <br/>
-     
-  * **Code:** `202 Accepted` <br/>
     **Content**: *None* <br/>
-    **Description**: The grading process is either pending or in progress.
-       
+     **Description**: The pending submission has been removed from the submission queue, or the grading process has
+      been cancelled if the submission was currently being graded. The content body will return empty in either case. <br/>
+     
   * **Code:** `401 Unauthorized` <br/>
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
@@ -476,7 +475,7 @@ Cancel and delete a Proforma submission that is queued for grading or being curr
 
 ### Get list of all online graders 
 
-Get the list of graders that are enabled and online and ready to take on submissions.
+Get the list of graders that are enabled and ready to take on submissions.
     
 * **URL**
 
@@ -503,7 +502,7 @@ Get the list of graders that are enabled and online and ready to take on submiss
     }
     ```
     **Content Type**: `application/json` <br/>
-    **Description**: Returns a list of graders that are enabled and online.    
+    **Description**: Returns a list of graders that are enabled for grading.
        
   * **Code:** `401 Unauthorized` <br/>
     **Content**: `{ error : "message" }` <br/>
@@ -607,15 +606,15 @@ Check if a particular task is cached by the middleware to avoid including the ta
 
 ## 4 Backend Plugin
 
-Grappa passes submissions onto the actual grader backend system. A backend plugin is used to connect a grader to the Grappa web service. 
+Grappa passes submissions onto the actual grader backend system. A backend plugin is used to connect a grader to the Grappa webservice. 
 
 ### 4.1 proformaxml module
 
-The `proformaxml` module contains the POJO classes of the [ProForma](https://github.com/ProFormA/proformaxml) format (currently version 2.1).
+The `proformaxml` module contains the POJO classes for the [ProForma](https://github.com/ProFormA/proformaxml) format (currently version 2.1).
 
 ### 4.2 grappa-backend-plugin-api module
 
-The are two different ways to pass a submission to a grader system from within a grader backend plugin.
+There are two different ways to pass a submission to a grader system from within a grader backend plugin.
 
 <!--- 
 TODO: uml class diagram of proformaxml, plugin-api and an example grader.
@@ -634,7 +633,7 @@ The backend plugin may convert the submission blob into a Java class instance an
 One bare-bones implementation would look like this:
 
 ```
-public class PythonGrader implements de.hsh.grappa.plugins.backendplugin.BackendPlugin {
+public class PythonGrader implements BackendPlugin {
     @Override
     public void init(Properties properties) throws Exception {
         // do initialization
@@ -651,7 +650,9 @@ public class PythonGrader implements de.hsh.grappa.plugins.backendplugin.Backend
         return useBackendGraderToGrade(submissionPojo);
     }
 
-    private ResponseResource useBackendGraderToGrade(SubmissionType submission) { /*...*/ }
+    private ResponseResource useBackendGraderToGrade(SubmissionType submission) { 
+        /*...*/
+    }
 }
 ```
 
