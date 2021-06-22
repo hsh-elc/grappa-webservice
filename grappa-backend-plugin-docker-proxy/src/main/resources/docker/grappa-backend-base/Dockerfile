@@ -22,22 +22,15 @@ RUN ["mkdir", "/var/grb_starter"]
 RUN ["mkdir", "/var/grb_starter/tmp"]
 
 ### Install software
-RUN ["apt-get", "-yq", "update"]
-
-# install 'file' etc for debugging
-RUN ["apt-get", "-yq", "install", "file"]
-RUN ["apt-get", "-yq", "install", "unzip"]
-RUN ["apt-get", "-yq", "install", "less"]
-RUN ["apt-get", "-yq", "install", "dos2unix"]
+# - OpenJDK
+# - 'file', 'unzip', 'less', 'dos2unix' for debugging
+RUN apt-get update && apt-get -yq install file unzip less dos2unix default-jdk
 
 # Install iptables
 #RUN ["apt-get", "-yq", "install", "iptables"]
 
 # Install iproute2
 #RUN ["apt-get", "-yq", "install", "iproute2"]
-
-# Install OpenJDK
-RUN ["apt-get", "-yq", "install", "default-jdk"]
 
 
 ### setup script
