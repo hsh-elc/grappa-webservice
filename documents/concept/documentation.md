@@ -111,7 +111,7 @@ Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-pro
 
 ### 2.4 Configuration
 
-Any changes to Grappa's configuration file require a web service restart to take effect.
+Any changes to Grappa's configuration file will require a web service restart to take effect.
 
 Grappa's configuration file's location and file name must be `/etc/grappa/grappa-config.yaml`.
 
@@ -188,8 +188,18 @@ graders:
     # in the result when a client polls for available grader types.
     enabled: true # values: true|false
 
-    # The class path and name to the Backend Plugin of a grader
+    # The class pathes of a backend plugin. It may contain multiple
+    # pathes, separated by a semicolon. class_path may also contain 
+    # pathes to directories.
     class_path: "/opt/Grappa/plugins/grappa-backend-plugin-docker-proxy-0.1.jar"
+
+    # In case the class_path property contains a directory, only files with
+    # the file extension set in file_extension will be loaded to the class path.
+    # Direcotories may also contain sub directories, which will be traversed
+    # recursively.
+    # file_extension may contain multiple file extensions, separated by a semicolon.
+    file_extension: ".jar"
+
     class_name: "de.hsh.grappa.DockerProxyBackendPlugin"
 
     # The path to the configuration file used to initialize a grader
@@ -298,7 +308,7 @@ Get the web service's status information, such as runtime infos.
     }
     ```
     **Content Type**: `application/json` <br/>
-    **Description**: Returns the status of a grader. This data is subject to change. It is not intended to be processed by a machine, but rather serves to provide an overview for debugging or statistical purposes.
+    **Description**: Returns the status of a grader. This data is subject to change. It is not intended to be processed by a machine, but rather serves an overview for debugging or statistical purposes.
        
   * **Code:** `401 Unauthorized` <br/>
     **Content**: `{ error : "message" }` <br/>
@@ -324,15 +334,15 @@ Submit a Proforma submission for grading.
   
 * **Required URL Params**
 
-  * `lmsid=[string]`: The LMS-ID, which represents the client ID.  
+  * `lmsid=[string]`: The LMS-ID, which represents the client ID.
    
-  * `graderId=[string]`: The grader instance to be used for grading this submission.
+  * `graderId=[string]`: The grader instance to be used for grading a submission.
    
   **Optional URL Params**
    
   * `async=[boolean][default=true]`: `true` if this `POST` request should return immediately after submitting the
    Proforma submission for asynchronous grading, or `false` if the `POST` request should block until a Proforma
-    response is returned. Synchronous calls will automatically time out with a `202 Accepted` and an `estimatedSecondsRemaining` after a pre-configured time span is exceeded. A timeout will occur due to a large number of queued submissions, in which case the client can poll for the result at a later time.
+    response is returned. Synchronous calls will automatically time out with a `202 Accepted` and an `estimatedSecondsRemaining` after a pre-configured time span is exceeded. A timeout may occur due to a large number of queued submissions, in which case the client can poll for the result at a later time.
 
   * `prioritize=[boolean][default=false]`: `true`, if the submission should be prioritized and graded as soon as a
    grader instance is available, or `false`, if the submission should join the tail of the submission queue. 
@@ -434,8 +444,8 @@ Poll for the status of a Proforma submission (queued for grading, being graded, 
    
 ### Cancel a Proforma submission 
 
-Cancel and delete a Proforma submission that is queued for grading or being currently graded. This request has no
- effect on already graded submissions.
+Cancel and delete a Proforma submission that is queued for grading or is currently being graded. This request has no
+ effect on an already graded submission.
     
 * **URL**
 
@@ -492,12 +502,12 @@ Get the list of graders that are enabled and ready to take on submissions.
 * **HTTP Responses**
   
   * **Code:** `200 OK` <br/>
-    **Content**:
+    **Content**: Example graders:
     ```
     {
         "graders": {
-            "graderId": "human-friendly grader name"
-            "graderId": "human-friendly grader name"
+            "graderId1": "human-friendly grader name 1"
+            "graderId2": "human-friendly grader name 2"
         }
     }
     ```

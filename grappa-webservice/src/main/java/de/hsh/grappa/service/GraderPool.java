@@ -43,7 +43,6 @@ public class GraderPool {
     private final AtomicLong totalGradingProcessesTimedOut =
         new AtomicLong(0);
 
-    private BackendPlugin backendPlugin;
     private GraderConfig graderConfig;
 
     private static final String GRAPPA_CONTEXT_GRADER_ID = "Grappa.Context.GraderId";
@@ -66,9 +65,7 @@ public class GraderPool {
             throw new IllegalArgumentException(String.format("concurrent_grading_processes must not be less than 1 " +
                 "for graderId '%s'.", graderConfig.getConcurrent_grading_processes()));
 
-        this.backendPlugin = loadBackendPlugin(graderConfig);
-        //this.loadGraderConfig(graderConfig);
-
+        loadBackendPlugin(graderConfig);
         log.debug("Using grader '{}' with {} concurrent instances.",
             graderConfig.getId(), graderConfig.getConcurrent_grading_processes());
         this.semaphore = new Semaphore(graderConfig.getConcurrent_grading_processes());
@@ -147,13 +144,17 @@ public class GraderPool {
         LocalDateTime beginTime = LocalDateTime.now();
         try {
             Properties props = getGraderConfigWithContextIds(graderConfig.getId(), subm.getGradeProcId());
-            backendPlugin.init(props);
+            // Create a fresh backend plugin instance for every grading request
+            BackendPlugin bp = BackendPluginLoadingHelper.loadBackendPlugin(graderConfig.getClass_name());
+            log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing BackendPlugin...",
+                graderConfig.getId(), subm.getGradeProcId());
+            bp.init(props);
             FutureTask<ResponseResource> futureTask = null;
             int timeoutSeconds = graderConfig.getTimeout_seconds();
             try {
                 log.debug("GRADE START: {}", subm.getGradeProcId());
                 futureTask = new FutureTask<ResponseResource>(() -> {
-                    return backendPlugin.grade(subm.getSubmission());
+                    return bp.grade(subm.getSubmission());
                 });
                 gpMap.put(subm.getGradeProcId(), futureTask);
                 new Thread(futureTask).start();
@@ -176,16 +177,18 @@ public class GraderPool {
                 return ProformaResponseGenerator.createInternalErrorResponse(errorMessage);
             } catch (TimeoutException e) {
                 totalGradingProcessesTimedOut.incrementAndGet();
-                log.info("[GraderId: '{}', GradeProcessId: '{}']: Grader timed out after {} seconds. Trying to cancel " +
-                        "grading process...",
-                    graderConfig.getId(), subm.getGradeProcId(), timeoutSeconds);
+                String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process timed " +
+                    "out after %d seconds.", graderConfig.getId(), subm.getGradeProcId(), timeoutSeconds);
+                log.warn(errorMessage);
+                log.info("[GraderId: '{}', GradeProcessId: '{}']: Trying to stop timed out grading process...",
+                    graderConfig.getId(), subm.getGradeProcId());
                 futureTask.cancel(true);
+                // Don't increment totalGradingProcessesCancelled, since the cancellation was due to a timeout,
+                // not due to a client's delete request
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after timing out.",
                     graderConfig.getId(), subm.getGradeProcId());
-                // Don't increment totalGradingProcessesCancelled, since the cancellation was due to a timeout.
-                // How do we know this timeout was due to the grader and not the student submission???
-                return ProformaResponseGenerator.createInternalErrorResponse(String.format("Grader '%s' timed out " +
-                    "after %d seconds.", graderConfig.getId(), timeoutSeconds));
+                // How do we know this timeout was due to the grader and not a forever loop in the student submission?
+                return ProformaResponseGenerator.createInternalErrorResponse(errorMessage);
             } catch (CancellationException e) {
                 totalGradingProcessesCancelled.incrementAndGet();
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process cancelled.",
@@ -305,35 +308,15 @@ public class GraderPool {
         return ProformaResponseGenerator.createInternalErrorResponse(message);
     }
 
-    private BackendPlugin loadBackendPlugin(GraderConfig grader) throws Exception {
+    private void loadBackendPlugin(GraderConfig grader) throws Exception {
         log.info("Loading grader plugin '{}' with classpathes '{}'...", grader.getId(), grader.getClass_path());
         BackendPluginLoadingHelper.loadClasspathLibs(grader.getClass_path(), grader.getFile_extension());
-        BackendPlugin bp = BackendPluginLoadingHelper.loadGraderPlugin(graderConfig.getClass_name(), graderConfig.getConfig_path());
-        log.debug("BackendPlugin loaded.");
-
         log.info("Loading grader config file '{}'...", grader.getConfig_path());
         graderConfigInitProps = new Properties();
         try (InputStream is = new FileInputStream(new File(grader.getConfig_path()))) {
             graderConfigInitProps.load(is);
         }
-
-        return bp;
-//        log.info("Loading grader plugin '{}' from file '{}'...",
-//            grader.getId(), grader.getClass_path());
-//        BackendPlugin bp = new ClassLoaderHelper<BackendPlugin>().LoadClass(grader.getClass_path(),
-//            grader.getClass_name(),
-//            BackendPlugin.class);
-//        log.debug("Grader JAR loaded.");
-//        return bp;
     }
-
-//    private void loadGraderConfig(GraderConfig grader) throws Exception {
-//        log.info("Loading grader config file '{}'...", grader.getConfig_path());
-//        graderConfigInitProps = new Properties();
-//        try (InputStream is = new FileInputStream(new File(grader.getConfig_path()))) {
-//            graderConfigInitProps.load(is);
-//        }
-//    }
 
     public long getTotalGradingProcessesExecuted() {
         return totalGradingProcessesExecuted.get();

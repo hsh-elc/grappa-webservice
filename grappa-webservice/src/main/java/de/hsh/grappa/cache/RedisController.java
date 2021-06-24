@@ -99,9 +99,10 @@ public class RedisController {
 
     public synchronized boolean ping() {
         try (var jedis= jedisPool.getResource()) {
+            log.info("PING... ");
             String pong = jedis.ping();
-            log.debug("PING... {}", pong);
-            return pong.equals("PONG");
+            log.info(pong);
+            return pong != null && pong.toUpperCase().equals("PONG");
         } catch (Exception e) {
             log.error(e.getMessage());
             log.error(ExceptionUtils.getStackTrace(e));
@@ -271,8 +272,8 @@ public class RedisController {
                     log.debug("[GradeProcId: '{}']: removeSubmission(): Nothing to remove.", gradeProcId);
                 }
             } else {
-                log.debug("[GradeProcId: '{}']: Cannot procced with removing the submission, no information about the " +
-                    "associated graderId is available.", gradeProcId);
+                log.debug("[GradeProcId: '{}']: Cannot procceed with removing the submission, no information about " +
+                    "the associated graderId is available.", gradeProcId);
             }
             return false;
         }

@@ -67,21 +67,8 @@ public class GraderBackendStarter {
 
             BackendPlugin bp = null;
             try {
-//                String classPathes = bpStarterConfig.getProperty(CONFIG_CLASS_PATHES);
-//                String fileExts = bpStarterConfig.getProperty(CONFIG_FILE_EXTENSIONS);
-//                String className = bpStarterConfig.getProperty(CONFIG_CLASS_NAME);
-//
-//                String[] classpathParts = classPathes.split(";");
-//                String[] extensionParts = fileExts.split(";");
-//
-//                ImprovedClassLoader<BackendPlugin> classLoader = new ImprovedClassLoader<>(classpathParts,
-//                    extensionParts);
-//
-//                log.info("Loading backend plugin class pathes '{}'...", classPathes);
-//                bp = classLoader.instantiateClass(className, BackendPlugin.class);
-
                 BackendPluginLoadingHelper.loadClasspathLibsFromProperties(bpStarterConfig);
-                bp = BackendPluginLoadingHelper.loadGraderPluginFromProperties(bpStarterConfig);
+                bp = BackendPluginLoadingHelper.loadBackendPluginFromPropertiesAndInit(bpStarterConfig);
             } catch (Exception e) {
                 log.error("Failed to load backend plugin.");
                 log.error(ExceptionUtils.getStackTrace(e));
@@ -174,12 +161,4 @@ public class GraderBackendStarter {
         byte[] submBytes = Files.readAllBytes(submToLoadPath);
         return new SubmissionResource(submBytes, mimeType);
     }
-
-//    private static BackendPlugin loadBackendPluginAlt(Properties props) throws Exception {
-//        return BackendPluginLoadingHelper.loadGraderPlugin(props/*, log*/);
-//    }
-
-//    private static BackendPlugin loadBackendPlugin(String jarPath, String fileExt, String classPath) throws Exception {
-//        return new ClassLoaderHelper<BackendPlugin>().LoadClass(jarPath, classPath, BackendPlugin.class);
-//    }
 }
