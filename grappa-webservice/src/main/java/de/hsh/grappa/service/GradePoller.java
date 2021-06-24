@@ -23,6 +23,7 @@ public class GradePoller {
     private static final Logger log = LoggerFactory.getLogger(GradePoller.class);
     private String gradeProcId;
     private Thread t;
+    private GrappaException exOccurredWhenWaiting= null;
     private ResponseResource respBlob = null;
 
     private final long intervalPoll = 2000;
@@ -35,7 +36,12 @@ public class GradePoller {
                 synchronized (GradePoller.this) {
                     while(!Thread.currentThread().isInterrupted()) {
                         log.debug("[GradeProcId: '{}']: polling...", gradeProcId);
-                        respBlob = RedisController.getInstance().getResponse(gradeProcId);
+                        try {
+                            respBlob = RedisController.getInstance().getResponse(gradeProcId);
+                        } catch (GrappaException e1) {
+                            exOccurredWhenWaiting= e1;
+                            break;
+                        }
                         if(null != respBlob)
                             break;
                         try {
@@ -65,6 +71,9 @@ public class GradePoller {
             if(null != respBlob) {
                 log.debug("[GradeProcId: '{}']: Response received. Returning.", gradeProcId);
                 return respBlob;
+            }
+            if (null != exOccurredWhenWaiting) {
+                throw exOccurredWhenWaiting;
             }
         }
 

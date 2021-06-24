@@ -10,11 +10,9 @@ import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.proforma.ProformaResponseGenerator;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.utils.TestConfig;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisURI;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.resource.ClientResources;
-import io.lettuce.core.resource.DefaultClientResources;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -64,18 +62,16 @@ public class Client {
     @Ignore
     @Test
     public void pingRedis() {
-        var redisURI =
-            RedisURI.Builder.redis(config.getCache().getRedis().getHost(),
-                config.getCache().getRedis().getPort())
-                .withPassword(config.getCache().getRedis().getPassword()).build();
-        System.out.print("redis uri " + redisURI.toString());
-        ClientResources sharedRedis = DefaultClientResources.create();
-        RedisClient redisClient = RedisClient.create(sharedRedis, redisURI);
-        try (StatefulRedisConnection<String, String> conn = redisClient.connect()) {
-            assert conn.sync().ping().equals("PONG") : "Could not establish connection to redis";
-            System.out.println(conn.sync().ping());
-        }
-        redisClient.shutdown();
+        var jedis= new Jedis(config.getCache().getRedis().getHost(),
+                config.getCache().getRedis().getPort(), Protocol.DEFAULT_TIMEOUT, false);
+        System.out.print("redis host:port " + config.getCache().getRedis().getHost() + ":" +
+                config.getCache().getRedis().getPort());
+        jedis.auth( config.getCache().getRedis().getPassword() );
+        
+        assert jedis.ping().equals("PONG") : "Could not establish connection to redis";
+        System.out.println(jedis.ping());
+        
+        jedis.close();
     }
 
     @Ignore

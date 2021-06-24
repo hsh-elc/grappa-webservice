@@ -1,15 +1,16 @@
 package de.hsh.grappa.cache;
 
 import de.hsh.grappa.config.CacheConfig;
+import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.proforma.ResponseResource;
 import de.hsh.grappa.proforma.SubmissionResource;
 import de.hsh.grappa.proforma.TaskResource;
-import de.hsh.grappa.utils.StringByteCodec;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisURI;
-import io.lettuce.core.SetArgs;
-import io.netty.util.internal.StringUtil;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.params.SetParams;
+
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -17,6 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -47,9 +50,28 @@ public class RedisController {
     private static final Logger log = LoggerFactory.getLogger(RedisController.class);
 
     private static RedisController instance = new RedisController();
-    private RedisClient redisClient = null;
+    private JedisPool jedisPool= null;
     private CacheConfig cacheConfig;
 
+    private static final Base64.Encoder base64Encoder= Base64.getEncoder();
+    private static final Base64.Decoder base64Decoder= Base64.getDecoder();
+    
+    
+    private JedisPoolConfig buildPoolConfig() {
+        final JedisPoolConfig poolConfig = new JedisPoolConfig();
+        poolConfig.setMaxTotal(16);
+        poolConfig.setMaxIdle(16);
+        poolConfig.setMinIdle(4);
+        poolConfig.setTestOnBorrow(true);
+        poolConfig.setTestOnReturn(true);
+        poolConfig.setTestWhileIdle(true);
+        poolConfig.setMinEvictableIdleTimeMillis(Duration.ofSeconds(60).toMillis());
+        poolConfig.setTimeBetweenEvictionRunsMillis(Duration.ofSeconds(30).toMillis());
+        poolConfig.setNumTestsPerEvictionRun(3);
+        poolConfig.setBlockWhenExhausted(true);
+        return poolConfig;
+    }
+    
     private RedisController() {
     }
 
@@ -59,24 +81,25 @@ public class RedisController {
 
     public synchronized void init(CacheConfig cc) {
         this.cacheConfig = cc;
-        var redisURI =
-            RedisURI.Builder.redis(cacheConfig.getRedis().getHost(),
-                cacheConfig.getRedis().getPort()).
-                withPassword(cacheConfig.getRedis().getPassword()).build();
-        redisURI.setVerifyPeer(false);
-        log.info("Setting up redis connection with URI '{}'...", redisURI.toString());
-        //ClientResources sharedRedis = DefaultClientResources.create();
-        redisClient = RedisClient.create(/*sharedRedis,*/ redisURI);
+        final JedisPoolConfig poolConfig = buildPoolConfig();
+        jedisPool = new JedisPool(poolConfig,
+                cacheConfig.getRedis().getHost(), 
+                cacheConfig.getRedis().getPort(),
+                Protocol.DEFAULT_TIMEOUT,
+                cacheConfig.getRedis().getPassword(),
+                false /* no ssl */);
+        log.info("Setting up redis connection with URI '{}:{}'...", cacheConfig.getRedis().getHost(), 
+                cacheConfig.getRedis().getPort());
     }
 
     public synchronized void shutdown() {
-        if (null != redisClient)
-            redisClient.shutdown();
+        if (null != jedisPool)
+            jedisPool.destroy();
     }
 
     public synchronized boolean ping() {
-        try (var redis = redisClient.connect()) {
-            String pong = redis.sync().ping();
+        try (var jedis= jedisPool.getResource()) {
+            String pong = jedis.ping();
             log.debug("PING... {}", pong);
             return pong.equals("PONG");
         } catch (Exception e) {
@@ -150,8 +173,8 @@ public class RedisController {
     public synchronized long getSubmissionQueueCount(String graderId) {
         // TODO: validate graderId
         // don't spam this: log.debug("[GraderId: '{}']: getSubmissionQueueCount()", graderId);
-        try (var redis = redisClient.connect()) {
-            return redis.sync().llen(SUBMISSION_QUEUE_PREFIX.concat(graderId));
+        try (var jedis = jedisPool.getResource()) {
+            return jedis.llen(SUBMISSION_QUEUE_PREFIX.concat(graderId));
         }
     }
 
@@ -174,12 +197,12 @@ public class RedisController {
         mapGraderProcIdToGraderId(gradeProcId, graderId);
         mapGraderProcIdToTaskUuid(gradeProcId, taskUuid);
         // push the graderProcId onto the queue
-        try (var redis = redisClient.connect()) {
+        try (var jedis= jedisPool.getResource()) {
             long listSize;
             if (prioritize)
-                listSize = redis.sync().lpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
+                listSize = jedis.lpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
             else
-                listSize = redis.sync().rpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
+                listSize = jedis.rpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
             log.debug("[GraderId: '{}', GradeProcId: '{}']: new queue size: {}", graderId, gradeProcId,
                 listSize);
         }
@@ -197,8 +220,8 @@ public class RedisController {
         log.debug("[GradeProcId: '{}']: isSubmissionQueued() called.", gradeProcId);
         validateGraderProcId(gradeProcId);
         String graderId = getAssociatedGraderId(gradeProcId);
-        try (var redis = redisClient.connect()) {
-            List<String> graderQueue = redis.sync().lrange(SUBMISSION_QUEUE_PREFIX.concat(graderId), 0, -1);
+        try (var jedis= jedisPool.getResource()) {
+            List<String> graderQueue = jedis.lrange(SUBMISSION_QUEUE_PREFIX.concat(graderId), 0, -1);
             int index = IntStream.range(0, graderQueue.size())
                 .filter(i -> gradeProcId.equals(graderQueue.get(i)))
                 .findFirst().orElse(-1);
@@ -218,8 +241,8 @@ public class RedisController {
         log.debug("[GradeProcId: '{}']: getSubmissionQueueIndex() called.", gradeProcId);
         validateGraderProcId(gradeProcId);
         String graderId = getAssociatedGraderId(gradeProcId);
-        try (var redis = redisClient.connect()) {
-            List<String> graderQueue = redis.sync().lrange(SUBMISSION_QUEUE_PREFIX.concat(graderId), 0, -1);
+        try (var jedis = jedisPool.getResource()) {
+            List<String> graderQueue = jedis.lrange(SUBMISSION_QUEUE_PREFIX.concat(graderId), 0, -1);
             return IntStream.range(0, graderQueue.size())
                 .filter(i -> gradeProcId.equals(graderQueue.get(i)))
                 .findFirst().orElse(-1);
@@ -236,10 +259,10 @@ public class RedisController {
      */
     public synchronized boolean removeSubmission(String gradeProcId) {
         log.debug("[GradeProcId: '{}']: removeSubmission() called.", gradeProcId);
-        try (var redis = redisClient.connect()) {
-            String graderId = redis.sync().get(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId));
+        try (var jedis = jedisPool.getResource()) {
+            String graderId = jedis.get(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId));
             if (null != graderId) {
-                long remCount = redis.sync().lrem(SUBMISSION_QUEUE_PREFIX.concat(graderId), 1, gradeProcId);
+                long remCount = jedis.lrem(SUBMISSION_QUEUE_PREFIX.concat(graderId), 1, gradeProcId);
                 assert remCount <= 1 : "Removed more than one occurrance of the same gardeProcId in a grader queue";
                 if (1 == remCount) {
                     log.debug("[GradeProcId: '{}']: removeSubmission(): Submission removed from queue.", gradeProcId);
@@ -266,11 +289,11 @@ public class RedisController {
      * @throws NotFoundException if a corresponding submission object for the gradeProcId does not exist (likely due
      * to TTL expiration)
      */
-    public synchronized QueuedSubmission popSubmission(String graderId) throws NotFoundException {
+    public synchronized QueuedSubmission popSubmission(String graderId) throws NotFoundException, GrappaException {
         log.debug("[GraderId: '{}']: popSubmission()", graderId);
         String gradeProcId = null;
-        try (var redis = redisClient.connect()) {
-            gradeProcId = redis.sync().lpop(SUBMISSION_QUEUE_PREFIX.concat(graderId));
+        try (var jedis = jedisPool.getResource()) {
+            gradeProcId = jedis.lpop(SUBMISSION_QUEUE_PREFIX.concat(graderId));
             //log.debug("Popped submission for grader '{}' with gradeProcId '{}'.",
             //        graderId, gradeProcId);
         }
@@ -287,7 +310,13 @@ public class RedisController {
                         gradeProcId));
             }
 
-            return new QueuedSubmission(gradeProcId, SerializationUtils.deserialize(subm));
+            try {
+                return new QueuedSubmission(gradeProcId, SerializationUtils.deserialize(subm));
+            } catch (org.apache.commons.lang3.SerializationException ex) {
+                log.debug("[graderId: '{}']: submission is not deserializable.", graderId);
+                throw new GrappaException(String.format("a submission for graderId '%s' was found in" +
+                        " the cache but the submission could not be restored - internal error.", graderId));
+            }                
         }
         return null; // submission queue is empty
     }
@@ -319,20 +348,27 @@ public class RedisController {
         setTimestamp(respKey, cacheConfig.getResponse_ttl_seconds());
     }
 
-    public synchronized ResponseResource getResponse(String gradeProcId) {
+    public synchronized ResponseResource getResponse(String gradeProcId) throws GrappaException {
         log.debug("[GradeProcId: '{}']: getResponse()", gradeProcId);
-        try (var redis = redisClient.connect(new StringByteCodec())) {
-            byte[] respBytes = redis.sync().get(RESPONSE_KEY_PREFIX.concat(gradeProcId));
+        try (var jedis = jedisPool.getResource()) {
+            String sval= jedis.get(RESPONSE_KEY_PREFIX.concat(gradeProcId));
+            if (null == sval)
+                return null;
+            byte[] respBytes = decodeToBytes(sval);
             if (null == respBytes)
                 return null;
             return SerializationUtils.deserialize(respBytes);
+        } catch (org.apache.commons.lang3.SerializationException ex) {
+            log.debug("[GradeProcId: '{}']: ProformaResponse is not deserializable.", gradeProcId);
+            throw new GrappaException(String.format("gradeProcessId '%s' was found in" +
+                    " the submission queue but the grade process could not be restored - internal error.", gradeProcId));
         }
     }
 
     public synchronized long getSubmissionQueueSize(String graderId) {
         log.debug("[GraderId: '{}']: getSubmissionQueueSize()", graderId);
-        try (var redis = redisClient.connect(new StringByteCodec())) {
-            return redis.sync().llen(SUBMISSION_QUEUE_PREFIX.concat(graderId));
+        try (var jedis = jedisPool.getResource()) {
+            return jedis.llen(SUBMISSION_QUEUE_PREFIX.concat(graderId));
         }
     }
 
@@ -347,21 +383,25 @@ public class RedisController {
         setTimestamp(taskKey, cacheConfig.getTask_ttl_seconds());
     }
 
-    public synchronized TaskResource getCachedTask(String taskUuid) throws NotFoundException {
+    public synchronized TaskResource getCachedTask(String taskUuid) throws NotFoundException, GrappaException {
         log.debug("[TaskUuid: '{}']: getCachedTask()", taskUuid);
-        try (var redis = redisClient.connect(new StringByteCodec())) {
-            byte[] taskBytes = redis.sync().get(TASK_KEY_PREFIX.concat(taskUuid));
+        try (var jedis = jedisPool.getResource()) {
+            byte[] taskBytes = decodeToBytes(jedis.get(TASK_KEY_PREFIX.concat(taskUuid)));
             if (null == taskBytes)
                 throw new NotFoundException(String.format("Task with uuid '%s' is not cached", taskUuid));
             return SerializationUtils.deserialize(taskBytes);
+        } catch (org.apache.commons.lang3.SerializationException ex) {
+            log.debug("[TaskUuid: '{}']: Task is not deserializable.", taskUuid);
+            throw new GrappaException(String.format("TaskUuid '%s' was found in" +
+                    " the cache but the task could not be restored - internal error.", taskUuid));
         }
     }
 
     public synchronized void refreshTaskTimeout(String taskUuid) {
         log.debug("[TaskUuid: '{}']: refreshing timeout for task", taskUuid);
-        try (var redis = redisClient.connect()) {
+        try (var jedis = jedisPool.getResource()) {
             String prefixedKey = TASK_KEY_PREFIX.concat(taskUuid);
-            if (!redis.sync().expire(prefixedKey,
+            if (1L != jedis.expire(prefixedKey,
                 cacheConfig.getTask_ttl_seconds())) {
                 // Setting the timeout may fail if the key already expired.
                 log.error("Setting timeout for key '{}' failed.", prefixedKey);
@@ -411,12 +451,12 @@ public class RedisController {
 
     public synchronized long getTaskAverageGradingDurationSeconds(String taskUuid, long defaultValue) {
         String s = getString(TASK_AVG_GRADING_DURATION_SECONDS_KEY_PREFIX.concat(taskUuid));
-        return !StringUtil.isNullOrEmpty(s) ? Long.parseLong(s) : defaultValue;
+        return s == null || s.isEmpty() ? defaultValue : Long.parseLong(s);
     }
 
     private synchronized boolean keyExists(String key) {
-        try (var redis = redisClient.connect()) {
-            return 1 == redis.sync().exists(key);
+        try (var jedis = jedisPool.getResource()) {
+            return jedis.exists(key);
         }
     }
 
@@ -440,16 +480,17 @@ public class RedisController {
      * @param value
      */
     private synchronized void set(String key, byte[] value) {
-        try (var redis = redisClient.connect(new StringByteCodec())) {
-            redis.sync().set(key, value);
+        String sval= encodeToString(value);
+        try (var jedis = jedisPool.getResource()) {
+            jedis.set(key, sval);
         }
     }
 
     private synchronized void set(String key, byte[] value, long timeoutSeconds) {
-        try (var redis = redisClient.connect(new StringByteCodec())) {
-            SetArgs sa = new SetArgs();
-            sa.ex(timeoutSeconds);
-            redis.sync().set(key, value, sa);
+        String sval= encodeToString(value);
+        try (var jedis = jedisPool.getResource()) {
+            SetParams sp= SetParams.setParams().ex(timeoutSeconds);
+            jedis.set(key, sval, sp);
         }
     }
 
@@ -460,34 +501,34 @@ public class RedisController {
      * @param value
      */
     private synchronized void set(String key, String value) {
-        try (var redis = redisClient.connect()) {
-            redis.sync().set(key, value);
+        try (var jedis = jedisPool.getResource()) {
+            jedis.set(key, value);
         }
     }
 
     private synchronized void set(String key, String value, long timeoutSeconds) {
-        try (var redis = redisClient.connect()) {
-            SetArgs sa = new SetArgs();
-            sa.ex(timeoutSeconds);
-            redis.sync().set(key, value, sa);
+        try (var jedis = jedisPool.getResource()) {
+            SetParams sp= SetParams.setParams().ex(timeoutSeconds);
+            jedis.set(key, value, sp);
         }
     }
 
     private synchronized void delete(String key) {
-        try (var redis = redisClient.connect()) {
-            redis.sync().del(key);
+        try (var jedis = jedisPool.getResource()) {
+            jedis.del(key);
         }
     }
 
     private synchronized byte[] getByteArray(String key) {
-        try (var redis = redisClient.connect(new StringByteCodec())) {
-            return redis.sync().get(key);
+        try (var jedis = jedisPool.getResource()) {
+            String val= jedis.get(key);
+            return decodeToBytes(val);
         }
     }
 
     private synchronized String getString(String key) {
-        try (var redis = redisClient.connect()) {
-            return redis.sync().get(key);
+        try (var jedis = jedisPool.getResource()) {
+            return jedis.get(key);
         }
     }
 
@@ -499,4 +540,20 @@ public class RedisController {
 //            throw new RuntimeException(e);
 //        }
 //    }
+    
+    
+    
+    private static String encodeToString(byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+        return base64Encoder.encodeToString(bytes);
+        //return new String(bytes, StandardCharsets.UTF_8);
+    }
+    
+    private static byte[] decodeToBytes(String str) {
+        if (str == null) return new byte[0];
+        return base64Decoder.decode(str);
+        //return str.getBytes(StandardCharsets.UTF_8);
+    }
 }
