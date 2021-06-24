@@ -1,7 +1,7 @@
 package de.hsh.grappa.utils;
 
+import de.hsh.grappa.ClassPathClassLoader;
 import de.hsh.grappa.plugin.BackendPlugin;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,18 +16,8 @@ public class BackendPluginLoadingHelper {
     private static final String CONFIG_CLASS_NAME = "grappa.plugin.grader.class";
     private static final String CONFIG_GRADER_CONFIG_PATH = "grappa.plugin.grader.config";
     private static final String CONFIG_FILE_EXTENSIONS = "grappa.plugin.grader.fileextensions";
-    private static final String CONFIG_FILE_NAME = "grappa-grader-backend-starter.properties";
-
     private static final Logger log = LoggerFactory.getLogger(BackendPluginLoadingHelper.class);
     private static ClassPathClassLoader<BackendPlugin> classLoader;
-
-//    // Use as singleton since this class makes use of a ClassLoader needs to be reused
-//    // due to
-//    private static BackendPluginLoadingHelper singleton = new BackendPluginLoadingHelper();
-//
-//    public static BackendPluginLoadingHelper getInstance() {
-//        return singleton;
-//    }
 	
 	public static void loadClasspathLibsFromProperties(Properties config) throws Exception{
 		String classpathes = config.getProperty(CONFIG_CLASS_PATHES);
@@ -43,43 +33,34 @@ public class BackendPluginLoadingHelper {
         classLoader = new ClassPathClassLoader(classpathParts, extensionsParts);
     }
 
-    public static BackendPlugin loadGraderPluginFromProperties(Properties config) throws Exception {
+    public static BackendPlugin loadBackendPluginFromPropertiesAndInit(Properties config) throws Exception {
         String className = config.getProperty(CONFIG_CLASS_NAME);
         String graderConfPath = config.getProperty(CONFIG_GRADER_CONFIG_PATH);
-        return loadGraderPlugin(className, graderConfPath);
+        BackendPlugin bp = loadBackendPlugin(className);
+        Properties bpConfig = loadBackendPluginConfig(graderConfPath);
+        bp.init(bpConfig);
+        return bp;
     }
 
-    public static BackendPlugin loadGraderPlugin(String className, String backendPluginConfigPath) throws Exception {
+    public static Properties loadBackendPluginConfig(String backendPluginConfigPath) throws Exception {
         Properties pluginConfig = new Properties();
-
         if (backendPluginConfigPath != null && !backendPluginConfigPath.isEmpty()) {
             try (InputStream is = new FileInputStream(new File(backendPluginConfigPath))) {
                 pluginConfig.load(is);
             } catch (IOException e) {
                 log.error("Error while loading grader config file: {}", backendPluginConfigPath);
-                log.error(e.getMessage());
-                log.error(ExceptionUtils.getStackTrace(e));
                 throw e;
             }
         } else {
             log.warn("BackendPlugin config file is not configured.");
         }
+        return pluginConfig;
+    }
 
-        BackendPlugin graderPlugin = (BackendPlugin) classLoader.instantiateClass(className, BackendPlugin.class);
-
-        try {
-            // It does not matter if the BackendPlugin's config file doesn't exist, or even if it's empty.
-            // BackendPlugin.init() still needs to be called.
-            graderPlugin.init(pluginConfig);
-        } catch (Exception e) {
-            log.error("Error while initializing the grader plugin with config file: {}", backendPluginConfigPath);
-            log.error(e.getMessage());
-            log.error(ExceptionUtils.getStackTrace(e));
-            throw e;
-        }
-
+    public static BackendPlugin loadBackendPlugin(String className) throws Exception {
+        BackendPlugin bp = (BackendPlugin) classLoader.instantiateClass(className, BackendPlugin.class);
         log.info("Grader plugin loaded successfully.");
-        return graderPlugin;
+        return bp;
     }
 
 //    public static BackendPlugin loadGraderPlugin(Properties config) throws Exception {
