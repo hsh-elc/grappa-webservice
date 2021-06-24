@@ -188,8 +188,18 @@ graders:
     # in the result when a client polls for available grader types.
     enabled: true # values: true|false
 
-    # The class path and name to the Backend Plugin of a grader
+    # The class pathes of a backend plugin. It may contain multiple
+    # pathes, separated by a semicolon. class_path may also contain 
+    # pathes to directories.
     class_path: "/opt/Grappa/plugins/grappa-backend-plugin-docker-proxy-0.1.jar"
+
+    # In case the class_path property contains a directory, only files with
+    # the file extension set in file_extension will be loaded to the class path.
+    # Direcotories may also contain sub directories, which will be traversed
+    # recursively.
+    # file_extension may contain multiple file extensions, separated by a semicolon.
+    file_extension: ".jar"
+
     class_name: "de.hsh.grappa.DockerProxyBackendPlugin"
 
     # The path to the configuration file used to initialize a grader
