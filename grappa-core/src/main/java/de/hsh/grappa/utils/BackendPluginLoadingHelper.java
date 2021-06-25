@@ -1,6 +1,5 @@
 package de.hsh.grappa.utils;
 
-import de.hsh.grappa.ClassPathClassLoader;
 import de.hsh.grappa.plugin.BackendPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
