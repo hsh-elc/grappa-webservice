@@ -1,8 +1,11 @@
 package de.hsh.grappa.utils;
 
 import de.hsh.grappa.proforma.MimeType;
+import de.hsh.grappa.proforma.ResponseResource;
 import de.hsh.grappa.proforma.SubmissionResource;
+import proforma.ProformaResponseZipPathes;
 import proforma.ProformaSubmissionZipPathes;
+import proforma.xml.ResponseType;
 import proforma.xml.SubmissionType;
 
 import java.nio.charset.StandardCharsets;
@@ -22,5 +25,15 @@ public class ProformaConverter {
             submXmlFileBytes = submXmlFileContent.getBytes(StandardCharsets.UTF_8);
         }
         return XmlUtils.unmarshalToObject(submXmlFileBytes, SubmissionType.class);
+    }
+    
+    public static ResponseType convertToPojo(ResponseResource responseResource) throws Exception {
+        byte[] xmlFileBytes = responseResource.getContent();
+        if (responseResource.getMimeType().equals(MimeType.ZIP)) {
+            String xmlFileContent = de.hsh.grappa.utils.Zip.getTextFileContentFromZip(responseResource.getContent(),
+                ProformaResponseZipPathes.RESPONSE_XML_FILE_NAME, StandardCharsets.UTF_8);
+            xmlFileBytes = xmlFileContent.getBytes(StandardCharsets.UTF_8);
+        }
+        return XmlUtils.unmarshalToObject(xmlFileBytes, ResponseType.class);
     }
 }

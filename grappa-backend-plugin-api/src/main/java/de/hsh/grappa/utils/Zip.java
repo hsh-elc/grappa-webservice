@@ -2,14 +2,80 @@ package de.hsh.grappa.utils;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
-
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.zip.ZipEntry;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class Zip {
+    
+    /**
+     * An in-memory representation of a zip file's entry.
+     */
+    public static class ZipContentElement {
+        private String path;
+        private byte[] bytes;
+        private long time;
+        public ZipContentElement(String path, byte[] bytes, long time) {
+            super();
+            this.path = path;
+            this.bytes = bytes;
+            this.time = time;
+        }
+        /**
+         * @return the path, where directories end with a trailing '/'
+         */
+        public String getPath() {
+            return path;
+        }
+        /**
+         * @return the content as a byte array
+         */
+        public byte[] getBytes() {
+            return bytes;
+        }
+        /**
+         * @return the size in bytes
+         */
+        public long getSize() {
+            return bytes.length;
+        }
+        /**
+         * @return The last modification time of the entry in milliseconds since the epoch 
+         */
+        public long getTime() {
+            return time;
+        }
+        /**
+         * @return true, if the path ends with '/'
+         */
+        public boolean isDirectory() {
+            return path.endsWith("/");
+        }
+        /**
+         * @param path the path, where directories end with a trailing '/'
+         */
+        public void setPath(String path) {
+            this.path = path;
+        }
+        /**
+         * @param bytes the content as a byte array
+         */
+        public void setBytes(byte[] bytes) {
+            this.bytes = bytes;
+        }
+        /**
+         * @param time The last modification time of the entry in milliseconds since the epoch 
+         */
+        public void setTime(long time) {
+            this.time = time;
+        }
+    }
+    
+    
     public static String getTextFileContentFromZip(byte[] zipBytes, String fileName, Charset charset) throws Exception {
         try (ByteArrayInputStream baos = new ByteArrayInputStream(zipBytes)) {
             return getTextFileContentFromZip(baos, fileName, charset);
@@ -34,14 +100,8 @@ public class Zip {
 
         try (ZipArchiveInputStream zip = new ZipArchiveInputStream(new BufferedInputStream(zipStream))) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ZipEntry ze;
-
             ZipArchiveEntry entry = null;
             while (null != (entry = zip.getNextZipEntry())) {
-                if (entry == null) {
-                    break;
-                }
-
                 Path zePath = Paths.get(entry.getName());
                 //System.out.println("Checking file/derectory in ZIP: " + zePath);
                 if (zePath.equals(filePath)) {
@@ -62,6 +122,61 @@ public class Zip {
         } catch (Throwable e) {
             System.err.println(e);
             throw e;
+        }
+    }
+    
+    /**
+     * Read a zip file from a stream and return a map of all contents in memory.
+     * All paths will be normalized to the '/' dir separator.
+     * @param zipStream source
+     * @return the content of the zip stream as a map pointing paths to elements
+     * @throws IOException
+     */
+    public static Map<String,ZipContentElement> readZipFileToMap(InputStream zipStream) throws IOException {
+        Map<String,ZipContentElement> result= new TreeMap<>();
+        try (ZipArchiveInputStream zip = new ZipArchiveInputStream(new BufferedInputStream(zipStream))) {
+            ZipArchiveEntry entry = null;
+            byte[] buffer = new byte[10000000]; // 10Mb file
+            while (null != (entry = zip.getNextZipEntry())) {
+                if (!entry.isDirectory()) {
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    int len;
+                    while (-1 != (len = zip.read(buffer))) {
+                        out.write(buffer, 0, len);
+                    }
+                    out.close();
+                    String p= entry.getName();
+                    p= p.replace('\\', '/');
+                    long time= entry.getTime();
+                    ZipContentElement elem= new ZipContentElement(p, out.toByteArray(), time);
+                    result.put(p, elem);
+                }
+            }
+            return result;
+        }
+    }
+    
+    /**
+     * Write in memory elements to a zip file output stream.
+     * @param content The in memory elements to be written
+     * @param os the target stream
+     * @throws IOException
+     */
+    public static void writeMapToZipFile(Map<String,ZipContentElement> content, OutputStream os) throws IOException {
+        try (ZipArchiveOutputStream zip= new ZipArchiveOutputStream(new BufferedOutputStream(os))) {
+            for (String path : content.keySet()) {
+                ZipContentElement elem= content.get(path);
+                ZipArchiveEntry entry = new ZipArchiveEntry(path);
+                entry.setSize(elem.getSize());
+                entry.setTime(elem.getTime());
+                
+                zip.putArchiveEntry(entry);
+                if (!elem.isDirectory()) {
+                    zip.write(elem.bytes);
+                }
+                zip.closeArchiveEntry();
+            }
+            zip.finish();
         }
     }
 

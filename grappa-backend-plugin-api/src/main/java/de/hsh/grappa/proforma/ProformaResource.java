@@ -7,6 +7,7 @@ import java.io.Serializable;
  * Task, Submission, and Response.
  */
 public abstract class ProformaResource implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final byte[] content;
     private final MimeType mimeType;
 
@@ -19,6 +20,10 @@ public abstract class ProformaResource implements Serializable {
         if(null == mimeType)
             throw new IllegalArgumentException("mimeType parameter must not be null.");
         this.mimeType = mimeType;
+    }
+    
+    protected ProformaResource(byte[] content) {
+          this(content, guessMimeType(content));
     }
 
     public byte[] getContent() {
@@ -41,5 +46,13 @@ public abstract class ProformaResource implements Serializable {
     public String toString() {
         return String.format("%s{content=byte[%d], mimeType=%s}",
             getClass().getSimpleName(), content.length, mimeType);
+    }
+    
+    private static boolean isZip(byte[] bytes) {
+        return bytes.length > 1 && bytes[0] == (byte)'P' && bytes[1] == (byte)'K';        
+    }
+    
+    private static MimeType guessMimeType(byte[] bytes) {
+        return isZip(bytes) ? MimeType.ZIP : MimeType.XML;
     }
 }

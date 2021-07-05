@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 
 public class XmlUtils {
-    public static String marshalToXml(Object source, Class... type) {
+    public static String marshalToXml(Object source, Class<?>... type) {
         String result;
         StringWriter sw = new StringWriter();
         try {
