@@ -46,7 +46,7 @@ public class AllGraderResources {
             var gc = GrappaServlet.CONFIG.getGraders().stream()
                 .filter(g -> g.getId().equals(graderId)).findFirst().get();
             JsonObject g = new JsonObject();
-            g.addProperty(gc.getId(), gc.getId());
+            g.addProperty(gc.getId(), gc.getName());
             ids.add(g);
         }
         JsonObject gradersJson = new JsonObject();
