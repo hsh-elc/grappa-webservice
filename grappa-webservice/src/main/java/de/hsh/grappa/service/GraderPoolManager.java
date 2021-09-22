@@ -85,7 +85,7 @@ public class GraderPoolManager implements Runnable {
             }
 
             for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
-                // Iterate through all grade workers, check if any of them
+                // Iterate through all graders (grader pools), check if any of them
                 // have queued submissions
                 while (0 < RedisController.getInstance().getSubmissionQueueCount(e.getKey())
                     && !Thread.currentThread().isInterrupted()) {
@@ -99,7 +99,6 @@ public class GraderPoolManager implements Runnable {
                 }
             }
         }
-
     }
 
     /**

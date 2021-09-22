@@ -80,13 +80,14 @@ public class GraderPool {
      *
      * @return True, if a grade process has started. False, if all workers are busy
      */
-    public boolean tryGrade(/*boolean async*/) {
+    public boolean tryGrade() {
         // We need to acquire the semaphore this soon already, since we
         // pop a submission from the queue in the next step and commit
         // ourselves to grading it. Otherwise, we'd have to put the submission
-        // back into the queue if no available grader instances are available.
+        // back into the queue if no available grader instances are available,
+        // and that would make the whole concurrency code a whole lot more complicated.
         if (semaphore.tryAcquire()) {
-            log.debug("Grader '{}': semaphore aquired, {} left", graderConfig.getId(), semaphore.availablePermits());
+            log.debug("[Grader: '{}']: semaphore aquired, {} left", graderConfig.getId(), semaphore.availablePermits());
             boolean releaseSemaphore = true; // release in current thread if we can't start a grading process
             try {
                 QueuedSubmission queuedSubm = RedisController.getInstance().popSubmission(graderConfig.getId());
@@ -99,7 +100,8 @@ public class GraderPool {
                     }, getJaxbExecutor()).thenAccept(resp -> {
                         cacheProformaResponseResult(resp, queuedSubm.getGradeProcId());
                     }).thenRun(() -> {
-                        // Grading slot has become free, try grading if there's anything queued.
+                        // We are done. This grader instance has become free, so check if there's anything
+                        // queued without prompting.
                         tryGrade(); // reuse future's async thread
                     });
                 } else
@@ -109,7 +111,7 @@ public class GraderPool {
             } finally {
                 if (releaseSemaphore) {
                     semaphore.release();
-                    log.debug("Grader '{}': Nothing to do here. Semaphore released, {} left", graderConfig.getId(),
+                    log.debug("[GraderID: '{}']: Nothing to do here. Semaphore released, {} left", graderConfig.getId(),
                         semaphore.availablePermits());
                 }
             }
@@ -141,8 +143,8 @@ public class GraderPool {
     }
 
     public ResponseResource runGradingProcess(QueuedSubmission subm) {
-        LocalDateTime beginTime = LocalDateTime.now();
         try {
+            LocalDateTime beginTime = LocalDateTime.now();
             Properties props = getGraderConfigWithContextIds(graderConfig.getId(), subm.getGradeProcId());
             // Create a fresh backend plugin instance for every grading request
             BackendPlugin bp = BackendPluginLoadingHelper.loadBackendPlugin(graderConfig.getClass_name());
@@ -152,7 +154,6 @@ public class GraderPool {
             FutureTask<ResponseResource> futureTask = null;
             int timeoutSeconds = graderConfig.getTimeout_seconds();
             try {
-                log.debug("GRADE START: {}", subm.getGradeProcId());
                 futureTask = new FutureTask<ResponseResource>(() -> {
                     return bp.grade(subm.getSubmission());
                 });
@@ -165,6 +166,10 @@ public class GraderPool {
                     totalGradingProcessesSucceeded.incrementAndGet();
                     log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process finished successfully.",
                         graderConfig.getId(), subm.getGradeProcId());
+                    // set the average grading duration only for grading processes that actually produced
+                    // a valid proforma response. Anything else (such as errors) will skew the average duration.
+                    setAverageGradingDuration(Duration.between(beginTime, LocalDateTime.now()),
+                        subm.getGradeProcId());
                     return resp;
                 }
                 throw new NoResultGraderExecption("Grader did not supply a proforma response.");
@@ -200,35 +205,34 @@ public class GraderPool {
                 futureTask.cancel(true);
                 // Treat this as cancellation, a direct result of the interrupt
                 totalGradingProcessesCancelled.incrementAndGet();
-                log.debug("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after  parent " +
-                        "thread interruption.",
-                    graderConfig.getId(), subm.getGradeProcId(), timeoutSeconds);
-                // TODO: return errorResponse with is-inernal-error?
-            } catch (Exception e) { // anything else unpredictable
+                log.debug("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after parent " +
+                        "thread interruption.", graderConfig.getId(), subm.getGradeProcId());
+                return ProformaResponseGenerator.createInternalErrorResponse("Grading process was interrupted.");
+            } catch (Throwable e) { // catch any other error
                 totalGradingProcessesFailed.incrementAndGet();
-                log.error("[GraderId: '{}', GradeProcessId: '{}']: Grading process failed with error: {}",
-                    graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
+                String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process " +
+                    "failed with error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
+                log.error(errorMessage);
                 log.error(ExceptionUtils.getStackTrace(e));
-                // TODO: return errorResp with is-internal-error=true and errorMsg=e.getMessage()
-                return null;
-            } finally {
-                totalGradingProcessesExecuted.incrementAndGet(); // finished one way or the other
-                log.debug("GRADE ENDE: {}", subm.getGradeProcId());
-                semaphore.release();
-                gpMap.remove(subm.getGradeProcId());
-                log.debug("Grader '{}': semaphore released, {} left", graderConfig.getId(),
-                    semaphore.availablePermits());
-                setGradingDuration(Duration.between(beginTime, LocalDateTime.now()),
-                    subm.getGradeProcId());
+                return ProformaResponseGenerator.createInternalErrorResponse(errorMessage);
             }
-        } catch (Exception e) {
-            log.error("Code handling grading process exceptions failed with: {}", e.getMessage());
+        } catch (Throwable e) {
+            String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process encountered " +
+                    "error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
+            log.error(errorMessage);
             log.error(ExceptionUtils.getStackTrace(e));
+            return ProformaResponseGenerator.createInternalErrorResponse(errorMessage);
+        } finally {
+            totalGradingProcessesExecuted.incrementAndGet(); // finished one way or the other
+            semaphore.release();
+            gpMap.remove(subm.getGradeProcId());
+            log.debug("[GraderId: '{}', GradeProcessId: '{}']: semaphore released, {} left", graderConfig.getId(),
+                subm.getGradeProcId(), semaphore.availablePermits());
         }
         return null;
     }
 
-    private void setGradingDuration(Duration d, String gradeProcId) {
+    private void setAverageGradingDuration(Duration d, String gradeProcId) {
         try {
             String taskUuid = RedisController.getInstance().getAssociatedTaskUuid(gradeProcId);
             if(null == taskUuid)
@@ -249,7 +253,8 @@ public class GraderPool {
                 avgDuration = queue.stream().reduce((a, b) -> a.plus(b)).get().toSeconds() / queue.size();
             }
 
-            log.debug("Average grading duration: {} seconds", avgDuration);
+            log.debug("[GraderId: '{}', GradeProcessId: '{}', Task-UUID: '{}']: Average grading duration: {} seconds",
+                graderConfig.getId(), gradeProcId, taskUuid, avgDuration);
             RedisController.getInstance().setTaskAverageGradingDurationSeconds(taskUuid, avgDuration);
         } catch (Exception e) {
             log.error("Failed to set grading duration.");
@@ -260,11 +265,12 @@ public class GraderPool {
 
     private void cacheProformaResponseResult(ResponseResource resp, String gradeProcId) {
         if (null != resp) {
-            log.debug("[Grader '{}']: Caching response: {}", graderConfig.getId(), resp);
+            log.debug("[GraderId: '{}', GradeProcessId: '{}']: Caching response: {}", graderConfig.getId(),
+                gradeProcId, resp);
             RedisController.getInstance().setResponse(gradeProcId, resp);
         } else {
-            log.debug("[Grader '{}']: Grading process did not supply a response result. " +
-                "Nothing to cache.", graderConfig.getId());
+            log.debug("[GraderId: '{}', GradeProcessId: '{}']: Grading process did not supply a response result. " +
+                "Nothing to cache.", graderConfig.getId(), gradeProcId);
         }
     }
 
