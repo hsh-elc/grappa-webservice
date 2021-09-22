@@ -43,9 +43,9 @@ public class GraderResource {
 
     public static JsonObject getGraderStatus(String graderId) throws NotFoundException {
         var gcOpt = GrappaServlet.CONFIG.getGraders().stream()
-            .filter(g -> g.getId().equals(graderId)).findFirst();
+            .filter(g -> g.getEnabled() && g.getId().equals(graderId)).findFirst();
         if(!gcOpt.isPresent())
-            throw new NotFoundException(String.format("GraderId does not exist."));
+            throw new NotFoundException(String.format("GraderId '%s' does not exist or is disabled.", graderId));
         var gc = gcOpt.get();
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();

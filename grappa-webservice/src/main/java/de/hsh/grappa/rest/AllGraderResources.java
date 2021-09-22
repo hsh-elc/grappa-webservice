@@ -58,12 +58,14 @@ public class AllGraderResources {
     public static JsonArray getGraderStatusArray() {
         JsonArray graderStatusArray = new JsonArray();
         for (GraderConfig g : GrappaServlet.CONFIG.getGraders()) {
-            try {
-                var status = GraderResource.getGraderStatus(g.getId());
-                graderStatusArray.add(status);
-            } catch (Exception e) {
-                log.error(e.getMessage());
-                log.error(ExceptionUtils.getStackTrace(e));
+            if(g.getEnabled()) {
+                try {
+                    var status = GraderResource.getGraderStatus(g.getId());
+                    graderStatusArray.add(status);
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    log.error(ExceptionUtils.getStackTrace(e));
+                }
             }
         }
         return graderStatusArray;
