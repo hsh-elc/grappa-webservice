@@ -77,13 +77,6 @@ public class GraderPoolManager implements Runnable {
     @Override
     public synchronized void run() {
         while (!Thread.currentThread().isInterrupted()) {
-            try {
-                this.wait();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-
             for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
                 // Iterate through all graders (grader pools), check if any of them
                 // have queued submissions
@@ -97,6 +90,13 @@ public class GraderPoolManager implements Runnable {
                         }
                     }
                 }
+            }
+
+            try {
+                this.wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             }
         }
     }
