@@ -66,7 +66,7 @@ public class GraderPool {
                 "for graderId '%s'.", graderConfig.getConcurrent_grading_processes()));
 
         loadBackendPlugin(graderConfig);
-        log.debug("Using grader '{}' with {} concurrent instances.",
+        log.info("Using grader '{}' with {} concurrent instances.",
             graderConfig.getId(), graderConfig.getConcurrent_grading_processes());
         this.semaphore = new Semaphore(graderConfig.getConcurrent_grading_processes());
         this.graderWorkersMgr = graderManager;

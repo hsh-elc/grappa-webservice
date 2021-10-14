@@ -177,17 +177,6 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
             }
 
             try {
-                log.debug("[GraderId: '{}', GradeProcId: '{}']: Stopping container '{}'...",
-                    graderId, gradeProcId, containerId);
-                DockerController.stopContainer(dockerClient, containerId);
-                log.debug("[GraderId: '{}', GradeProcId: '{}']: Container stopped: '{}'",
-                    graderId, gradeProcId, containerId);
-            } catch (Exception e) {
-                log.warn("[GraderId: '{}', GradeProcId: '{}']: Failed to stop container (it may already " +
-                    "have stopped): '{}'", graderId, gradeProcId, containerId);
-            }
-
-            try {
                 log.debug("[GraderId: '{}', GradeProcId: '{}']: Removing container '{}'...",
                     graderId, gradeProcId, containerId);
                 DockerController.removeContainer(dockerClient, containerId);
@@ -227,11 +216,13 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
     private long waitForContainerToFinishGrading(DockerClient dockerClient, String containerId)
         throws InterruptedException {
         InspectContainerResponse.ContainerState state = dockerClient.inspectContainerCmd(containerId).exec().getState();
-        for (int i = 3; !Thread.currentThread().isInterrupted()
-            && state.getStatus().toUpperCase().equals("RUNNING"); ++i) {
-            if (i % 4 == 0) // Don't spam the log with waiting messages
+        for (int i = 1; !Thread.currentThread().isInterrupted()
+            && (state.getRunning() || state.getPaused()) ; ++i) {
+            if (i % 20 == 0) {
+                // Don't spam the log with waiting messages
                 log.debug("[GraderId: '{}', GradeProcId: '{}']: Waiting for the grading process to finish...",
                     graderId, gradeProcId);
+            }
             Thread.sleep(1000);
             state = dockerClient.inspectContainerCmd(containerId).exec().getState();
         }
