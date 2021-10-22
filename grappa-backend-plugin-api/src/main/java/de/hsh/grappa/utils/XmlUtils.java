@@ -43,7 +43,7 @@ public class XmlUtils {
      * @throws JAXBException
      * @throws IOException
      */
-	public String marshalToXmlUsingCDATA(Object source,Class<?>...type) throws JAXBException, IOException{
+	public static String marshalToXmlUsingCDATA(Object source,Class<?>...type) throws JAXBException, IOException{
 		String xmlStringWithCDATA=null;
 		StringWriter sw=new StringWriter();
 		
