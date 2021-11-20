@@ -147,7 +147,7 @@ public class GraderPool {
             LocalDateTime beginTime = LocalDateTime.now();
             Properties props = getGraderConfigWithContextIds(graderConfig.getId(), subm.getGradeProcId());
             // Create a fresh backend plugin instance for every grading request
-            BackendPlugin bp = BackendPluginLoadingHelper.loadBackendPlugin(graderConfig.getClass_name());
+            BackendPlugin bp = BackendPluginLoadingHelper.loadBackendPlugin(graderConfig.getId(), graderConfig.getClass_name());
             log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing BackendPlugin...",
                 graderConfig.getId(), subm.getGradeProcId());
             bp.init(props);
@@ -316,7 +316,7 @@ public class GraderPool {
 
     private void loadBackendPlugin(GraderConfig grader) throws Exception {
         log.info("Loading grader plugin '{}' with classpathes '{}'...", grader.getId(), grader.getClass_path());
-        BackendPluginLoadingHelper.loadClasspathLibs(grader.getClass_path(), grader.getFile_extension());
+        BackendPluginLoadingHelper.loadClasspathLibs(grader.getId(), grader.getClass_path(), grader.getFile_extension());
         log.info("Loading grader config file '{}'...", grader.getConfig_path());
         graderConfigInitProps = new Properties();
         try (InputStream is = new FileInputStream(new File(grader.getConfig_path()))) {

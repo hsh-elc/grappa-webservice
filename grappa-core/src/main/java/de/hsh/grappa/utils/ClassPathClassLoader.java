@@ -78,6 +78,7 @@ public class ClassPathClassLoader<C> extends URLClassLoader {
     }
 
     public C instantiateClass(String className, Class<C> parentClass) throws Exception {
+        logger.trace("instantiateClass ({})", className);
         Class<?> clazz = Class.forName(className, true, this);
         Class<? extends C> newClass = clazz.asSubclass(parentClass);
         Constructor<? extends C> constructor = newClass.getConstructor();
@@ -87,6 +88,13 @@ public class ClassPathClassLoader<C> extends URLClassLoader {
     private void addToClasspath(File file) throws Exception {
         URL url = file.toURI().toURL();
         this.addURL(url);
+    }
+    
+    @Override protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        logger.trace("loadClass ({}, {})", name, resolve);
+        Class<?> clazz = super.loadClass(name, resolve);
+        logger.trace("loaded class {} from {}", clazz.getName(), clazz.getProtectionDomain().getCodeSource());
+        return clazz;
     }
 
 }

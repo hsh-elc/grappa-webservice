@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class BackendPluginLoadingHelper {
@@ -16,26 +18,43 @@ public class BackendPluginLoadingHelper {
     private static final String CONFIG_GRADER_CONFIG_PATH = "grappa.plugin.grader.config";
     private static final String CONFIG_FILE_EXTENSIONS = "grappa.plugin.grader.fileextensions";
     private static final Logger log = LoggerFactory.getLogger(BackendPluginLoadingHelper.class);
-    private static ClassPathClassLoader<BackendPlugin> classLoader;
-	
-	public static void loadClasspathLibsFromProperties(Properties config) throws Exception{
-		String classpathes = config.getProperty(CONFIG_CLASS_PATHES);
+    private static Map<String, ClassPathClassLoader<BackendPlugin>> classLoader= new HashMap<>();
+    private static final String DEFAULT_GRADER_KEY = "defaultGraderKey";
+    
+    /**
+     * This method is only meant to be called from the BackendPluginStarter, where there are no
+     * potentially conflicting classes from different graders.
+     * @param config
+     * @throws Exception
+     */
+    public static void loadClasspathLibsFromProperties(Properties config) throws Exception{
+        String classpathes = config.getProperty(CONFIG_CLASS_PATHES);
         String extensions = config.getProperty(CONFIG_FILE_EXTENSIONS);
-        loadClasspathLibs(classpathes, extensions);
-	}
-
-	public static void loadClasspathLibs(String classpath, String fileExtensions) throws Exception {
-        log.debug("Current classpathes: {}", classpath);
-	    String[] classpathParts = classpath.split(";");
-        log.debug("Current extensions: {}", fileExtensions);
-        String[] extensionsParts = fileExtensions.split(";");
-        classLoader = new ClassPathClassLoader(classpathParts, extensionsParts);
+        loadClasspathLibs(DEFAULT_GRADER_KEY, classpathes, extensions);
     }
 
+    public static void loadClasspathLibs(String graderKey, String classpath, String fileExtensions) throws Exception {
+        log.debug("Current classpathes: {}", classpath);
+        String[] classpathParts = classpath.split(";");
+        log.debug("Current extensions: {}", fileExtensions);
+        String[] extensionsParts = fileExtensions.split(";");
+        synchronized (classLoader) {
+            ClassPathClassLoader<BackendPlugin> cl= new ClassPathClassLoader<>(classpathParts, extensionsParts);
+            classLoader.put(graderKey, cl);
+        }
+    }
+
+    /**
+     * This method is only meant to be called from the BackendPluginStarter, where there are no
+     * potentially conflicting classes from different graders.
+     * @param config
+     * @return
+     * @throws Exception
+     */
     public static BackendPlugin loadBackendPluginFromPropertiesAndInit(Properties config) throws Exception {
         String className = config.getProperty(CONFIG_CLASS_NAME);
         String graderConfPath = config.getProperty(CONFIG_GRADER_CONFIG_PATH);
-        BackendPlugin bp = loadBackendPlugin(className);
+        BackendPlugin bp = loadBackendPlugin(DEFAULT_GRADER_KEY, className);
         Properties bpConfig = loadBackendPluginConfig(graderConfPath);
         bp.init(bpConfig);
         return bp;
@@ -56,14 +75,19 @@ public class BackendPluginLoadingHelper {
         return pluginConfig;
     }
 
-    public static BackendPlugin loadBackendPlugin(String className) throws Exception {
-        BackendPlugin bp = (BackendPlugin) classLoader.instantiateClass(className, BackendPlugin.class);
+    public static BackendPlugin loadBackendPlugin(String graderKey, String className) throws Exception {
+        ClassPathClassLoader<BackendPlugin> cl= classLoader.get(graderKey);
+        if (cl == null) {
+            log.error("Class loader of backend plugin '{}' not found", graderKey);
+            throw new Exception("Class loader of backend plugin '" + graderKey + "' not found");
+        }
+        BackendPlugin bp = (BackendPlugin) cl.instantiateClass(className, BackendPlugin.class);
         log.info("Grader plugin loaded successfully.");
         return bp;
     }
 
 //    public static BackendPlugin loadGraderPlugin(Properties config) throws Exception {
-//    	BackendPlugin graderPlugin = null;
+//        BackendPlugin graderPlugin = null;
 //
 //        Properties backendConf = new Properties();
 //        String graderConfPath = config.getProperty(CONFIG_GRADER_CONFIG_PATH);
