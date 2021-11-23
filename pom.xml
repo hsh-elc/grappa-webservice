@@ -16,6 +16,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <de.hsh.grappa.grappa-backend-plugin-api.version>0.1</de.hsh.grappa.grappa-backend-plugin-api.version>
+        <de.hsh.grappa.grappa-core.version>1.0.1</de.hsh.grappa.grappa-core.version>
+        <de.hsh.grappa.grappa-webservice.version>2.0.1</de.hsh.grappa.grappa-webservice.version>
+        <proforma.proformaxml.version>2.1.0</proforma.proformaxml.version>
     </properties>
 
     <modules>
@@ -28,6 +32,71 @@
         <module>grappa-dummygrader</module>
         <module>proformaxml</module>
     </modules>
+    
+    <dependencyManagement>
+        <dependencies>
+	        <dependency>
+	            <groupId>de.hsh.grappa</groupId>
+	            <artifactId>grappa-backend-plugin-api</artifactId>
+	            <version>${de.hsh.grappa.grappa-backend-plugin-api.version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>de.hsh.grappa</groupId>
+	            <artifactId>grappa-core</artifactId>
+	            <version>${de.hsh.grappa.grappa-core.version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>de.hsh.grappa</groupId>
+	            <artifactId>grappa-webservice</artifactId>
+	            <version>${de.hsh.grappa.grappa-webservice.version}</version>
+	        </dependency>
+		    <dependency>
+		      <groupId>proforma</groupId>
+		      <artifactId>proformaxml</artifactId>
+		      <version>${proforma.proformaxml.version}</version>
+		    </dependency>
+	        <dependency>
+	            <groupId>commons-io</groupId>
+	            <artifactId>commons-io</artifactId>
+	            <version>2.6</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>ch.qos.logback</groupId>
+	            <artifactId>logback-classic</artifactId>
+	            <version>1.2.3</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.github.docker-java</groupId>
+	            <artifactId>docker-java</artifactId>
+	            <version>3.2.8</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>org.apache.commons</groupId>
+	            <artifactId>commons-lang3</artifactId>
+	            <version>3.9</version>
+	        </dependency>
+		    <dependency>
+		      <groupId>org.apache.commons</groupId>
+		      <artifactId>commons-compress</artifactId>
+		      <version>1.20</version>
+		    </dependency>
+		    <dependency>
+		      <groupId>javax.xml.bind</groupId>
+		      <artifactId>jaxb-api</artifactId>
+		      <version>2.3.1</version>
+		    </dependency>
+		    <dependency>
+		      <groupId>org.glassfish.jaxb</groupId>
+		      <artifactId>jaxb-runtime</artifactId>
+		      <version>2.3.1</version>
+		    </dependency>
+		    <dependency>
+		      <groupId>junit</groupId>
+		      <artifactId>junit</artifactId>
+		      <version>4.11</version>
+		    </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 <!--    <dependencies>-->
 <!--        <dependency>-->
@@ -77,6 +146,25 @@
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>3.0.0</version>
                 </plugin>
+	            <plugin>
+	                <groupId>org.apache.maven.plugins</groupId>
+	                <artifactId>maven-assembly-plugin</artifactId>
+	                <version>3.3.0</version>
+	                <configuration>
+	                    <descriptorRefs>
+	                        <descriptorRef>jar-with-dependencies</descriptorRef>
+	                    </descriptorRefs>
+	                </configuration>
+	                <executions>
+	                    <execution>
+	                        <id>make-assembly</id>
+	                        <phase>package</phase>
+	                        <goals>
+	                            <goal>single</goal>
+	                        </goals>
+	                    </execution>
+	                </executions>
+	            </plugin>
             </plugins>
         </pluginManagement>
     </build>
