@@ -24,7 +24,7 @@ public class GrappaServlet implements ServletContextListener {
     private static final Logger log = LoggerFactory.getLogger(GrappaServlet.class);
     public static final String CONFIG_FILENAME_PATH = "/etc/grappa/grappa-config.yaml";
 
-    private Thread t;
+    private Thread graderPoolManagerThread;
 
     private static String grappaInstanceName = "grappa-webservice";
 
@@ -49,8 +49,8 @@ public class GrappaServlet implements ServletContextListener {
             setupRedisConnection();
             //loadGradingEnvironmentSetups();
             GraderPoolManager.getInstance().init(CONFIG.getGraders());
-            t = new Thread(GraderPoolManager.getInstance());
-            t.start();
+            graderPoolManagerThread = new Thread(GraderPoolManager.getInstance());
+            graderPoolManagerThread.start();
         } catch (Exception e) {
             log.error("Error during webservice initialization.");
             log.error(e.getMessage());
@@ -62,8 +62,8 @@ public class GrappaServlet implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent ctxEvent) {
         try {
-            GraderPoolManager.getInstance().stopStartingNewGradingProcesses();
-            t.interrupt();
+            GraderPoolManager.getInstance().shutdown();
+            graderPoolManagerThread.interrupt();
             RedisController.getInstance().shutdown();
         } catch (Exception e) {
             log.error("Error during webservice deinitialization.");

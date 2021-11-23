@@ -55,6 +55,7 @@ public class GraderPool {
     private HashMap<String /*taskUuid*/, MinMaxPriorityQueue<Duration> /*seconds*/>
         gradingDurationMap = new HashMap<>();
 
+    private ExecutorService jaxbExecutor;
     private Semaphore semaphore;
     private GraderPoolManager graderWorkersMgr;
 
@@ -70,6 +71,13 @@ public class GraderPool {
             graderConfig.getId(), graderConfig.getConcurrent_grading_processes());
         this.semaphore = new Semaphore(graderConfig.getConcurrent_grading_processes());
         this.graderWorkersMgr = graderManager;
+
+        jaxbExecutor = Executors.newFixedThreadPool(graderConfig.getConcurrent_grading_processes(),
+            new JaxbThreadFactory());
+    }
+
+    public void shutdown() {
+        jaxbExecutor.shutdownNow();
     }
 
     /**
@@ -97,7 +105,7 @@ public class GraderPool {
                         graderConfig.getId(), queuedSubm.getGradeProcId());
                     CompletableFuture.supplyAsync(() -> {
                         return runGradingProcess(queuedSubm);
-                    }, getJaxbExecutor()).thenAccept(resp -> {
+                    }, jaxbExecutor).thenAccept(resp -> {
                         cacheProformaResponseResult(resp, queuedSubm.getGradeProcId());
                     }).thenRun(() -> {
                         // We are done. This grader instance has become free, so check if there's anything
@@ -344,9 +352,9 @@ public class GraderPool {
         return totalGradingProcessesTimedOut.get();
     }
 
-    private ForkJoinPool getJaxbExecutor() {
-        JaxbForkJoinWorkerThreadFactory threadFactory = new JaxbForkJoinWorkerThreadFactory();
-        int parallelism = Math.min(0x7fff /* copied from ForkJoinPool.java */, Runtime.getRuntime().availableProcessors());
-        return new ForkJoinPool(parallelism, threadFactory, null, false);
-    }
+//    private static ForkJoinPool getJaxbExecutor() {
+//        JaxbForkJoinWorkerThreadFactory threadFactory = new JaxbForkJoinWorkerThreadFactory();
+//        int parallelism = Math.min(0x7fff /* copied from ForkJoinPool.java */, Runtime.getRuntime().availableProcessors());
+//        return new ForkJoinPool(parallelism, threadFactory, null, false);
+//    }
 }

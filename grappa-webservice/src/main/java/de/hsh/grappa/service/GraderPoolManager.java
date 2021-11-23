@@ -56,8 +56,17 @@ public class GraderPoolManager implements Runnable {
         return false;
     }
 
-    public void stopStartingNewGradingProcesses() {
+    public void shutdown() {
         stopStartingNewGradingProcesses.set(true);
+
+        for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
+            try {
+                e.getValue().shutdown();
+            } catch(Throwable ex) {
+                log.error(ex.getMessage());
+                log.error(ExceptionUtils.getStackTrace(ex));
+            }
+        }
     }
 
     public void resumeStartingNewGradingProcesses() {
