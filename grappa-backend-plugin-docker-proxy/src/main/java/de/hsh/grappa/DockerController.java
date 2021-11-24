@@ -41,8 +41,10 @@ public class DockerController { // TODO: refactor to ctor(dockerClient, containe
         }
     }
 
-    public static String createContainer(DockerClient client, String imageId) throws Exception {
-        String id = client.createContainerCmd(imageId).exec().getId();
+    public static String createContainer(DockerClient client, String imageId, List<String> environment) throws Exception {
+        String id = client.createContainerCmd(imageId)
+                .withEnv(environment)
+                .exec().getId();
         return id;
     }
 

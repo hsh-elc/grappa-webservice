@@ -14,6 +14,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
 /**
@@ -57,6 +59,7 @@ public class GraderBackendStarter {
             Path configPath = Paths.get(WORKING_DIR_PATH, CONFIG_FILE_NAME);
             Properties bpStarterConfig = new Properties();
 
+            log.info("Time: {}", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             log.info("Loading config file: {}", configPath);
             try (InputStream input = new FileInputStream(configPath.toFile().getAbsolutePath())) {
                 bpStarterConfig.load(input);

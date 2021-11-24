@@ -20,6 +20,9 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -91,9 +94,10 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
 
              log.info("[GraderId: '{}', GradeProcId: '{}']: Creating container from image '{}'...",
                 graderId, gradeProcId, dockerContainerImage);
-             String containerId = DockerController.createContainer(dockerClient, dockerContainerImage);
-             log.info("[GraderId: '{}', GradeProcId: '{}']: Container with id '{}' created",
-                graderId, gradeProcId, containerId);
+             List<String> environment= Arrays.asList("TZ=" + getHostTimezone());
+             String containerId = DockerController.createContainer(dockerClient, dockerContainerImage, environment);
+             log.info("[GraderId: '{}', GradeProcId: '{}']: Container with id '{}' created, env={}",
+                graderId, gradeProcId, containerId, environment);
 
              copySubmissionToContainer(dockerClient, containerId, submission);
 
@@ -280,5 +284,12 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
         }
 
         return responseResource;
+    }
+
+    private static String getHostTimezone() {
+        ZonedDateTime date = ZonedDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_ZONED_DATE_TIME;
+        String text = date.format(formatter).replaceAll("^.*\\[(.*)\\].*$", "$1");
+        return text;
     }
 }
