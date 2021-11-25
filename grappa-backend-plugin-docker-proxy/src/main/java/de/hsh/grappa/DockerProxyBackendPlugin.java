@@ -19,11 +19,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 /**
@@ -94,7 +96,11 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
 
              log.info("[GraderId: '{}', GradeProcId: '{}']: Creating container from image '{}'...",
                 graderId, gradeProcId, dockerContainerImage);
-             List<String> environment= Arrays.asList("TZ=" + getHostTimezone());
+             List<String> environment= Arrays.asList(
+                     "TZ=" + getHostTimezone(),
+                     "FILE_ENCODING=" + Charset.defaultCharset().name(),
+                     "USER_COUNTRY=" + Locale.getDefault().getCountry(),
+                     "USER_LANGUAGE=" + Locale.getDefault().getLanguage());
              String containerId = DockerController.createContainer(dockerClient, dockerContainerImage, environment);
              log.info("[GraderId: '{}', GradeProcId: '{}']: Container with id '{}' created, env={}",
                 graderId, gradeProcId, containerId, environment);
