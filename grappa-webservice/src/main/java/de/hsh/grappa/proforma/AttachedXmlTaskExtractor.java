@@ -1,6 +1,5 @@
 package de.hsh.grappa.proforma;
 
-import com.google.common.base.Charsets;
 import de.hsh.grappa.utils.Zip;
 import org.apache.commons.io.FilenameUtils;
 import proforma.ProformaSubmissionZipPathes;
@@ -47,7 +46,7 @@ public class AttachedXmlTaskExtractor extends TaskExtractor {
         //String taskUuid = included.getUuid();
         //if (Strings.isNullOrEmpty(taskUuid))
         //    throw new NotImplementedException("taskuuid needs to be extracted from the task xml file");
-        byte[] taskXmlFileBytes = taskXmlFileContent.getBytes(Charsets.UTF_8);
+        byte[] taskXmlFileBytes = taskXmlFileContent.getBytes(StandardCharsets.UTF_8);
         taskWrapper = new TaskWrapperImpl(new TaskResource(taskXmlFileBytes, MimeType.XML));
         return taskWrapper;
     }

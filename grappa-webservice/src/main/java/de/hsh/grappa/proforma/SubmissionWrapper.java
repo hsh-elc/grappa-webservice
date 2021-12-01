@@ -1,6 +1,7 @@
 package de.hsh.grappa.proforma;
 
-import com.google.common.base.Charsets;
+import java.nio.charset.StandardCharsets;
+
 import de.hsh.grappa.utils.XmlUtils;
 import de.hsh.grappa.utils.Zip;
 import proforma.ProformaSubmissionZipPathes;
@@ -48,8 +49,8 @@ public abstract class SubmissionWrapper {
         byte[] submXmlFileBytes = submissionResource.getContent();
         if (submissionResource.getMimeType().equals(MimeType.ZIP)) {
             String submXmlContent = Zip.getTextFileContentFromZip(submissionResource.getContent(),
-                ProformaSubmissionZipPathes.SUBMISSION_XML_FILE_NAME, Charsets.UTF_8);
-            submXmlFileBytes = submXmlContent.getBytes(Charsets.UTF_8);
+                ProformaSubmissionZipPathes.SUBMISSION_XML_FILE_NAME, StandardCharsets.UTF_8);
+            submXmlFileBytes = submXmlContent.getBytes(StandardCharsets.UTF_8);
         }
         return XmlUtils.unmarshalToObject(submXmlFileBytes, AbstractSubmissionType.class);
     }

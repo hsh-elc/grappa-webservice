@@ -7,7 +7,6 @@ import com.google.gson.JsonParser;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GrappaConfig;
-import de.hsh.grappa.proforma.ProformaResponseGenerator;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.utils.TestConfig;
 import redis.clients.jedis.Jedis;
@@ -96,14 +95,6 @@ public class Client {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-    }
-
-    @Ignore
-    @Test
-    public void testProformaResponseGenerator() throws Exception {
-        var resp = ProformaResponseGenerator.createInternalErrorResponse("some error");
-        String xmlString = IOUtils.toString(resp.getContent(), "utf8");
-        System.out.println(xmlString);
     }
 
     @Ignore

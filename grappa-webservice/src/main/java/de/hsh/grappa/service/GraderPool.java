@@ -10,7 +10,9 @@ import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.plugin.BackendPlugin;
 import de.hsh.grappa.proforma.ProformaResponseGenerator;
 import de.hsh.grappa.proforma.ResponseResource;
+import de.hsh.grappa.proforma.ProformaResponseGenerator.Audience;
 import de.hsh.grappa.utils.BackendPluginLoadingHelper;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,8 +142,6 @@ public class GraderPool {
         Properties propsWithLoggingContext = new Properties();
         synchronized (graderConfigInitProps) {
             graderConfigInitProps.forEach((key, value) -> {
-                String k = (String)key;
-                String v = (String)value;
                 propsWithLoggingContext.setProperty((String)key, (String)value);
             });
         }
@@ -187,7 +187,7 @@ public class GraderPool {
                         "with error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
                 log.error(errorMessage);
                 log.error(ExceptionUtils.getStackTrace(e));
-                return ProformaResponseGenerator.createInternalErrorResponse(errorMessage);
+                return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), Audience.TEACHER_ONLY);
             } catch (TimeoutException e) {
                 totalGradingProcessesTimedOut.incrementAndGet();
                 String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process timed " +
@@ -201,7 +201,7 @@ public class GraderPool {
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after timing out.",
                     graderConfig.getId(), subm.getGradeProcId());
                 // How do we know this timeout was due to the grader and not a forever loop in the student submission?
-                return ProformaResponseGenerator.createInternalErrorResponse(errorMessage);
+                return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), Audience.BOTH);
             } catch (CancellationException e) {
                 totalGradingProcessesCancelled.incrementAndGet();
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process cancelled.",
@@ -215,21 +215,21 @@ public class GraderPool {
                 totalGradingProcessesCancelled.incrementAndGet();
                 log.debug("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after parent " +
                         "thread interruption.", graderConfig.getId(), subm.getGradeProcId());
-                return ProformaResponseGenerator.createInternalErrorResponse("Grading process was interrupted.");
+                return ProformaResponseGenerator.createInternalErrorResponse("Grading process was interrupted.", subm.getSubmission(), Audience.TEACHER_ONLY);
             } catch (Throwable e) { // catch any other error
                 totalGradingProcessesFailed.incrementAndGet();
                 String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process " +
                     "failed with error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
                 log.error(errorMessage);
                 log.error(ExceptionUtils.getStackTrace(e));
-                return ProformaResponseGenerator.createInternalErrorResponse(errorMessage);
+                return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), Audience.TEACHER_ONLY);
             }
         } catch (Throwable e) {
             String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process encountered " +
                     "error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
             log.error(errorMessage);
             log.error(ExceptionUtils.getStackTrace(e));
-            return ProformaResponseGenerator.createInternalErrorResponse(errorMessage);
+            return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), Audience.TEACHER_ONLY);
         } finally {
             totalGradingProcessesExecuted.incrementAndGet(); // finished one way or the other
             semaphore.release();
@@ -316,10 +316,6 @@ public class GraderPool {
 
     public boolean isGradeProcIdBeingGradedRightNow(String gradeProcId) {
         return gpMap.containsKey(gradeProcId);
-    }
-
-    private ResponseResource createInternalErrorResponse(String message) {
-        return ProformaResponseGenerator.createInternalErrorResponse(message);
     }
 
     private void loadBackendPlugin(GraderConfig grader) throws Exception {

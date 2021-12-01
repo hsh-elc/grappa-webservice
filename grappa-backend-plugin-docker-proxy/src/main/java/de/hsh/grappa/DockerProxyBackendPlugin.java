@@ -101,6 +101,8 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
                      "FILE_ENCODING=" + Charset.defaultCharset().name(),
                      "USER_COUNTRY=" + Locale.getDefault().getCountry(),
                      "USER_LANGUAGE=" + Locale.getDefault().getLanguage());
+             log.info("[GraderId: '{}', GradeProcId: '{}']: passing environment '{}'...",
+                     graderId, gradeProcId, environment.toString());
              String containerId = DockerController.createContainer(dockerClient, dockerContainerImage, environment);
              log.info("[GraderId: '{}', GradeProcId: '{}']: Container with id '{}' created, env={}",
                 graderId, gradeProcId, containerId, environment);

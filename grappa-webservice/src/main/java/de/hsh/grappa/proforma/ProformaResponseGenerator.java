@@ -1,10 +1,11 @@
 package de.hsh.grappa.proforma;
 
 import de.hsh.grappa.utils.XmlUtils;
-import org.apache.commons.codec.Charsets;
 import proforma.xml.*;
+import proforma.xml.FeedbackType.Content;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This class creates a proforma response with the is-internal-error
@@ -15,7 +16,7 @@ import java.math.BigDecimal;
  * invalidate the submission as the error is attributed to the grading
  * system.
  *
- * Using a HTTP status code in case of an server-side error is not
+ * Using a HTTP status code in case of a server-side error is not
  * sufficient since there is only a generic 500 error code without
  * any indication to the true nature of the problem. If we were to
  * return an HTTPstatus code instead, the client would be inclined to
@@ -29,12 +30,109 @@ import java.math.BigDecimal;
  * the grading system.
  */
 public class ProformaResponseGenerator {
+
+    public enum Audience {
+        TEACHER_ONLY,
+        BOTH
+    }
+
+    private static final String DEFAULT_STUDENT_INTERNAL_ERROR_MESSAGE = "An error occurred during the grading process. Please ask your teacher for details.";
+
     private ProformaResponseGenerator() {
     }
 
-    public static ResponseResource createInternalErrorResponse(String errorMessage) {
-        final String finalMsg = "Grappa encountered a fatal error: " + errorMessage;
+    private static GraderEngineType createUnknownGraderEngineObject() {
+        GraderEngineType graderEngine = new GraderEngineType();
+        graderEngine.setName("N/A");
+        graderEngine.setVersion("N/A");
+        return graderEngine;
+    }
 
+    private static ResponseMetaDataType createResponseMetaData() {
+        ResponseMetaDataType responseMetaData = new ResponseMetaDataType();
+        responseMetaData.setGraderEngine(createUnknownGraderEngineObject());
+        return responseMetaData;
+    }
+
+    /**
+     * @param merged Either merged or separate should be null
+     * @param separate Either separate or merged should be null
+     */
+    private static ResponseType createResponse(MergedTestFeedbackType merged, SeparateTestFeedbackType separate) {
+        ResponseType resp = new ResponseType();
+        resp.setMergedTestFeedback(merged);
+        resp.setSeparateTestFeedback(separate);
+        resp.setLang("en");
+        resp.setFiles(new ResponseFilesType());
+        resp.setResponseMetaData(createResponseMetaData());
+        return resp;
+    }
+
+    private static FeedbackType createFeedback(String errorMessage) {
+        FeedbackType feedback = new FeedbackType();
+        feedback.setTitle("Internal error");
+        feedback.setLevel(FeedbackLevelType.ERROR);
+        Content content = new Content();
+        content.setFormat("html");
+        content.setValue("<p>" + errorMessage + "</p>");
+        feedback.setContent(content);
+        return feedback;
+    }
+
+    private static FeedbackListType createFeedbackList(String errorMessage, Audience audience) {
+        FeedbackListType feedbackList= new FeedbackListType();
+        feedbackList.getTeacherFeedback().add(createFeedback(errorMessage));
+        if (audience.equals(Audience.BOTH)) {
+            feedbackList.getStudentFeedback().add(createFeedback(errorMessage));
+        } else {
+            feedbackList.getStudentFeedback().add(createFeedback(DEFAULT_STUDENT_INTERNAL_ERROR_MESSAGE));
+        }
+        return feedbackList;
+    }
+
+    private static SeparateTestFeedbackType tryCreateSeparateTestFeedback(String errorMessage, SubmissionResource subm, Audience audience) {
+        SeparateTestFeedbackType separate = null;
+        try {
+            SubmissionWrapper sw = new SubmissionWrapperImpl(subm);
+            AbstractSubmissionType as = sw.getAbstractSubmPojo();
+            if (as instanceof SubmissionType) {
+                SubmissionType submPojo = ((SubmissionType)as);
+                String structure = submPojo.getResultSpec().getStructure();
+                if ("separate-test-feedback".equals(structure)) {
+                    TaskWrapper tw = sw.getTask();
+                    AbstractTaskType at = tw.getAbstractTaskPojo();
+                    if (at instanceof TaskType) {
+                        TaskType taskPojo = (TaskType)at;
+                        TestsResponseType testsResponse = new TestsResponseType();
+                        for (TestType test : taskPojo.getTests().getTest() ) {
+                            TestResponseType testResponse= new TestResponseType();
+                            testResponse.setId(test.getId());
+                            TestResultType testResult = new TestResultType();
+                            testResult.setFeedbackList(createFeedbackList(errorMessage, audience));
+                            ResultType result = new ResultType();
+                            result.setIsInternalError(true);
+                            result.setScore(BigDecimal.ZERO);
+                            testResult.setResult(result);
+                            testResponse.setTestResult(testResult);
+                            testsResponse.getTestResponse().add(testResponse);
+                        }
+                        separate = new SeparateTestFeedbackType();
+                        separate.setSubmissionFeedbackList(createFeedbackList(errorMessage, audience));
+                        separate.setTestsResponse(testsResponse);
+                        return separate;
+                    }
+                }
+            }
+            // Falling back to merged feedback
+            // nothing to do
+        } catch (Exception e) {
+            // cannot identify desired response type.
+            // Falling back to merged feedback
+        }
+        return null; // set null in case of a half-prepared separate test feedback object.
+    }
+
+    private static MergedTestFeedbackType createMergedTestFeedback(String errorMessage, Audience audience) {
         OverallResultType result = new OverallResultType();
         result.setIsInternalError(true);
         result.setScore(BigDecimal.ZERO);
@@ -42,24 +140,27 @@ public class ProformaResponseGenerator {
 
         MergedTestFeedbackType merged = new MergedTestFeedbackType();
         merged.setOverallResult(result);
-        merged.setTeacherFeedback(finalMsg);
+        merged.setTeacherFeedback(errorMessage);
+        if (audience.equals(Audience.BOTH)) {
+            merged.setStudentFeedback(errorMessage);
+        } else {
+            merged.setStudentFeedback(DEFAULT_STUDENT_INTERNAL_ERROR_MESSAGE);
+        }
+        return merged;
+    }
 
-        GraderEngineType graderEngine = new GraderEngineType();
-        graderEngine.setName("N/A");
-        graderEngine.setVersion("N/A");
+    public static ResponseResource createInternalErrorResponse(String errorMessage, SubmissionResource subm, Audience audience) {
+        final String finalMsg = "Grappa encountered a fatal error: " + errorMessage;
 
-        ResponseMetaDataType responseMetaData = new ResponseMetaDataType();
-        responseMetaData.setGraderEngine(graderEngine);
+        SeparateTestFeedbackType separate = tryCreateSeparateTestFeedback(finalMsg, subm, audience);
+        MergedTestFeedbackType merged = null;
+        if (separate == null) merged = createMergedTestFeedback(finalMsg, audience);
 
-        ResponseType resp = new ResponseType();
-        resp.setMergedTestFeedback(merged);
-        resp.setLang("en");
-        resp.setFiles(new ResponseFilesType());
-        resp.setResponseMetaData(responseMetaData);
+        ResponseType resp = createResponse(merged, separate);
 
         String responseXml = XmlUtils.marshalToXml(resp, ResponseType.class);
         System.out.println(responseXml);
-        return new ResponseResource(responseXml.getBytes(Charsets.UTF_8), MimeType.XML);
+        return new ResponseResource(responseXml.getBytes(StandardCharsets.UTF_8), MimeType.XML);
     }
 
     /**
