@@ -150,9 +150,17 @@ public class ProformaResponseGenerator {
     }
 
     public static ResponseResource createInternalErrorResponse(String errorMessage, SubmissionResource subm, Audience audience) {
+        return createInternalErrorResponse(errorMessage, subm, audience, false);
+    }
+
+    @Deprecated
+    public static ResponseResource createInternalErrorResponse(String errorMessage, SubmissionResource subm, Audience audience, @Deprecated boolean isExpectedInternalErrorTypeAlwaysMergedTestFeedback) {
         final String finalMsg = "Grappa encountered a fatal error: " + errorMessage;
 
-        SeparateTestFeedbackType separate = tryCreateSeparateTestFeedback(finalMsg, subm, audience);
+        SeparateTestFeedbackType separate = null;
+        if (!isExpectedInternalErrorTypeAlwaysMergedTestFeedback) {
+            separate = tryCreateSeparateTestFeedback(finalMsg, subm, audience);
+        }
         MergedTestFeedbackType merged = null;
         if (separate == null) merged = createMergedTestFeedback(finalMsg, audience);
 

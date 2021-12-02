@@ -7,6 +7,10 @@ public class LmsConfig {
   //@JsonIgnore
   private String password_hash;
 
+  @Deprecated
+  // acronym of "expected internal error type always merged test feedback"
+  private boolean eietamtf;
+
   public String getName() {
     return name;
   }
@@ -29,6 +33,16 @@ public class LmsConfig {
 
   public void setPassword_hash(String password_hash) {
     this.password_hash = password_hash;
+  }
+
+  @Deprecated
+  public boolean getEietamtf() {
+    return eietamtf;
+  }
+
+  @Deprecated
+  public void setEietamtf(boolean eietamtf) {
+    this.eietamtf = eietamtf;
   }
 
   @Override

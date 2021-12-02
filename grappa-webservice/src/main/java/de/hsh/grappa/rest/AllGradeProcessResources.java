@@ -1,6 +1,7 @@
 package de.hsh.grappa.rest;
 
 import de.hsh.grappa.cache.RedisController;
+import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.proforma.MimeType;
 import de.hsh.grappa.proforma.ResponseResource;
 import de.hsh.grappa.proforma.SubmissionResource;
@@ -61,7 +62,13 @@ public class AllGradeProcessResources {
             SubmissionResource proformaSubm = new SubmissionResource
                 (IOUtils.toByteArray(submission), mimeType);
             log.info("[GraderId: {}] Processing submission: {}", graderId, proformaSubm);
-            String gradeProcId = new SubmissionProcessor(proformaSubm, graderId).process(prioritize);
+            LmsConfig lmsConfig = null;
+            try {
+                lmsConfig = (LmsConfig) sr.getProperty("logged_user");
+            } catch (Exception ex) {
+                throw new de.hsh.grappa.exceptions.BadRequestException("Internal error. Cannot map grade request to LMS.");
+            }
+            String gradeProcId = new SubmissionProcessor(proformaSubm, graderId, lmsConfig).process(prioritize);
 
             if(Boolean.parseBoolean(async) || async.equals("1"))
                 return replyWithTimeRemaining(gradeProcId);

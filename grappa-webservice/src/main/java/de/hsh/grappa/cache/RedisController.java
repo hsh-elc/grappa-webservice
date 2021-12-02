@@ -126,6 +126,13 @@ public class RedisController {
      */
     private static final String GRADEPROCID_TO_GRADERID_MAP = "gradeprocid-to-graderid-map:";
 
+    /**
+     * Maps a gradeProcId to a lmsId.
+     * <p>
+     * Key: gradeprocid-to-lmsid-map:gradeProcId
+     */
+    private static final String GRADEPROCID_TO_LMSID_MAP = "gradeprocid-to-lmsid-map:";
+
     private static final String GRADEPROCID_TO_TASKUUID_MAP = "gradeprocid-to-taskuuid-map:";
 
     /**
@@ -185,7 +192,7 @@ public class RedisController {
      * @param gradeProcId
      * @param submissionResource
      */
-    public synchronized void pushSubmission(String graderId, String gradeProcId,
+    public synchronized void pushSubmission(String graderId, String lmsId, String gradeProcId,
                                             String taskUuid, SubmissionResource submissionResource,
                                             boolean prioritize) {
         log.debug("[GraderId: '{}', GradeProcId: '{}']: pushSubmission(): {}", graderId, gradeProcId,
@@ -196,6 +203,7 @@ public class RedisController {
             cacheConfig.getSubmission_ttl_seconds());
         setTimestamp(submKey, cacheConfig.getSubmission_ttl_seconds());
         mapGraderProcIdToGraderId(gradeProcId, graderId);
+        mapGraderProcIdToLmsId(gradeProcId, lmsId);
         mapGraderProcIdToTaskUuid(gradeProcId, taskUuid);
         // push the graderProcId onto the queue
         try (var jedis= jedisPool.getResource()) {
@@ -311,8 +319,15 @@ public class RedisController {
                         gradeProcId));
             }
 
+            String lmsId = getAssociatedLmsId(gradeProcId);
+            if (null == lmsId) {
+                throw new NotFoundException(String.format
+                    ("The LMS record for graderProcId '%s' does not exist.",
+                        gradeProcId));
+            }
+
             try {
-                return new QueuedSubmission(gradeProcId, SerializationUtils.deserialize(subm));
+                return new QueuedSubmission(gradeProcId, lmsId, SerializationUtils.deserialize(subm));
             } catch (org.apache.commons.lang3.SerializationException ex) {
                 log.debug("[graderId: '{}']: submission is not deserializable.", graderId);
                 throw new GrappaException(String.format("a submission for graderId '%s' was found in" +
@@ -411,15 +426,15 @@ public class RedisController {
     }
 
     /**
-     * @param graderProcId
-     * @return the associated gradeId for the graderProcId, or null if the graderProcId does not exist
+     * @param gradeProcId
+     * @return the associated gradeId for the gradeProcId, or null if the gradeProcId does not exist
      */
-    public String getAssociatedGraderId(String graderProcId) throws NotFoundException {
-        String id = this.getString(GRADEPROCID_TO_GRADERID_MAP.concat(graderProcId));
+    public String getAssociatedGraderId(String gradeProcId) throws NotFoundException {
+        String id = this.getString(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId));
         if (null != id)
             return id;
         throw new NotFoundException(String.format("No associated graderId exists for gradeProcId '%s'.",
-            graderProcId));
+            gradeProcId));
     }
 
     private void mapGraderProcIdToGraderId(String gradeProcId, String graderId) {
@@ -427,12 +442,29 @@ public class RedisController {
             cacheConfig.getSubmission_ttl_seconds());
     }
 
-    public String getAssociatedTaskUuid(String graderProcId) throws NotFoundException {
-        String id = this.getString(GRADEPROCID_TO_TASKUUID_MAP.concat(graderProcId));
+    /**
+     * @param gradeProcId
+     * @return the associated lmsId for the gradeProcId, or null if the gradeProcId does not exist
+     */
+    public String getAssociatedLmsId(String gradeProcId) throws NotFoundException {
+        String id = this.getString(GRADEPROCID_TO_LMSID_MAP.concat(gradeProcId));
+        if (null != id)
+            return id;
+        throw new NotFoundException(String.format("No associated lmsId exists for gradeProcId '%s'.",
+            gradeProcId));
+    }
+
+    private void mapGraderProcIdToLmsId(String gradeProcId, String lmsId) {
+        set(GRADEPROCID_TO_LMSID_MAP.concat(gradeProcId), lmsId,
+            cacheConfig.getSubmission_ttl_seconds());
+    }
+
+    public String getAssociatedTaskUuid(String gradeProcId) throws NotFoundException {
+        String id = this.getString(GRADEPROCID_TO_TASKUUID_MAP.concat(gradeProcId));
         if (null != id)
             return id;
         throw new NotFoundException(String.format("No associated taskUuid exists for gradeProcId '%s'.",
-            graderProcId));
+            gradeProcId));
     }
 
     private void mapGraderProcIdToTaskUuid(String gradeProcId, String taskUuid) {

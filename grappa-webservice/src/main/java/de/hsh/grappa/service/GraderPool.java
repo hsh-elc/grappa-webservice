@@ -5,6 +5,8 @@ import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.QueuedSubmission;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GraderConfig;
+import de.hsh.grappa.config.LmsConfig;
+import de.hsh.grappa.exceptions.AuthenticationException;
 import de.hsh.grappa.exceptions.NoResultGraderExecption;
 import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.plugin.BackendPlugin;
@@ -187,7 +189,7 @@ public class GraderPool {
                         "with error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
                 log.error(errorMessage);
                 log.error(ExceptionUtils.getStackTrace(e));
-                return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), Audience.TEACHER_ONLY);
+                return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY);
             } catch (TimeoutException e) {
                 totalGradingProcessesTimedOut.incrementAndGet();
                 String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process timed " +
@@ -201,7 +203,7 @@ public class GraderPool {
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after timing out.",
                     graderConfig.getId(), subm.getGradeProcId());
                 // How do we know this timeout was due to the grader and not a forever loop in the student submission?
-                return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), Audience.BOTH);
+                return createInternalErrorResponse(errorMessage, subm, Audience.BOTH);
             } catch (CancellationException e) {
                 totalGradingProcessesCancelled.incrementAndGet();
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process cancelled.",
@@ -215,21 +217,21 @@ public class GraderPool {
                 totalGradingProcessesCancelled.incrementAndGet();
                 log.debug("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after parent " +
                         "thread interruption.", graderConfig.getId(), subm.getGradeProcId());
-                return ProformaResponseGenerator.createInternalErrorResponse("Grading process was interrupted.", subm.getSubmission(), Audience.TEACHER_ONLY);
+                return createInternalErrorResponse("Grading process was interrupted.", subm, Audience.TEACHER_ONLY);
             } catch (Throwable e) { // catch any other error
                 totalGradingProcessesFailed.incrementAndGet();
                 String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process " +
                     "failed with error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
                 log.error(errorMessage);
                 log.error(ExceptionUtils.getStackTrace(e));
-                return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), Audience.TEACHER_ONLY);
+                return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY);
             }
         } catch (Throwable e) {
             String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process encountered " +
                     "error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
             log.error(errorMessage);
             log.error(ExceptionUtils.getStackTrace(e));
-            return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), Audience.TEACHER_ONLY);
+            return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY);
         } finally {
             totalGradingProcessesExecuted.incrementAndGet(); // finished one way or the other
             semaphore.release();
@@ -238,6 +240,24 @@ public class GraderPool {
                 subm.getGradeProcId(), semaphore.availablePermits());
         }
         return null;
+    }
+
+    private LmsConfig getLmsConfig(String lmsId) {
+        var lms = GrappaServlet.CONFIG.getLms().stream()
+                .filter(l -> l.getId().equals(lmsId)).findFirst();
+        if (!lms.isPresent())
+            throw new AuthenticationException("Unknown lmsId '"+lmsId+"'.");
+        return lms.get();
+    }
+
+    private ResponseResource createInternalErrorResponse(String errorMessage, QueuedSubmission subm, Audience audience) {
+        LmsConfig lmsConfig = getLmsConfig(subm.getLmsId());
+        boolean ietm = lmsConfig.getEietamtf();
+        return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), audience, ietm);
+
+        // when eliminating the flag isExpected_internal_error_type_always_merged_test_feedback,
+        // then the following call we do:
+        //return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), audience);
     }
 
     private void setAverageGradingDuration(Duration d, String gradeProcId) {

@@ -3,6 +3,7 @@ package de.hsh.grappa.service;
 import com.google.common.base.Strings;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
+import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.BadRequestException;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.exceptions.NotFoundException;
@@ -28,11 +29,13 @@ public class SubmissionProcessor {
     private static final Logger log = LoggerFactory.getLogger(SubmissionProcessor.class);
     private SubmissionWrapper subm;
     private String graderId;
+    private LmsConfig lmsConfig;
 
-    public SubmissionProcessor(/*GrappaConfig config,*/ SubmissionResource subm, String graderId) throws Exception {
+    public SubmissionProcessor(/*GrappaConfig config,*/ SubmissionResource subm, String graderId, LmsConfig lmsConfig) throws Exception {
         //this.config = config;
         this.subm = createProformaSubmission(subm);
         this.graderId = graderId;
+        this.lmsConfig = lmsConfig;
     }
 
     /**
@@ -106,7 +109,7 @@ public class SubmissionProcessor {
         cacheTask();
         // Queue submission for grading
         String gradeProcId = ObjectId.createObjectId();
-        RedisController.getInstance().pushSubmission(graderId, gradeProcId, subm.getTask().getUuid(),
+        RedisController.getInstance().pushSubmission(graderId, lmsConfig.getId(), gradeProcId, subm.getTask().getUuid(),
             subm.getProformasubmissionResource(), prioritize);
         synchronized (GraderPoolManager.getInstance()) {
             GraderPoolManager.getInstance().notify();

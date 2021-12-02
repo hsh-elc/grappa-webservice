@@ -1,6 +1,7 @@
 package de.hsh.grappa.test;
 
 import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.proforma.MimeType;
 import de.hsh.grappa.proforma.SubmissionResource;
 import de.hsh.grappa.service.SubmissionProcessor;
@@ -33,7 +34,11 @@ public class SubmissionProcessorTest {
     public void testSubmissionProcessor() throws Exception {
         try (FileInputStream fis = new FileInputStream(proformaSubmissionFilePath)) {
             SubmissionResource subm = new SubmissionResource(IOUtils.toByteArray(fis), MimeType.ZIP);
-            SubmissionProcessor proc = new SubmissionProcessor(subm, "DummyGrader");
+            LmsConfig lmsConfig = new LmsConfig();
+            lmsConfig.setId("test");
+            lmsConfig.setName("test@SubmissionProcessorTest");
+            lmsConfig.setPassword_hash("test");
+            SubmissionProcessor proc = new SubmissionProcessor(subm, "DummyGrader", lmsConfig);
             proc.process(false);
         }
     }
