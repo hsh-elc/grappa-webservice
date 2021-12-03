@@ -11,7 +11,9 @@ lms:
   - name: "test@HsH"
     id: "test"
     password_hash: "test"
-
+    # expected internal error type always merged test feedback (temporary switch, default: false)
+    eietamtf: false
+    
 graders:
   - id: "DummyGrader"
     name: "DummyGrader" # user friendly name
