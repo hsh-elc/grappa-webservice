@@ -730,7 +730,7 @@ The following modules currently are built for Java-1.8-compatibility:
 - grappa-util
 - grappa-common
 - grappa-proforma-2-1
-- proformaxml-2-1
+- proformaxml
 - proformaxml-2-1
 
 The other modules are compiled for Java-11-compatibility.
