@@ -2,6 +2,8 @@ package de.hsh.grappa.config;
 
 import java.util.List;
 
+import com.google.common.base.Strings;
+
 public class GrappaConfig {
   private ServiceConfig service;
   private List<LmsConfig> lms;
@@ -51,4 +53,13 @@ public class GrappaConfig {
             ", cache=" + cache +
             '}';
   }
+  
+  public void propagateLoggingLevelToGraders() {
+	  for (GraderConfig g : graders) {
+		  if (Strings.isNullOrEmpty(g.getLogging_level())) {
+			  g.setLogging_level(service.getLogging_level());
+		  }
+	  }
+  }
+  
 }

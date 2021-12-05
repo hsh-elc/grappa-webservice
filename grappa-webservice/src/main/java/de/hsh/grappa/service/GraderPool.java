@@ -1,19 +1,23 @@
 package de.hsh.grappa.service;
 
 import com.google.common.collect.MinMaxPriorityQueue;
+
 import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.boundary.BoundaryImpl;
 import de.hsh.grappa.cache.QueuedSubmission;
 import de.hsh.grappa.cache.RedisController;
+import de.hsh.grappa.common.BackendPlugin;
+import de.hsh.grappa.common.Boundary;
+import de.hsh.grappa.common.ResponseResource;
 import de.hsh.grappa.config.GraderConfig;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.AuthenticationException;
-import de.hsh.grappa.exceptions.NoResultGraderExecption;
 import de.hsh.grappa.exceptions.NotFoundException;
-import de.hsh.grappa.plugin.BackendPlugin;
-import de.hsh.grappa.proforma.ProformaResponseGenerator;
-import de.hsh.grappa.proforma.ResponseResource;
-import de.hsh.grappa.proforma.ProformaResponseGenerator.Audience;
-import de.hsh.grappa.utils.BackendPluginLoadingHelper;
+import de.hsh.grappa.util.ClassPathClassLoader;
+import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
+import de.hsh.grappa.util.proforma.Proforma21ResponseGenerator;
+import de.hsh.grappa.util.proforma.Proforma21ResponseGenerator.Audience;
+import de.hsh.grappa.util.XmlUtils;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -48,9 +52,12 @@ public class GraderPool {
         new AtomicLong(0);
 
     private GraderConfig graderConfig;
+    private ClassPathClassLoader<BackendPlugin> backendPluginLoader;
+    private Boundary boundary;
 
     private static final String GRAPPA_CONTEXT_GRADER_ID = "Grappa.Context.GraderId";
     private static final String GRAPPA_CONTEXT_GRADE_PROCESS_ID = "Grappa.Context.GraderProcessId";
+    private static final String GRAPPA_CONTEXT_LOG_LEVEL = "Grappa.Context.LogLevel";
     private Properties graderConfigInitProps;
 
     private ConcurrentHashMap<String /*gradeProcId*/, Future<ResponseResource>> gpMap =
@@ -65,6 +72,8 @@ public class GraderPool {
 
     public GraderPool(GraderConfig graderConfig, GraderPoolManager graderManager) throws Exception {
         this.graderConfig = graderConfig;
+        this.backendPluginLoader = new ClassPathClassLoader<>(BackendPlugin.class, graderConfig.getId());
+        this.boundary = new BoundaryImpl();
 
         if(0 >= graderConfig.getConcurrent_grading_processes())
             throw new IllegalArgumentException(String.format("concurrent_grading_processes must not be less than 1 " +
@@ -77,7 +86,7 @@ public class GraderPool {
         this.graderWorkersMgr = graderManager;
 
         jaxbExecutor = Executors.newFixedThreadPool(graderConfig.getConcurrent_grading_processes(),
-            new JaxbThreadFactory());
+            new XmlUtils.JaxbThreadFactory());
     }
 
     public void shutdown() {
@@ -149,18 +158,27 @@ public class GraderPool {
         }
         propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_GRADER_ID, graderId);
         propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_GRADE_PROCESS_ID, gradeProcId);
+        propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_LOG_LEVEL, this.graderConfig.getLogging_level());
         return propsWithLoggingContext;
     }
 
     public ResponseResource runGradingProcess(QueuedSubmission subm) {
+        @SuppressWarnings("serial")
+        class NoResultGraderExecption extends Exception {
+            public NoResultGraderExecption(String s) { super(s); }
+        }
         try {
             LocalDateTime beginTime = LocalDateTime.now();
             Properties props = getGraderConfigWithContextIds(graderConfig.getId(), subm.getGradeProcId());
             // Create a fresh backend plugin instance for every grading request
-            BackendPlugin bp = BackendPluginLoadingHelper.loadBackendPlugin(graderConfig.getId(), graderConfig.getClass_name());
+            if (backendPluginLoader == null) {
+                log.error("Class loader of BackendPlugin '{}' not found", graderConfig.getId());
+                throw new Exception("Class loader of backend plugin '" + graderConfig.getId() + "' not found");
+            }
+            BackendPlugin bp = backendPluginLoader.instantiateClass(graderConfig.getClass_name());
             log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing BackendPlugin...",
                 graderConfig.getId(), subm.getGradeProcId());
-            bp.init(props);
+            bp.init(props, boundary);
             FutureTask<ResponseResource> futureTask = null;
             int timeoutSeconds = graderConfig.getTimeout_seconds();
             try {
@@ -253,7 +271,7 @@ public class GraderPool {
     private ResponseResource createInternalErrorResponse(String errorMessage, QueuedSubmission subm, Audience audience) {
         LmsConfig lmsConfig = getLmsConfig(subm.getLmsId());
         boolean ietm = lmsConfig.getEietamtf();
-        return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), audience, ietm);
+        return Proforma21ResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), boundary, audience, ietm);
 
         // when eliminating the flag isExpected_internal_error_type_always_merged_test_feedback,
         // then the following call we do:
@@ -340,7 +358,7 @@ public class GraderPool {
 
     private void loadBackendPlugin(GraderConfig grader) throws Exception {
         log.info("Loading grader plugin '{}' with classpathes '{}'...", grader.getId(), grader.getClass_path());
-        BackendPluginLoadingHelper.loadClasspathLibs(grader.getId(), grader.getClass_path(), grader.getFile_extension());
+        backendPluginLoader.configure(Classpath.of(grader.getClass_path(), grader.getFile_extension()));
         log.info("Loading grader config file '{}'...", grader.getConfig_path());
         graderConfigInitProps = new Properties();
         try (InputStream is = new FileInputStream(new File(grader.getConfig_path()))) {
@@ -369,7 +387,7 @@ public class GraderPool {
     }
 
 //    private static ForkJoinPool getJaxbExecutor() {
-//        JaxbForkJoinWorkerThreadFactory threadFactory = new JaxbForkJoinWorkerThreadFactory();
+//        XmlUtils.JaxbForkJoinWorkerThreadFactory threadFactory = new XmlUtils.JaxbForkJoinWorkerThreadFactory();
 //        int parallelism = Math.min(0x7fff /* copied from ForkJoinPool.java */, Runtime.getRuntime().availableProcessors());
 //        return new ForkJoinPool(parallelism, threadFactory, null, false);
 //    }

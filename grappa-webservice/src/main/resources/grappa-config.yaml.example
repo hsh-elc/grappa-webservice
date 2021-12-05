@@ -25,6 +25,7 @@ graders:
     timeout_seconds: 60
     # concurrent_grading_processes sets the number of max grader instances in a grader pool
     concurrent_grading_processes: 5
+    logging_level: "WARN"    # optional, if different from service setting above
 
 cache:
   submission_ttl_seconds: 86400 # 1 day

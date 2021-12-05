@@ -1,11 +1,11 @@
 package de.hsh.grappa.cache;
 
+import de.hsh.grappa.common.ResponseResource;
+import de.hsh.grappa.common.SubmissionResource;
+import de.hsh.grappa.common.TaskResource;
 import de.hsh.grappa.config.CacheConfig;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.exceptions.NotFoundException;
-import de.hsh.grappa.proforma.ResponseResource;
-import de.hsh.grappa.proforma.SubmissionResource;
-import de.hsh.grappa.proforma.TaskResource;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;

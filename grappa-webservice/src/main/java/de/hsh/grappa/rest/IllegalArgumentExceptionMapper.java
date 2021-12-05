@@ -1,6 +1,5 @@
 package de.hsh.grappa.rest;
 
-import de.hsh.grappa.utils.Json;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +21,6 @@ public class IllegalArgumentExceptionMapper implements
         log.error(e.getMessage());
         log.error(ExceptionUtils.getStackTrace(e));
         return Response.status(Response.Status.BAD_REQUEST)
-            .entity(Json.createJsonExceptionMessage(e)).build();
+            .entity(Util.createJsonExceptionMessage(e)).build();
     }
 }

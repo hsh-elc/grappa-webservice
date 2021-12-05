@@ -87,6 +87,10 @@ public class TaskType implements AbstractTaskType {
     @XmlSchemaType(name = "language")
     protected String lang;
 
+	@Override public String proFormAVersion() {
+		return "2.1";
+	}
+
     /**
      * Gets the value of the title property.
      * 

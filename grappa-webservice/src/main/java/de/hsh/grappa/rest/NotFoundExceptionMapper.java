@@ -1,7 +1,7 @@
 package de.hsh.grappa.rest;
 
 import de.hsh.grappa.exceptions.NotFoundException;
-import de.hsh.grappa.utils.Json;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +23,6 @@ public class NotFoundExceptionMapper implements
         log.error(e.getMessage());
         log.error(ExceptionUtils.getStackTrace(e));
         return Response.status(Response.Status.NOT_FOUND)
-            .entity(Json.createJsonExceptionMessage(e)).build();
+            .entity(Util.createJsonExceptionMessage(e)).build();
     }
 }

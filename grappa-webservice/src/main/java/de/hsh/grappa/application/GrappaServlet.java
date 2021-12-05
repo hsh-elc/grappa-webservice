@@ -7,7 +7,8 @@ import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.GradingEnvironmentSetup;
-import de.hsh.grappa.utils.ClassLoaderHelper;
+import de.hsh.grappa.util.ClassLoaderHelper;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +87,7 @@ public class GrappaServlet implements ServletContextListener {
             var mapper = new ObjectMapper(new YAMLFactory());
             var configFile = new File(CONFIG_FILENAME_PATH);
             CONFIG = mapper.readValue(configFile, GrappaConfig.class);
+            CONFIG.propagateLoggingLevelToGraders();
             setLoggingLevel(Level.toLevel(CONFIG.getService().getLogging_level()));
             log.info("Config file loaded: {}", CONFIG.toString());
         } catch (Exception e) {

@@ -69,6 +69,11 @@ public class SubmissionType implements AbstractSubmissionType {
     @XmlAttribute(name = "id")
     protected String id;
 
+	@Override public String proFormAVersion() {
+		return "2.1";
+	}
+
+
     /**
      * Gets the value of the externalTask property.
      * 

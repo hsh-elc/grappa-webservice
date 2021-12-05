@@ -5,9 +5,11 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
-import de.hsh.grappa.proforma.MimeType;
-import de.hsh.grappa.proforma.SubmissionResource;
-import org.apache.commons.io.FileUtils;
+
+import de.hsh.grappa.common.MimeType;
+import de.hsh.grappa.common.SubmissionResource;
+import de.hsh.grappa.util.FileUtils;
+
 import org.junit.Test;
 
 import java.io.File;

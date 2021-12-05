@@ -16,34 +16,34 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <de.hsh.grappa.grappa-backend-plugin-api.version>0.1</de.hsh.grappa.grappa-backend-plugin-api.version>
-        <de.hsh.grappa.grappa-core.version>1.0.1</de.hsh.grappa.grappa-core.version>
+        <de.hsh.grappa.grappa-util.version>0.1</de.hsh.grappa.grappa-util.version>
+        <de.hsh.grappa.grappa-common.version>0.1</de.hsh.grappa.grappa-common.version>
         <de.hsh.grappa.grappa-webservice.version>2.0.1</de.hsh.grappa.grappa-webservice.version>
         <proforma.proformaxml.version>2.1.0</proforma.proformaxml.version>
     </properties>
 
     <modules>
-        <module>grappa-core</module>
+        <module>proformaxml</module>
+        <module>grappa-util</module>
+        <module>grappa-common</module>
         <module>grappa-webservice</module>
-        <module>grappa-backend-plugin-api</module>
         <module>grappa-backend-plugin-docker-proxy</module>
 <!--        <module>grappa-grader-environment-vagrant</module>-->
         <module>grappa-grader-backend-starter</module>
         <module>grappa-dummygrader</module>
-        <module>proformaxml</module>
     </modules>
     
     <dependencyManagement>
         <dependencies>
 	        <dependency>
 	            <groupId>de.hsh.grappa</groupId>
-	            <artifactId>grappa-backend-plugin-api</artifactId>
-	            <version>${de.hsh.grappa.grappa-backend-plugin-api.version}</version>
+	            <artifactId>grappa-util</artifactId>
+	            <version>${de.hsh.grappa.grappa-util.version}</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>de.hsh.grappa</groupId>
-	            <artifactId>grappa-core</artifactId>
-	            <version>${de.hsh.grappa.grappa-core.version}</version>
+	            <artifactId>grappa-common</artifactId>
+	            <version>${de.hsh.grappa.grappa-common.version}</version>
 	        </dependency>
 	        <dependency>
 	            <groupId>de.hsh.grappa</groupId>

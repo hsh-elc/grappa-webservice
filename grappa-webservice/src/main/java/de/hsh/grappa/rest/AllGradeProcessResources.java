@@ -1,15 +1,16 @@
 package de.hsh.grappa.rest;
 
 import de.hsh.grappa.cache.RedisController;
+import de.hsh.grappa.common.MimeType;
+import de.hsh.grappa.common.ResponseResource;
+import de.hsh.grappa.common.SubmissionResource;
 import de.hsh.grappa.config.LmsConfig;
-import de.hsh.grappa.proforma.MimeType;
-import de.hsh.grappa.proforma.ResponseResource;
-import de.hsh.grappa.proforma.SubmissionResource;
 import de.hsh.grappa.service.GradePoller;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.SubmissionProcessor;
-import de.hsh.grappa.utils.Json;
-import org.apache.commons.io.IOUtils;
+import de.hsh.grappa.util.IOUtils;
+import de.hsh.grappa.util.Json;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

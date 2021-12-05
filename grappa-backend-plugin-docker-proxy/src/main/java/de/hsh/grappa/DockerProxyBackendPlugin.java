@@ -6,13 +6,16 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
-import com.google.common.base.Strings;
-import de.hsh.grappa.plugin.BackendPlugin;
-import de.hsh.grappa.proforma.MimeType;
-import de.hsh.grappa.proforma.ResponseResource;
-import de.hsh.grappa.proforma.SubmissionResource;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
+
+import de.hsh.grappa.common.BackendPlugin;
+import de.hsh.grappa.common.MimeType;
+import de.hsh.grappa.common.ResponseResource;
+import de.hsh.grappa.common.SubmissionResource;
+import de.hsh.grappa.util.FilenameUtils;
+import de.hsh.grappa.util.IOUtils;
+import de.hsh.grappa.util.Strings;
+import de.hsh.grappa.util.proforma.ProformaConverter;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +43,7 @@ import java.util.Properties;
  * success, or a grader error stack trace in case of failure),
  * and returns it back to the Grappa web service.
  */
-public class DockerProxyBackendPlugin implements BackendPlugin {
+public class DockerProxyBackendPlugin extends BackendPlugin {
     private static final Logger log = LoggerFactory.getLogger(DockerProxyBackendPlugin.class);
 
     private static final String GRADER_EXCEPTION_STACKTRACE_FILE_PATH =
@@ -52,9 +55,11 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
     private String dockerHost;
     private String copySubmissionToDirectoryPath;
     private String responseResultDirectoryPath;
+    private String logLevel; // logLevel inside the container
 
     private static final String GRAPPA_CONTEXT_GRADER_ID = "Grappa.Context.GraderId";
     private static final String GRAPPA_CONTEXT_GRADE_PROCESS_ID = "Grappa.Context.GraderProcessId";
+    private static final String GRAPPA_CONTEXT_LOG_LEVEL = "Grappa.Context.LogLevel";
 
     @Override
     public void init(Properties props) throws Exception {
@@ -70,12 +75,24 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
         copySubmissionToDirectoryPath =
             props.get("dockerproxybackendplugin.copy_submission_to_directory_path").toString();
         responseResultDirectoryPath = props.get("dockerproxybackendplugin.response_result_directory_path").toString();
+        logLevel = props.getProperty(GRAPPA_CONTEXT_LOG_LEVEL);
     }
 
     @Override
     public ResponseResource grade(SubmissionResource submission) throws Exception {
         log.debug("[GraderId: '{}', GradeProcId: '{}']: Entering DockerProxyBackendPlugin.grade()...",
-            graderId, gradeProcId);
+                graderId, gradeProcId);
+        
+        // TODO: implement conversion of external task to included task.
+        // TODO: implement conversion of external submission to submission files.
+        
+        // Or alternatively provide a specific Boundary implementation that is 
+        // instantiated by GraderBackendStarter that reads externally referenced 
+        // task and submission files from a dedicated folder inside the docker
+        // container.
+        
+        // Or should we delegate external task and submission handling to the grader?
+        
         log.info("[GraderId: '{}', GradeProcId: '{}']: Setting up docker connection to: {}",
             graderId, gradeProcId, dockerHost);
 
@@ -96,11 +113,15 @@ public class DockerProxyBackendPlugin implements BackendPlugin {
 
              log.info("[GraderId: '{}', GradeProcId: '{}']: Creating container from image '{}'...",
                 graderId, gradeProcId, dockerContainerImage);
+             List<String> sysProps = Arrays.asList(
+                     "-Dfile.encoding=" + Charset.defaultCharset().name(),
+                     "-Duser.country=" + Locale.getDefault().getCountry(),
+                     "-Duser.language=" + Locale.getDefault().getLanguage(),
+                     "-Duser.timezone=" + getHostTimezone(),
+                     "-Dlogging.level=" + logLevel);
              List<String> environment= Arrays.asList(
                      "TZ=" + getHostTimezone(),
-                     "FILE_ENCODING=" + Charset.defaultCharset().name(),
-                     "USER_COUNTRY=" + Locale.getDefault().getCountry(),
-                     "USER_LANGUAGE=" + Locale.getDefault().getLanguage());
+                     "SYSPROPS=" + String.join(" ", sysProps));
              log.info("[GraderId: '{}', GradeProcId: '{}']: passing environment '{}'...",
                      graderId, gradeProcId, environment.toString());
              String containerId = DockerController.createContainer(dockerClient, dockerContainerImage, environment);

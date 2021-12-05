@@ -16,9 +16,9 @@
 
 	<property name="logDirectory" value="${catalina.base}/logs" />	
 	<appender name="SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
-	    <discriminator class="de.hsh.grappa.utils.AppNameDiscriminator"/>
+	    <discriminator class="de.hsh.grappa.log.AppNameDiscriminator"/>
 	    <sift>
-	        <appender name="FILE-${appName}" class="de.hsh.grappa.utils.MyFileAppender">
+	        <appender name="FILE-${appName}" class="de.hsh.grappa.log.MyFileAppender">
 	            <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
                 <file>${logDirectory}/${appName}.log</file>
                 <encoder>

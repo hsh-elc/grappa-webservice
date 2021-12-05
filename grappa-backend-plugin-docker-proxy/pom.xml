@@ -17,7 +17,11 @@
     <dependencies>
         <dependency>
             <groupId>de.hsh.grappa</groupId>
-            <artifactId>grappa-backend-plugin-api</artifactId>
+            <artifactId>grappa-util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.hsh.grappa</groupId>
+            <artifactId>grappa-common</artifactId>
         </dependency>
         <dependency>
             <groupId>proforma</groupId>

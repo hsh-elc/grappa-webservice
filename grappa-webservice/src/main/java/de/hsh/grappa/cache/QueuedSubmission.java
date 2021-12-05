@@ -1,6 +1,6 @@
 package de.hsh.grappa.cache;
 
-import de.hsh.grappa.proforma.SubmissionResource;
+import de.hsh.grappa.common.SubmissionResource;
 
 /**
  * This QueuedSubmission class is used to save

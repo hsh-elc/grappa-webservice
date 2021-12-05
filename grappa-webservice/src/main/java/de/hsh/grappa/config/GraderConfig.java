@@ -10,6 +10,7 @@ public class GraderConfig {
   private String config_path;
   private int timeout_seconds = 120;
   private int concurrent_grading_processes = 5;
+  private String logging_level;
 
   public String getId() {
     return id;
@@ -79,7 +80,17 @@ public class GraderConfig {
     this.concurrent_grading_processes = concurrent_grading_processes;
   }
 
-  @Override
+  
+  
+  public String getLogging_level() {
+	return logging_level;
+  }
+
+  public void setLogging_level(String logging_level) {
+	this.logging_level = logging_level;
+  }
+
+@Override
   public String toString() {
     return "Grader{" +
             "id='" + id + '\'' +
@@ -91,6 +102,7 @@ public class GraderConfig {
             ", config_path='" + config_path + '\'' +
             ", max_runtime_seconds=" + timeout_seconds +
             ", max_concurrent_grade_processes=" + concurrent_grading_processes +
+            ", logging_level=" + logging_level +
             '}';
   }
 }

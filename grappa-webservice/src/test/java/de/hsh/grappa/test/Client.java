@@ -8,12 +8,12 @@ import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.service.GraderPoolManager;
-import de.hsh.grappa.utils.TestConfig;
+import de.hsh.grappa.test.utils.TestConfig;
+import de.hsh.grappa.util.FilenameUtils;
+import de.hsh.grappa.util.IOUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Before;
 import org.junit.Ignore;

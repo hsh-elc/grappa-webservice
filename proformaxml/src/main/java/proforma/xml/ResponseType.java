@@ -41,7 +41,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
     "files",
     "responseMetaData"
 })
-public class ResponseType {
+public class ResponseType implements AbstractResponseType {
 
     @XmlElement(name = "merged-test-feedback", namespace = "urn:proforma:v2.1")
     protected MergedTestFeedbackType mergedTestFeedback;
@@ -57,6 +57,12 @@ public class ResponseType {
     protected String lang;
     @XmlAttribute(name = "submission-id")
     protected String submissionId;
+
+    
+    @Override public String proFormAVersion() {
+        return "2.1";
+    }
+
 
     /**
      * Gets the value of the mergedTestFeedback property.

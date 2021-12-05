@@ -1,7 +1,7 @@
 package de.hsh.grappa.rest;
 
 import de.hsh.grappa.exceptions.AuthenticationException;
-import de.hsh.grappa.utils.Json;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +21,6 @@ public class AuthExceptionMapper implements
     public Response toResponse(AuthenticationException e) {
         log.error(e.getMessage());
         return Response.status(Response.Status.UNAUTHORIZED)
-            .entity(Json.createJsonExceptionMessage(e)).build();
+            .entity(Util.createJsonExceptionMessage(e)).build();
     }
 }

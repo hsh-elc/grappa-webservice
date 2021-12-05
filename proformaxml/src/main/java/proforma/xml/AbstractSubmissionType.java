@@ -10,5 +10,6 @@ import javax.xml.bind.annotation.XmlTransient;
     // go here in case a multi versioned Proforma
     // library should be used
 })
-public interface AbstractSubmissionType {
+public interface AbstractSubmissionType extends AbstractProformaType {
+
 }

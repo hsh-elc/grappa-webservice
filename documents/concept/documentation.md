@@ -36,9 +36,9 @@ A web service for connecting multiple Learn Management Systems to multiple autom
 
 ### 2.1 System Requirements
 
-- [JDK 10 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+- [JDK 11 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
-  *Note: JDK 10 is used to develop and compile the Grappa web service. Backend Plugin modules use JDK 8 to ensure compatibility with existing graders.*
+  *Note: JDK 11 is used to develop and compile the Grappa web service. Backend Plugin modules use JDK 8 to ensure compatibility with existing graders.*
 - [Apache Tomcat 8.X or higher](http://tomcat.apache.org/) for running the web service
 - [Apache Maven](https://maven.apache.org/index.html) for building a web application resource
 - [Redis](https://redis.io/) for storing ProFormA submissions and results
@@ -96,7 +96,7 @@ Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-pro
     
 *Note: skipping tests is recommended at this point, since running the tests requires the web service to be already deployed and running in Tomcat. Not skipping the tests will not affect the build process in any way, but it will result in additional error messages on part of the maven-test-plugin.* 
 
-4. Copy the resulting WAR file `grappa-webservice/grappa-webservice/target/grappa-webservice-2.0.0.jar`  to Tomcat's webapps directory (`CATALINA_BASE/webapps/`)
+4. Copy the resulting WAR file `grappa-webservice/grappa-webservice/target/grappa-webservice-2.M.N.jar`  to Tomcat's webapps directory (`CATALINA_BASE/webapps/grappa-webservice-2.jar`)
 
 5. Configure Grappa
 
@@ -105,9 +105,9 @@ Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-pro
   
 5. Run Tomcat (e.g. `sudo systemctl start tomcat`)
 
-  - you may want to test the web service locally by using a GET request to the [serivce's status endpoint](get-web-service-status) using  `curl` like so: `curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2.0.0/rest`, with `test:test` being the LMS ID and password hash, respectively
+  - you may want to test the web service locally by using a GET request to the [serivce's status endpoint](get-web-service-status) using  `curl` like so: `curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2/rest`, with `test:test` being the LMS ID and password hash, respectively
 
-6. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2.0.0/rest`
+6. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2/rest`
 
 ### 2.4 Configuration
 
@@ -212,9 +212,12 @@ graders:
     # submissions, either due to the student's code or an internal
     # server problem.
     timeout_seconds: 60
-    
+
     # Sets the number of maximum grader instances in this grader pool
     concurrent_grading_processes: 10
+    
+    # optional, if different from service setting above
+    logging_level: "WARN"
 
 # Storage part
 # Redis is used as a cache storage
@@ -622,7 +625,7 @@ Grappa passes submissions onto the actual grader backend system. A backend plugi
 
 The `proformaxml` module contains the POJO classes for the [ProForma](https://github.com/ProFormA/proformaxml) format (currently version 2.1).
 
-### 4.2 grappa-backend-plugin-api module
+### 4.2 grappa-common module
 
 There are two different ways to pass a submission to a grader system from within a grader backend plugin.
 
@@ -643,7 +646,7 @@ The backend plugin may convert the submission blob into a Java class instance an
 One bare-bones implementation would look like this:
 
 ```
-public class PythonGrader implements BackendPlugin {
+public class PythonGrader extends BackendPlugin {
     @Override
     public void init(Properties properties) throws Exception {
         // do initialization
@@ -653,14 +656,15 @@ public class PythonGrader implements BackendPlugin {
     public ResponseResource grade(SubmissionResource submissionResource) throws Exception {
     
         // Unmarshal the Proforma submission blob into an actual Java class using XML binding.
-        SubmissionType submissionPojo = ProformaConverter.convertToPojo(submissionResource);
+        // The Java object can be any of the supported ProFormA versions (currently 2.1 only).
+        AbstractSubmissionType submissionPojo = ProformaConverter.convertToPojo(submissionResource);
         
-        // Pass the submission on to the bakend grader system and await the result.
+        // Pass the submission on to the backend grader system and await the result.
         // The resulting response must be marshalled to a ResponseResource object.
         return useBackendGraderToGrade(submissionPojo);
     }
 
-    private ResponseResource useBackendGraderToGrade(SubmissionType submission) { 
+    private ResponseResource useBackendGraderToGrade(AbstractSubmissionType submission) { 
         /*...*/
     }
 }
@@ -692,11 +696,46 @@ dockerproxybackendplugin.copy_submission_to_directory_path=/var/grb_starter/tmp
 dockerproxybackendplugin.response_result_directory_path=/var/grb_starter/tmp
 ```
 
+# 5 Modules
+
+The following diagram shows the modules of the Grappa system and the dependencies between them.
+
+```
+         ┌───────────────────┐                       ┌───────────────┐
+   ┌─────┤ grappa-webservice ├───────────────────────► grappa-common │
+   │     └───────────────────┘                       └─▲─▲─┬─▲───┬───┘
+   │                                                   │ │ │ │   │
+   │     ┌────────────────────────────────────┐        │ │ │ │   │
+   │ ┌───┤ grappa-backend-plugin-docker-proxy ├────────┘ │ │ │ ┌─▼───────────┐
+   │ │   └────────────────────────────────────┘          │ │ │ │ proformaxml │
+   │ │                                                   │ │ │ └─▲───────────┘
+   │ │   ┌───────────────────────────────┐               │ │ │   │
+   │ │ ┌─┤ grappa-grader-backend-starter ├───────────────┘ │ │   │
+   │ │ │ └───────────────────────────────┘                 │ │   │
+   │ │ │                                                   │ │   │
+   │ │ │                                                   │ │   │
+┌──▼─▼─▼──────┐                                            │ │   │
+│ grappa-util ◄────────────────────────────────────────────┘ │   │
+└──────▲──────┘                                              │   │
+       │                                                     │   │
+       │                                    ┌────────────────┴───┴─────────────┐
+       └────────────────────────────────────┤ a grader-specific backend plugin │
+                                            └──────────────────────────────────┘
+```
+
+The following modules currently are built for Java-1.8-compatibility:
+
+- grappa-util
+- grappa-common
+- grappa-proforma
+
+The other modules are compile for Java-11-compatibility.
+
 <!---
 # Workflow
 
 -->
-# 5 Understanding the Submission Process 
+# 6 Understanding the Submission Process 
 
 ![Submitting a Proforma Submission](https://github.com/hsh-elc/grappa-webservice/raw/master/documents/concept/images/submitting.png "Submitting a Proforma Submission")
 

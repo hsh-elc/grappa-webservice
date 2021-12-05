@@ -1,14 +1,19 @@
 package de.hsh.grappa;
 
-import de.hsh.grappa.plugin.BackendPlugin;
-import de.hsh.grappa.proforma.MimeType;
-import de.hsh.grappa.proforma.ResponseResource;
-import de.hsh.grappa.proforma.SubmissionResource;
-import de.hsh.grappa.utils.BackendPluginLoadingHelper;
-import org.apache.commons.io.IOUtils;
+import de.hsh.grappa.common.BackendPlugin;
+import de.hsh.grappa.common.MimeType;
+import de.hsh.grappa.common.ResponseResource;
+import de.hsh.grappa.common.SubmissionResource;
+import de.hsh.grappa.util.ClassPathClassLoader;
+import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
+import de.hsh.grappa.util.IOUtils;
+import de.hsh.grappa.util.Strings;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -38,6 +43,17 @@ import java.util.Properties;
  */
 public class GraderBackendStarter {
     private static final Logger log = LoggerFactory.getLogger(GraderBackendStarter.class);
+    
+    static {
+        String lvl = System.getProperty("logging.level");
+        if (!Strings.isNullOrEmpty(lvl)) {
+            Level level = Level.toLevel(lvl);
+            ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("de.hsh.grappa");
+            root.setLevel(level);
+            root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("root");
+            root.setLevel(level);
+        }
+    }
 
     private static final String CONFIG_CLASS_PATHES = "grappa.plugin.grader.classpathes";
     private static final String CONFIG_CLASS_NAME = "grappa.plugin.grader.class";
@@ -70,8 +86,7 @@ public class GraderBackendStarter {
 
             BackendPlugin bp = null;
             try {
-                BackendPluginLoadingHelper.loadClasspathLibsFromProperties(bpStarterConfig);
-                bp = BackendPluginLoadingHelper.loadBackendPluginFromPropertiesAndInit(bpStarterConfig);
+                bp = loadBackendPluginFromProperties(bpStarterConfig);
             } catch (Exception e) {
                 log.error("Failed to load backend plugin.");
                 log.error(ExceptionUtils.getStackTrace(e));
@@ -87,6 +102,8 @@ public class GraderBackendStarter {
                 log.error(ExceptionUtils.getStackTrace(e));
                 System.exit(-1);
             }
+            
+            // TODO: assert that the submission is self containing and (no reference to external task).
 
             String graderConfigPath = bpStarterConfig.getProperty(CONFIG_GRADER_CONFIG_PATH);
             Properties graderConfig = new Properties();
@@ -101,7 +118,7 @@ public class GraderBackendStarter {
             ResponseResource responseResource = null;
             try {
                 log.info("Initializing grader backend...");
-                bp.init(graderConfig);
+                bp.init(graderConfig, null); // null = no boundary available in backend starter
                 log.info("Starting grading process...");
                 responseResource = bp.grade(submissionResource);
                 log.info("Grading finished.");
@@ -145,6 +162,24 @@ public class GraderBackendStarter {
             System.exit(-1);
         }
     }
+
+    
+    private static BackendPlugin loadBackendPluginFromProperties(Properties config) throws Exception {
+        String classpathes = config.getProperty(CONFIG_CLASS_PATHES);
+        String extensions = config.getProperty(CONFIG_FILE_EXTENSIONS);
+        Classpath cp = Classpath.of(classpathes, extensions);
+
+        String className = config.getProperty(CONFIG_CLASS_NAME);
+        
+        @SuppressWarnings("resource") // do not close the class loader, since we need it for further class loadings
+        ClassPathClassLoader<BackendPlugin> backendPluginLoader = 
+                new ClassPathClassLoader<>(BackendPlugin.class, "default");
+        backendPluginLoader.configure(cp);
+        BackendPlugin bp = backendPluginLoader.instantiateClass(className);
+        return bp;
+    
+    }
+    
 
     private static SubmissionResource loadProformaSubmission() throws Exception {
         Path submZipPath = Paths.get(TMP_INPUT_PATH, "submission.zip");
