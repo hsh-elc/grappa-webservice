@@ -21,7 +21,8 @@
 &nbsp;&nbsp;&nbsp;&nbsp;4.1 [proformaxml module](#41-proformaxml-module)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;4.2 [grappa-backend-plugin-api module](#42-grappa-backend-plugin-api-module)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;4.3 [grappa-backend-plugin-docker-proxy module](#43-grappa-backend-plugin-docker-proxy-module)<br>
-5 [Understanding the Submission Process](#5-understanding-the-submission-process)<br>
+5 [Modules](#5-modules)<br>
+6 [Understanding the Submission Process](#6-understanding-the-submission-process)<br>
 <!--- 5 [Docker](#2-internationalization)<br> -->
 <!--- 6 [Vagrant](#2-internationalization)<br> -->
 <!--- 7 [Development](#3-elements-and-types-that-are-used-in-several-parts-of-the-xsd)<br> -->
