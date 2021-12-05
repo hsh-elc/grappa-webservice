@@ -14,7 +14,6 @@ import de.hsh.grappa.common.SubmissionResource;
 import de.hsh.grappa.util.FilenameUtils;
 import de.hsh.grappa.util.IOUtils;
 import de.hsh.grappa.util.Strings;
-import de.hsh.grappa.util.proforma.ProformaConverter;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;

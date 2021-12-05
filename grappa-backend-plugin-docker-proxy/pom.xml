@@ -24,10 +24,6 @@
             <artifactId>grappa-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>proforma</groupId>
-            <artifactId>proformaxml</artifactId>
-        </dependency>
-        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>

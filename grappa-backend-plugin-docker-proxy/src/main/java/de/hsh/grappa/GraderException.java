@@ -1,7 +1,10 @@
 package de.hsh.grappa;
 
 public class GraderException extends Exception {
-    public GraderException() {
+    
+	private static final long serialVersionUID = 4581470094516588765L;
+
+	public GraderException() {
     }
 
     public GraderException(String message) {

@@ -4,13 +4,14 @@ import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.boundary.BoundaryImpl;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.common.*;
+import de.hsh.grappa.common.util.proforma.ProformaVersion;
+import de.hsh.grappa.common.util.proforma.SubmissionLive;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.BadRequestException;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.util.ObjectId;
-import de.hsh.grappa.util.proforma.Proforma21TaskHelper;
-import de.hsh.grappa.util.proforma.SubmissionLive;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +39,11 @@ public class SubmissionProcessor {
     }
 
     private String getTastUuid() throws Exception {
-    	return Proforma21TaskHelper.getTaskUuid(getTaskResource());
+    	return ProformaVersion.getTaskHelper().getTaskUuid(getTaskResource());
     }
     
     private TaskResource getTaskResource() throws Exception {
-    	return subm.getTask(boundary);
+    	return subm.getTask(boundary, ProformaVersion.getSubmissionHelper());
     }
     
     

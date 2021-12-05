@@ -19,12 +19,12 @@
 
   <dependencies>
     <dependency>
-      <groupId>proforma</groupId>
-      <artifactId>proformaxml</artifactId>
-    </dependency>
-    <dependency>
       <groupId>de.hsh.grappa</groupId>
       <artifactId>grappa-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>proforma</groupId>
+      <artifactId>proformaxml</artifactId>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>

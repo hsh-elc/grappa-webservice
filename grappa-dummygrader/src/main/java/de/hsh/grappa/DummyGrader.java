@@ -4,24 +4,18 @@ import de.hsh.grappa.common.BackendPlugin;
 import de.hsh.grappa.common.MimeType;
 import de.hsh.grappa.common.ResponseResource;
 import de.hsh.grappa.common.SubmissionResource;
+import de.hsh.grappa.common.util.proforma.ProformaAttachedEmbeddedFileInfo;
+import de.hsh.grappa.common.util.proforma.ProformaConverter;
+import de.hsh.grappa.common.util.proforma.ProformaResponseHelper;
+import de.hsh.grappa.common.util.proforma.ProformaSubmissionHelper;
+import de.hsh.grappa.common.util.proforma.ProformaVersion;
+import de.hsh.grappa.common.util.proforma.ResponseLive;
+import de.hsh.grappa.common.util.proforma.SubmissionLive;
 import de.hsh.grappa.util.IOUtils;
 import de.hsh.grappa.util.Strings;
-import de.hsh.grappa.util.proforma.ProformaConverter;
-import de.hsh.grappa.util.proforma.ResponseLive;
-import de.hsh.grappa.util.proforma.ProformaLiveObject.FileInfo;
-import de.hsh.grappa.util.proforma.SubmissionLive;
 import proforma.ProformaSubmissionZipPathes;
+import proforma.xml.AbstractResponseType;
 import proforma.xml.AbstractSubmissionType;
-import proforma.xml.ExternalSubmissionType;
-import proforma.xml.GraderEngineType;
-import proforma.xml.MergedTestFeedbackType;
-import proforma.xml.OverallResultType;
-import proforma.xml.ResponseFilesType;
-import proforma.xml.ResponseMetaDataType;
-import proforma.xml.ResponseType;
-import proforma.xml.SubmissionFileType;
-import proforma.xml.SubmissionFilesType;
-import proforma.xml.SubmissionType;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -37,6 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 
+/**
+ * This dummy grader currently works with ProFormA version 2.1 only.
+ *
+ */
 public class DummyGrader extends BackendPlugin {
 
     private static final Logger log = LoggerFactory.getLogger(DummyGrader.class);
@@ -55,9 +53,11 @@ public class DummyGrader extends BackendPlugin {
 
     @Override
     public ResponseResource grade(SubmissionResource submissionResource) throws Exception {
+        ProformaSubmissionHelper psh = ProformaVersion.getSubmissionHelper();
+        ProformaResponseHelper prh = ProformaVersion.getResponseHelper();
         
         SubmissionLive submissionLive= new SubmissionLive(submissionResource);
-        SubmissionType subm= submissionLive.getSubmissionAs(SubmissionType.class);
+        AbstractSubmissionType subm= submissionLive.getSubmission(psh.getPojoType());
         
         StringBuilder feedback = new StringBuilder("<h4>This is dummy feedback from the dummy grader</h4>");
         feedback.append("Local time: ").append(LocalDateTime.now());
@@ -66,15 +66,11 @@ public class DummyGrader extends BackendPlugin {
         // To test this grader, you could try the task in src/main/resources/task.zip
         
         double score = 0.0; // the default
-        SubmissionFilesType files = subm.getFiles();
-        ExternalSubmissionType es = subm.getExternalSubmission();
-        if (files != null) {
+        
+        if (psh.hasSubmissionFiles(subm)) {
             feedback.append("<p><b>Submission files</b></p>\n");
             feedback.append("<ul>");
-            for (SubmissionFileType sf : files.getFile()) {
-                FileInfo fi = submissionLive.getFromFileChoiceGroup(sf.getId(), sf.getMimetype(),
-                       sf.getEmbeddedBinFile(), sf.getEmbeddedTxtFile(), sf.getAttachedBinFile(), sf.getAttachedTxtFile(),
-                       ProformaSubmissionZipPathes.SUBMISSION_DIRECTORY);
+        	for (ProformaAttachedEmbeddedFileInfo fi : psh.getSubmissionFiles(subm, submissionLive.getZipContent())) {
                 feedback.append("<li>id: ").append(fi.getId()).append("<br>\n");
                 feedback.append("  mimetype: ").append(fi.getMimetype()).append("<br>\n");
                 feedback.append("  filename: ").append(fi.getFilename()).append("<br>\n");
@@ -114,34 +110,18 @@ public class DummyGrader extends BackendPlugin {
                 feedback.append("</li>");
             }
             feedback.append("</ul>");
-        } else if (es != null) {
+        } else if (psh.hasExternalSubmission(subm)) {
             feedback.append("<p><b>external submission</b></p>\n");
-            String uri = es.getUri();
+            String uri = psh.getExternalSubmissionUri(subm);
             feedback.append("<p>uri = ").append(uri).append("</p>");
         } else {
             throw new IllegalArgumentException("Neither files nor external submission found in submission");
         }
         
-        String feedbackString= feedback.toString();
-        MergedTestFeedbackType mtf = new MergedTestFeedbackType();
-        mtf.setStudentFeedback(feedbackString);
-        mtf.setTeacherFeedback(feedbackString);
-        OverallResultType or = new OverallResultType();
-        or.setScore(BigDecimal.valueOf(score));
-        mtf.setOverallResult(or);
-
-        ResponseType response = new ResponseType();
-        response.setFiles(new ResponseFilesType()); // empty, but required
-        response.setMergedTestFeedback(mtf);
-        response.setSubmissionId(subm.getId());
-        ResponseMetaDataType meta = new ResponseMetaDataType();
-        GraderEngineType ge = new GraderEngineType();
-        ge.setName(this.getClass().getName());
-        meta.setGraderEngine(ge);
-        response.setResponseMetaData(meta);
+        AbstractResponseType response = prh.createMergedTestFeedbackResponse(feedback.toString(), BigDecimal.valueOf(score), psh.getSubmissionId(subm), this.getClass().getName());
         
         ResponseLive responseLive = new ResponseLive(response, null, MimeType.XML);
-        return responseLive.toResource();
+        return responseLive.toResource(prh.getPojoType());
         
         // old version
         //return oldGrade(submissionResource);

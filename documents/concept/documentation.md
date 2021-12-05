@@ -701,36 +701,41 @@ dockerproxybackendplugin.response_result_directory_path=/var/grb_starter/tmp
 
 The following diagram shows the modules of the Grappa system and the dependencies between them.
 
-```
-         ┌───────────────────┐                       ┌───────────────┐
-   ┌─────┤ grappa-webservice ├───────────────────────► grappa-common │
-   │     └───────────────────┘                       └─▲─▲─┬─▲───┬───┘
-   │                                                   │ │ │ │   │
-   │     ┌────────────────────────────────────┐        │ │ │ │   │
-   │ ┌───┤ grappa-backend-plugin-docker-proxy ├────────┘ │ │ │ ┌─▼───────────┐
-   │ │   └────────────────────────────────────┘          │ │ │ │ proformaxml │
-   │ │                                                   │ │ │ └─▲───────────┘
-   │ │   ┌───────────────────────────────┐               │ │ │   │
-   │ │ ┌─┤ grappa-grader-backend-starter ├───────────────┘ │ │   │
-   │ │ │ └───────────────────────────────┘                 │ │   │
-   │ │ │                                                   │ │   │
-   │ │ │                                                   │ │   │
-┌──▼─▼─▼──────┐                                            │ │   │
-│ grappa-util ◄────────────────────────────────────────────┘ │   │
-└──────▲──────┘                                              │   │
-       │                                                     │   │
-       │                                    ┌────────────────┴───┴─────────────┐
-       └────────────────────────────────────┤ a grader-specific backend plugin │
-                                            └──────────────────────────────────┘
-```
+![Modules](images/components1.png "Modules")
+
+`grappa-webservice` is the largest module and implements the restful webservice. It also operates a Redis cache to store tasks, submissions and responses. The `grappa-webservice` module does not know any details about the ProFormA format. It just pools and queues tasks, submissions and responses as blobs and organizes these blobs for various connected graders in the backend and for various connected learning management systems in the frontend. Any reading of task, submission or response data, that might in fact be necessary - e. g. the task uuid is needed to identify a task in the Redis cache - is delegated from `grappa-webservice` to `grappa-common'.
+
+`proformaxml-2-1` hosts all java classes representing a ProForma v2.1 task, submission and response. 
+
+`proformaxml` defines a few abstract base classes that are provided for those `proforma-...` module clients that want to reference a ProFormA object without specifying the ProFormA version, most notably the `grappa-common` module and the `grader-specific backend plugin` modules.
+
+`grappa-common` first provides the class `de.hsh.grappa.common.BackendPlugin` which is the base class of all backend plugins each serving a specific grader. Second this module implements the blobs `TaskResource`, `SubmissionResource` and `ResponseResource` that allow the other modules to abstract from the nitty-gritty details of the ProFormA format. Next, `grappa-common` offers a ProFormA utility interface, that makes it easier to read, modify and write a full-blown net of java objects from `proformaxml` and to convert these to and from the blobs mentioned previously. Typically it's a `grader-specific backend plugin` module that will use the ProFormA utility interface of the `grappa-common` module like an api of the Grappa system.
+
+`grappa-proforma-2-1` provides an implementation of the utility interface provided by `grappa-common`. In applying the dependency inversion pattern there is no module directly dependent on `grappa-proforma-2-1`, so it could be replaced easily by future modules for future ProFormA versions. These carefully considered dependencies should allow for Grappa operating concurrently more than one ProFormA version, but currently there is only one ProFormA version 2.1 supported.
+
+`A grader-specific backend plugin` module implements a subclass of `de.hsh.grappa.common.BackendPlugin`. The path of the module's jar file and the fully qualified classname are configured in the `graders` section of the `grappa-config.yaml` file. The `grappa-webservice` module will load and instantiate the subclass and pass grade requests to it. As such, the `grader-specific backend plugin's` code is running inside the JVM that also runs the `grappa-webservice` module. For simple `grader-specific backend plugins` this is convenient and efficient, but more demanding `grader-specific backend plugins` could run in conflicting situations with the `grappa-webservice` module, e. g. if the `grappa-webservice` module uses a different version of a third-party library than the `grader-specific backend plugin` module. For solving this and also to better protect the webservice host from flawed or malicious code in a `grader-specific backend plugin` module, the `grader-specific backend plugin` module can be wrapped into a docker container.
+
+The `grader-specific backend plugin` module usually calls the `grappa-common` ProFormA utility interface to process a submission. If this is not sufficient, a `grader-specific backend plugin` module also could directly use the java types in the `grappa-proforma-M-N` modules.
+
+`grappa-grader-backend-starter` is the module that bootstraps the docker container. It provides the class `de.hsh.grappa.GraderBackendStarter` that has a `main` method, which loads and instantiates a `grader-specific backend plugin` module. The `grader-specific backend plugin` module is more or less agnostic of whether it has been invoked from the `grappa-webservice` module or from the `grappa-grader-backend-starter` module.
+
+`grappa-backend-plugin-docker-proxy` is a special subclass of `de.hsh.grappa.common.BackendPlugin`, that creates a docker container, pushes the submission to the container's file system, and starts the bootstrap process of the container which leads to the `grappa-grader-backend-starter` module being executed inside the container. After the `grader-specific backend plugin` returns and after the `grappa-grader-backend-starter` module exits its `main` method, the `grappa-backend-plugin-docker-proxy` fetches the response from the container and discards the container. The `grappa-backend-plugin-docker-proxy` module processes submissions as blobs. This module should run with any future ProFormA version without modifications.
+
+![Additional utility module](images/components2.png "Additional utility module")
+
+`grappa-util` is a module of useful routines that are not specific to Grappa or ProFormA. Think about one of the Apache commons projects and you get the point about `grappa-util`.
 
 The following modules currently are built for Java-1.8-compatibility:
 
 - grappa-util
 - grappa-common
-- grappa-proforma
+- grappa-proforma-2-1
+- proformaxml-2-1
+- proformaxml-2-1
 
-The other modules are compile for Java-11-compatibility.
+The other modules are compiled for Java-11-compatibility.
+
+
 
 <!---
 # Workflow

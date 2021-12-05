@@ -28,7 +28,8 @@ public class XmlUtils {
     public static <T> T unmarshalToObject(InputStream is, Class<T> clazz) throws Exception {
         JAXBContext c = JAXBContext.newInstance(clazz);
         Unmarshaller u = c.createUnmarshaller();
-        JAXBElement<T> j = (JAXBElement<T>) u.unmarshal(is);
+        @SuppressWarnings("unchecked")
+		JAXBElement<T> j = (JAXBElement<T>) u.unmarshal(is);
         return j.getValue();
     }
 

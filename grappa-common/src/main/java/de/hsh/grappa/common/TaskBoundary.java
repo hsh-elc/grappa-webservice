@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.exceptions.NotFoundException;
 
+
 public interface TaskBoundary {
     /**
      * Load the task from a local cache like Redis

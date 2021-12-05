@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import de.hsh.grappa.cache.RedisController;
+import de.hsh.grappa.common.util.proforma.ProformaVersion;
 import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.GradingEnvironmentSetup;
@@ -47,6 +48,7 @@ public class GrappaServlet implements ServletContextListener {
             }
             log.info("Running grappa web service instance: '{}'.", grappaInstanceName);
             readConfigFile();
+            ProformaVersion.getVersion(); // fail fast, if the required grappa-proforma-N-M.jat is missing
             setupRedisConnection();
             //loadGradingEnvironmentSetups();
             GraderPoolManager.getInstance().init(CONFIG.getGraders());
