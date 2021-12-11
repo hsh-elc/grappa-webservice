@@ -3,8 +3,6 @@ package proforma.xml21;
 
 import javax.xml.bind.annotation.*;
 
-import proforma.xml.AbstractEmbeddedTxtFileType;
-
 
 /**
  * <p>Java class for embedded-txt-file-type complex type.
@@ -27,7 +25,7 @@ import proforma.xml.AbstractEmbeddedTxtFileType;
 @XmlType(name = "embedded-txt-file-type", namespace = "urn:proforma:v2.1", propOrder = {
     "value"
 })
-public class EmbeddedTxtFileType implements AbstractEmbeddedTxtFileType {
+public class EmbeddedTxtFileType {
 
     @XmlValue
     protected String value;

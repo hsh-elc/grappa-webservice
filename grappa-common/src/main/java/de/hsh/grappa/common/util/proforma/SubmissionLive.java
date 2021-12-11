@@ -1,12 +1,14 @@
 package de.hsh.grappa.common.util.proforma;
 
-import java.util.Map;
+import java.util.List;
 
 import de.hsh.grappa.common.MimeType;
 import de.hsh.grappa.common.SubmissionResource;
 import de.hsh.grappa.common.TaskBoundary;
-import de.hsh.grappa.common.TaskResource;
-import de.hsh.grappa.util.Zip.ZipContentElement;
+import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionFileHandle;
+import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionTaskHandle;
+import de.hsh.grappa.util.XmlUtils.MarshalOption;
+import de.hsh.grappa.util.Zip.ZipContent;
 import proforma.ProformaSubmissionZipPathes;
 import proforma.xml.AbstractSubmissionType;
 
@@ -30,16 +32,13 @@ import proforma.xml.AbstractSubmissionType;
  */
 public class SubmissionLive extends ProformaLiveObject<SubmissionResource, AbstractSubmissionType>{
 
-    private TaskResource task;
-    
-    
     /**
      * Creates an in-memory representation of a given submission resource
      * @param submissionResource The given resource
      * @throws Exception
      */
-    public SubmissionLive(SubmissionResource submissionResource) throws Exception {
-        super(submissionResource);
+    public SubmissionLive(SubmissionResource submissionResource, ProformaVersion pv, Class<?> ... contextClasses) throws Exception {
+        super(submissionResource, pv, contextClasses);
     }
     
     
@@ -48,8 +47,8 @@ public class SubmissionLive extends ProformaLiveObject<SubmissionResource, Abstr
      * data to be written to a ZIP or XML file when serialized.
      * @param mimeType must be ZIP, if {@code otherZipContentExceptMainXmlFile} is not empty.
      */
-    public SubmissionLive(AbstractSubmissionType subm, Map<String, ZipContentElement> otherZipContentExceptMainXmlFile, MimeType mimeType, Class<?> ... contextClasses) throws Exception {
-        super(subm, otherZipContentExceptMainXmlFile, mimeType, contextClasses);
+    public SubmissionLive(AbstractSubmissionType subm, ZipContent otherZipContentExceptMainXmlFile, MimeType mimeType, MarshalOption[] marshalOptions, Class<?> ... contextClasses) throws Exception {
+        super(subm, otherZipContentExceptMainXmlFile, mimeType, marshalOptions, contextClasses);
     }
     
 
@@ -63,31 +62,21 @@ public class SubmissionLive extends ProformaLiveObject<SubmissionResource, Abstr
 
     /**
      * @return a pojo deserialized from the submission.xml file. This pojo can be modified and stored later
-     * on by calling {@link #toResource()}.
+     * on by calling {@link #markPojoChanged(MarshalOption[], Class...)}.
      * @throws Exception
      */
-    public <T extends AbstractSubmissionType> T getSubmission(Class<T> clazz) throws Exception {
-        return super.getPojo(clazz);
+    public <T extends AbstractSubmissionType> T getSubmission() throws Exception {
+    	return super.getPojo(getProformaVersion().getSubmissionHelper().getPojoType());
     }
 
     /**
      * @return the original resource or the new resource created by {@link #toResource(Class...)}.
+     * @throws Exception 
      */
-    @Override public SubmissionResource getResource() {
+    @Override public SubmissionResource getResource() throws Exception {
         return (SubmissionResource)super.getResource();
     }
     
-    /**
-     * Create a new resource object from the live data.
-     * @param contextClasses classes needed when marshalling XML
-     * @return a new resource object
-     * @throws Exception
-     */
-    @Override
-    public SubmissionResource toResource(Class<? extends AbstractSubmissionType> pojoType, Class<?> ... contextClasses) throws Exception {
-        return (SubmissionResource) super.toResource(pojoType, contextClasses);
-    }
-
     
     @Override
     protected Class<SubmissionResource> getResourceType() {
@@ -98,50 +87,34 @@ public class SubmissionLive extends ProformaLiveObject<SubmissionResource, Abstr
     protected String getMainXmlFileName() {
         return ProformaSubmissionZipPathes.SUBMISSION_XML_FILE_NAME;
     }
-
-    /**
-     * Retrieves the task as part of the submission.
-     * This will trigger a {@link #getSubmission()} call.
-     * Currently supported are:
-     * <ul>
-     *   <li>Supported: ProFormA 2.1</li>
-     *   <li>Unsupported: any other ProFormA version</li>
-     *   <li>Supported: attached xml and zip task files</li>
-     *   <li>Supported: external tasks retrievable from a local cache or from the internet</li>
-     *   <li>Supported: embedded task zip file and embedded task xml file</li>
-     *   <li>Unsupported: native task element</li>
-     * </ul>
-     * @return The task as a resource
-     * @throws Exception
-     */
-    public TaskResource getTask(TaskBoundary tb, ProformaSubmissionHelper sh) throws Exception {
-        if (task != null) return task;
-        
-        AbstractSubmissionType s = getPojo(sh.getPojoType());
-        if (sh.isTaskExternal(s)) {
-            task = sh.createTaskFromExternal(s, tb);
-        } else if (sh.isTaskElement(s)) {
-            throw new UnsupportedOperationException("TODO: implement native xml task element");
-        } else switch (sh.getTaskIncludedVariant(s)) {
-			case ATTACHED_XML:
-				task = sh.createTaskFromAttachedXmlFile(s, getZipContent());
-				break;
-			case ATTACHED_ZIP:
-				task = sh.createTaskFromAttachedZipFile(s, getZipContent());
-				break;
-			case EMBEDDED_XML:
-				task = sh.createTaskFromEmbeddedXmlFile(s);
-				break;
-			case EMBEDDED_ZIP:
-				task = sh.createTaskFromEmbeddedZipFile(s);
-				break;
-			case NONE:
-				break;
-			default:
-	            throw new IllegalArgumentException("Unknown task element in submission");        
-        }
-        
-        return task;
-    }
     
+    public TaskLive getTask(TaskBoundary tb) throws Exception {
+    	return getSubmissionTaskHandle(tb).getTask();
+    }
+
+    
+    
+	public String getSubmissionId() throws Exception {
+		return getProformaVersion().getSubmissionHelper().getSubmissionId(getSubmission());
+	}
+
+	public ProformaSubmissionTaskHandle getSubmissionTaskHandle(TaskBoundary tb) {
+		return getProformaVersion().getSubmissionHelper().getSubmissionTaskHandle(this, tb);
+	}
+	
+
+	public boolean hasSubmissionFiles() throws Exception {
+		return getProformaVersion().getSubmissionHelper().hasSubmissionFiles(getSubmission());
+	}
+	public List<? extends ProformaSubmissionFileHandle> getSubmissionFileHandles() throws Exception {
+		return getProformaVersion().getSubmissionHelper().getSubmissionFileHandles(getSubmission(), getZipContent());
+	}
+	public boolean hasExternalSubmission() throws Exception {
+		return getProformaVersion().getSubmissionHelper().hasExternalSubmission(getSubmission());
+	}
+	public String getExternalSubmissionUri() throws Exception {
+		return getProformaVersion().getSubmissionHelper().getExternalSubmissionUri(getSubmission());
+	}
+	
+	
 }

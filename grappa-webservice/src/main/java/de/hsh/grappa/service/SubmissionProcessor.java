@@ -3,15 +3,17 @@ package de.hsh.grappa.service;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.boundary.BoundaryImpl;
 import de.hsh.grappa.cache.RedisController;
-import de.hsh.grappa.common.*;
+import de.hsh.grappa.common.Boundary;
+import de.hsh.grappa.common.SubmissionResource;
+import de.hsh.grappa.common.TaskResource;
 import de.hsh.grappa.common.util.proforma.ProformaVersion;
 import de.hsh.grappa.common.util.proforma.SubmissionLive;
+import de.hsh.grappa.common.util.proforma.TaskLive;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.BadRequestException;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.util.ObjectId;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,25 +27,34 @@ import org.slf4j.LoggerFactory;
 public class SubmissionProcessor {
     private static final Logger log = LoggerFactory.getLogger(SubmissionProcessor.class);
     private SubmissionLive subm;
+    private TaskLive task;
     private String graderId;
     private LmsConfig lmsConfig;
     private Boundary boundary;
 
     public SubmissionProcessor(/*GrappaConfig config,*/ SubmissionResource subm, String graderId, LmsConfig lmsConfig) throws Exception {
         //this.config = config;
-    	this.subm = new SubmissionLive(subm);
+    	this.subm = new SubmissionLive(subm, ProformaVersion.getDefault());
         //this.subm = createProformaSubmission(subm);
         this.graderId = graderId;
         this.lmsConfig = lmsConfig;
         this.boundary = new BoundaryImpl();
     }
 
-    private String getTastUuid() throws Exception {
-    	return ProformaVersion.getTaskHelper().getTaskUuid(getTaskResource());
+    private String getTaskUuid() throws Exception {
+    	return getTask().getTaskUuid();
+    	//return subm.getProformaVersion().getTaskHelper().getTaskUuid(getTask().getTask());
+    }
+    
+    private TaskLive getTask() throws Exception {
+    	if (task == null) {
+    		task = subm.getTask(boundary);
+    	}
+    	return task;
     }
     
     private TaskResource getTaskResource() throws Exception {
-    	return subm.getTask(boundary, ProformaVersion.getSubmissionHelper());
+    	return getTask().getResource();
     }
     
     
@@ -64,7 +75,7 @@ public class SubmissionProcessor {
             throw new GrappaException(String.format("Grader '%s' is disabled in the service's configuration file.",
                 graderId));
 
-        getTastUuid(); // trigger exception if invalid
+        getTaskUuid(); // trigger exception if invalid
     }
 
     /**
@@ -79,7 +90,7 @@ public class SubmissionProcessor {
         cacheTask();
         // Queue submission for grading
         String gradeProcId = ObjectId.createObjectId();
-        RedisController.getInstance().pushSubmission(graderId, lmsConfig.getId(), gradeProcId, getTastUuid(),
+        RedisController.getInstance().pushSubmission(graderId, lmsConfig.getId(), gradeProcId, getTaskUuid(),
             subm.getResource(), prioritize);
         synchronized (GraderPoolManager.getInstance()) {
             GraderPoolManager.getInstance().notify();
@@ -94,7 +105,7 @@ public class SubmissionProcessor {
      * @throws Exception
      */
     private void cacheTask() throws Exception {
-    	String taskuuid = getTastUuid();
+    	String taskuuid = getTaskUuid();
         if (!RedisController.getInstance().isTaskCached(taskuuid)) {
             RedisController.getInstance().cacheTask(taskuuid, getTaskResource());
         } else {

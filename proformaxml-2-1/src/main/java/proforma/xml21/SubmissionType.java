@@ -3,7 +3,6 @@ package proforma.xml21;
 
 import javax.xml.bind.annotation.*;
 
-import proforma.xml.AbstractProformaType;
 import proforma.xml.AbstractSubmissionType;
 
 
@@ -53,10 +52,10 @@ import proforma.xml.AbstractSubmissionType;
 })
 public class SubmissionType implements AbstractSubmissionType {
 
-	@Override
-	public Class<? extends AbstractProformaType> getContextClass() {
-		return SubmissionType.class;
-	}
+//	@Override
+//	public Class<? extends AbstractProformaType> getContextClass() {
+//		return SubmissionType.class;
+//	}
 
     @XmlElement(name = "external-task", namespace = "urn:proforma:v2.1")
     protected ExternalTaskType externalTask;
@@ -77,7 +76,7 @@ public class SubmissionType implements AbstractSubmissionType {
     @XmlAttribute(name = "id")
     protected String id;
 
-	@Override public String proFormAVersion() {
+	@Override public String proFormAVersionNumber() {
 		return "2.1";
 	}
 

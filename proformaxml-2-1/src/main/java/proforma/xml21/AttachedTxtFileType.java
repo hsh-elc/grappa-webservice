@@ -5,8 +5,6 @@ import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import proforma.xml.AbstractAttachedTxtFileType;
-
 
 /**
  * <p>Java class for attached-txt-file-type complex type.
@@ -30,7 +28,7 @@ import proforma.xml.AbstractAttachedTxtFileType;
 @XmlType(name = "attached-txt-file-type", namespace = "urn:proforma:v2.1", propOrder = {
     "value"
 })
-public class AttachedTxtFileType implements AbstractAttachedTxtFileType {
+public class AttachedTxtFileType {
 
     @XmlValue
     protected String value;

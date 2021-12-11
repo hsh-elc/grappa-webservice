@@ -3,26 +3,77 @@ package de.hsh.grappa.util;
 import javax.xml.bind.*;
 import javax.xml.bind.annotation.XmlSchema;
 
+import org.xml.sax.SAXException;
+
+import com.sun.xml.txw2.output.XMLWriter;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.ThreadFactory;
+import java.util.regex.Pattern;
 
 public class XmlUtils {
-    public static String marshalToXml(Object source, Class<?>... type) {
+	
+	public static enum MarshalOption {
+		/**
+		 * leads to marshaling POJO into XML-String using CDATA-tags if element 
+		 * contains XML-control-characters (instead of transform them to XML-entities)
+		 */
+		CDATA;
+
+		private static final MarshalOption[] NONE = new MarshalOption[0];
+		
+		public static MarshalOption[] none() {
+			return NONE;
+		}
+
+		public static MarshalOption[] of(MarshalOption ... o) {
+			return o;
+		}
+		
+		public static boolean isCData(MarshalOption[] options) {
+			return isContained(CDATA, options);
+		}
+		
+		private static boolean isContained(MarshalOption option, MarshalOption[] options) {
+			for (MarshalOption o : options) {
+				if (option.equals(o)) return true;
+			}
+			return false;
+		}
+	}
+	
+    /**
+     * @param source: POJO that should be marshaled
+     * @param marshalOptions options
+     * @param type: JAXB class of given POJO
+     * @return XML-String of POJO 
+     * @throws IOException
+     * @throws JAXBException
+     */
+    public static String marshalToXml(Object source, MarshalOption[] marshalOptions, Class<?>... type) throws IOException, JAXBException {
         String result;
         StringWriter sw = new StringWriter();
-        try {
-            JAXBContext context = JAXBContext.newInstance(type);
-            Marshaller marshaller = context.createMarshaller();
+        JAXBContext jaxbContext;
+        jaxbContext=JAXBContext.newInstance(type);
+        Marshaller marshaller=jaxbContext.createMarshaller();
+        
+        if (MarshalOption.isCData(marshalOptions)) {
+            //see: https://stackoverflow.com/questions/3136375/how-to-generate-cdata-block-using-jaxb#answer-39557646
+            CDataContentHandler cdataHandler=new CDataContentHandler(sw, StandardCharsets.UTF_8);
+            marshaller.marshal(source,cdataHandler);
+        } else {
             marshaller.marshal(source, sw);
-            result = sw.toString();
-        } catch (JAXBException e) {
-            throw new RuntimeException(e);
         }
+        
+        result = sw.toString();
         return result;
     }
 
@@ -86,27 +137,26 @@ public class XmlUtils {
         }
     }
     
-    /**
-     * Marshaling POJO into XML-String using CDATA-tags if element contains XML-control-characters (instead of transform them to XML-entities) 
-     * @param source: POJO that should be marshaled
-     * @param type: JAXB class of given POJO
-     * @return XML-String of POJO with CDATA where required.
-     * @throws JAXBException
-     * @throws IOException
-     */
-    public static String marshalToXmlUsingCDATA(Object source,Class<?>...type) throws JAXBException, IOException{
-        String xmlStringWithCDATA=null;
-        StringWriter sw=new StringWriter();
-        
-        //see: https://stackoverflow.com/questions/3136375/how-to-generate-cdata-block-using-jaxb#answer-39557646
-        JAXBContext jaxbContext;
-        jaxbContext=JAXBContext.newInstance(type);
-        Marshaller marshaller=jaxbContext.createMarshaller();
-        
-        CDataContentHandler cdataHandler=new CDataContentHandler(sw,"utf-8");
-        marshaller.marshal(source,cdataHandler);
-        
-        xmlStringWithCDATA=sw.toString();
-        return xmlStringWithCDATA;
+    //from: https://stackoverflow.com/questions/3136375/how-to-generate-cdata-block-using-jaxb#answer-39557646
+    //class XMLWriter contained in grappa-backend-plugin-api already
+    private static class CDataContentHandler extends XMLWriter {
+        // public class CDataContentHandler extends com.sun.xml.txw2.output.XMLWriter{
+        public CDataContentHandler(Writer writer, Charset encoding) throws IOException {
+            super(writer, encoding.name());
+        }
+
+        // see http://www.w3.org/TR/xml/#syntax
+        private static final Pattern XML_CHARS = Pattern.compile("[<>&]");
+
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            boolean useCData = XML_CHARS.matcher(new String(ch, start, length)).find();
+            if (useCData) {
+                super.startCDATA();
+            }
+            super.characters(ch, start, length);
+            if (useCData) {
+                super.endCDATA();
+            }
+        }
     }
 }

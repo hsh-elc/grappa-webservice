@@ -1,6 +1,8 @@
 package de.hsh.grappa.common;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import de.hsh.grappa.util.Zip;
 
 /**
  * The base class for the three different Proforma types,
@@ -29,6 +31,13 @@ public abstract class ProformaResource implements Serializable {
     public byte[] getContent() {
         return content;
     }
+    
+    public String getXmlContent() {
+    	if (mimeType.equals(MimeType.XML)) {
+    		return new String(content, StandardCharsets.UTF_8);
+    	}
+    	throw new UnsupportedOperationException("Cannot get xml content from a zip resource");
+    }
 
 //    public void setContent(byte[] content) {
 //        this.content = content;
@@ -48,11 +57,7 @@ public abstract class ProformaResource implements Serializable {
             getClass().getSimpleName(), content.length, mimeType);
     }
     
-    private static boolean isZip(byte[] bytes) {
-        return bytes.length > 1 && bytes[0] == (byte)'P' && bytes[1] == (byte)'K';        
-    }
-    
     private static MimeType guessMimeType(byte[] bytes) {
-        return isZip(bytes) ? MimeType.ZIP : MimeType.XML;
+        return Zip.isZip(bytes) ? MimeType.ZIP : MimeType.XML;
     }
 }

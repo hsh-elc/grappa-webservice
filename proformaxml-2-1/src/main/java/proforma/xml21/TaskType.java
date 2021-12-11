@@ -5,7 +5,6 @@ import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import proforma.xml.AbstractProformaType;
 import proforma.xml.AbstractTaskType;
 
 
@@ -59,10 +58,10 @@ import proforma.xml.AbstractTaskType;
 })
 public class TaskType implements AbstractTaskType {
 
-	@Override
-	public Class<? extends AbstractProformaType> getContextClass() {
-		return TaskType.class;
-	}
+//	@Override
+//	public Class<? extends AbstractProformaType> getContextClass() {
+//		return TaskType.class;
+//	}
 
     @XmlElement(namespace = "urn:proforma:v2.1", required = true)
     protected String title;
@@ -95,7 +94,7 @@ public class TaskType implements AbstractTaskType {
     @XmlSchemaType(name = "language")
     protected String lang;
 
-	@Override public String proFormAVersion() {
+	@Override public String proFormAVersionNumber() {
 		return "2.1";
 	}
 

@@ -1,10 +1,9 @@
 package de.hsh.grappa.common.util.proforma;
 
-import java.util.Map;
-
 import de.hsh.grappa.common.MimeType;
 import de.hsh.grappa.common.ResponseResource;
-import de.hsh.grappa.util.Zip.ZipContentElement;
+import de.hsh.grappa.util.XmlUtils.MarshalOption;
+import de.hsh.grappa.util.Zip.ZipContent;
 import proforma.ProformaResponseZipPathes;
 import proforma.xml.AbstractResponseType;
 
@@ -33,8 +32,8 @@ public class ResponseLive extends ProformaLiveObject<ResponseResource, AbstractR
      * @param resource The given resource
      * @throws Exception
      */
-    public ResponseLive(ResponseResource resource) throws Exception {
-        super(resource);
+    public ResponseLive(ResponseResource resource, ProformaVersion pv, Class<?> ... contextClasses) throws Exception {
+        super(resource, pv, contextClasses);
     }
 
     /**
@@ -42,8 +41,8 @@ public class ResponseLive extends ProformaLiveObject<ResponseResource, AbstractR
      * data to be written to a ZIP or XML file when serialized.
      * @param mimeType must be ZIP, if {@code otherZipContentExceptMainXmlFile} is not empty.
      */
-    public ResponseLive(AbstractResponseType response, Map<String, ZipContentElement> otherZipContentExceptMainXmlFile, MimeType mimeType, Class<?> ... contextClasses) throws Exception {
-        super(response, otherZipContentExceptMainXmlFile, mimeType, contextClasses);
+    public ResponseLive(AbstractResponseType response, ZipContent otherZipContentExceptMainXmlFile, MimeType mimeType, MarshalOption[] marshalOptions, Class<?> ... contextClasses) throws Exception {
+        super(response, otherZipContentExceptMainXmlFile, mimeType, marshalOptions, contextClasses);
     }
     
     /**
@@ -56,32 +55,23 @@ public class ResponseLive extends ProformaLiveObject<ResponseResource, AbstractR
 
     /**
      * @return a pojo deserialized from the response.xml file. This pojo can be modified and stored later
-     * on by calling {@link #toResource()}.
+     * on by calling {@link #markPojoChanged(MarshalOption[], Class...)}.
      * @throws Exception
      */
-    public <T extends AbstractResponseType> T getResponse(Class<T> clazz) throws Exception {
-        return super.getPojo(clazz);
+    public <T extends AbstractResponseType> T getResponse() throws Exception {
+        return super.getPojo(getProformaVersion().getResponseHelper().getPojoType());
     }
     
     /**
      * @return the original resource or the new resource created by {@link #toResource(Class...)}.
+     * @throws Exception 
      */
-    @Override public ResponseResource getResource() {
+    @Override public ResponseResource getResource() throws Exception {
         return (ResponseResource)super.getResource();
     }
     
 
-    
-    /**
-     * Create a new resource object from the live data.
-     * @param contextClasses classes needed when marshalling XML
-     * @return a new resource object
-     * @throws Exception
-     */
-    @Override
-    public ResponseResource toResource(Class<? extends AbstractResponseType> pojoType, Class<?> ... contextClasses) throws Exception {
-        return (ResponseResource) super.toResource(pojoType, contextClasses);
-    }
+
 
     
     @Override

@@ -1,10 +1,13 @@
 package de.hsh.grappa.common.util.proforma;
 
-import java.util.Map;
+import java.util.List;
 
 import de.hsh.grappa.common.MimeType;
 import de.hsh.grappa.common.TaskResource;
-import de.hsh.grappa.util.Zip.ZipContentElement;
+import de.hsh.grappa.common.util.proforma.impl.ProformaTaskFileHandle;
+import de.hsh.grappa.exceptions.BadRequestException;
+import de.hsh.grappa.util.XmlUtils.MarshalOption;
+import de.hsh.grappa.util.Zip.ZipContent;
 import proforma.ProformaTaskZipPathes;
 import proforma.xml.AbstractTaskType;
 
@@ -33,8 +36,8 @@ public class TaskLive extends ProformaLiveObject<TaskResource, AbstractTaskType>
      * @param resource The given resource
      * @throws Exception
      */
-    public TaskLive(TaskResource resource) throws Exception {
-        super(resource);
+    public TaskLive(TaskResource resource, ProformaVersion pv, Class<?> ... contextClasses) throws Exception {
+        super(resource, pv, contextClasses);
     }
     
     /**
@@ -42,8 +45,8 @@ public class TaskLive extends ProformaLiveObject<TaskResource, AbstractTaskType>
      * data to be written to a ZIP or XML file when serialized.
      * @param mimeType must be ZIP, if {@code otherZipContentExceptMainXmlFile} is not empty.
      */
-    public TaskLive(AbstractTaskType task, Map<String, ZipContentElement> otherZipContentExceptMainXmlFile, MimeType mimeType, Class<?> ... contextClasses) throws Exception {
-        super(task, otherZipContentExceptMainXmlFile, mimeType, contextClasses);
+    public TaskLive(AbstractTaskType task, ZipContent otherZipContentExceptMainXmlFile, MimeType mimeType, MarshalOption[] marshalOptions, Class<?> ... contextClasses) throws Exception {
+        super(task, otherZipContentExceptMainXmlFile, mimeType, marshalOptions, contextClasses);
     }
     
     
@@ -57,33 +60,24 @@ public class TaskLive extends ProformaLiveObject<TaskResource, AbstractTaskType>
 
     /**
      * @return a pojo deserialized from the task.xml file. This pojo can be modified and stored later
-     * on by calling {@link #toResource()}.
+     * on by calling {@link #markPojoChanged(MarshalOption[], Class...)}.
      * @throws Exception
      */
-    public <T extends AbstractTaskType> T getTask(Class<T> clazz) throws Exception {
-        return super.getPojo(clazz);
+    public <T extends AbstractTaskType> T getTask() throws Exception {
+        return super.getPojo(getProformaVersion().getTaskHelper().getPojoType());
     }
 
 
     
     /**
      * @return the original resource or the new resource created by {@link #toResource(Class...)}.
+     * @throws Exception 
      */
-    @Override public TaskResource getResource() {
+    @Override public TaskResource getResource() throws Exception {
         return (TaskResource)super.getResource();
     }
     
 
-    /**
-     * Create a new resource object from the live data.
-     * @param contextClasses classes needed when marshalling XML
-     * @return a new resource object
-     * @throws Exception
-     */
-    @Override
-    public TaskResource toResource(Class<? extends AbstractTaskType> pojoType, Class<?> ... contextClasses) throws Exception {
-        return (TaskResource) super.toResource(pojoType, contextClasses);
-    }
 
     
     @Override
@@ -95,6 +89,24 @@ public class TaskLive extends ProformaLiveObject<TaskResource, AbstractTaskType>
     protected String getMainXmlFileName() {
         return ProformaTaskZipPathes.TASK_XML_FILE_NAME;
     }
+    
+    /**
+	 * @return the task's uuid
+	 * @throws UnsupportedOperationException if the task is unsupported version
+	 * @throws BadRequestException if taskuuid is missing in the task
+	 * @throws Exception
+	 */
+	public String getTaskUuid() throws Exception {
+		return getProformaVersion().getTaskHelper().getTaskUuid(getTask());
+	}
 
+	
+	/**
+	 * @return a list of handles allowing access to embedded and attached files.
+	 * @throws Exception
+	 */
+	public List<? extends ProformaTaskFileHandle> getTaskFileHandles() throws Exception {
+		return getProformaVersion().getTaskHelper().getTaskFileHandles(getTask(), getZipContent());
+	}
     
 }

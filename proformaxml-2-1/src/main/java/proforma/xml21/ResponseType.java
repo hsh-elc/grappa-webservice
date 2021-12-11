@@ -5,7 +5,6 @@ import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import proforma.xml.AbstractProformaType;
 import proforma.xml.AbstractResponseType;
 
 
@@ -46,10 +45,10 @@ import proforma.xml.AbstractResponseType;
 })
 public class ResponseType implements AbstractResponseType {
 	
-	@Override
-	public Class<? extends AbstractProformaType> getContextClass() {
-		return ResponseType.class;
-	}
+//	@Override
+//	public Class<? extends AbstractProformaType> getContextClass() {
+//		return ResponseType.class;
+//	}
 
     @XmlElement(name = "merged-test-feedback", namespace = "urn:proforma:v2.1")
     protected MergedTestFeedbackType mergedTestFeedback;
@@ -67,7 +66,7 @@ public class ResponseType implements AbstractResponseType {
     protected String submissionId;
 
     
-    @Override public String proFormAVersion() {
+    @Override public String proFormAVersionNumber() {
         return "2.1";
     }
 

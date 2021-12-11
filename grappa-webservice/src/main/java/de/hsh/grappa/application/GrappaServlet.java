@@ -48,7 +48,7 @@ public class GrappaServlet implements ServletContextListener {
             }
             log.info("Running grappa web service instance: '{}'.", grappaInstanceName);
             readConfigFile();
-            ProformaVersion.getVersion(); // fail fast, if the required grappa-proforma-N-M.jat is missing
+            ProformaVersion.getDefaultVersionNumber(); // fail fast, if the required grappa-proforma-N-M.jar is missing
             setupRedisConnection();
             //loadGradingEnvironmentSetups();
             GraderPoolManager.getInstance().init(CONFIG.getGraders());

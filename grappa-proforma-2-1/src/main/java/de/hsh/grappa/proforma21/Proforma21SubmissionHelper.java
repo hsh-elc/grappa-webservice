@@ -1,27 +1,17 @@
 package de.hsh.grappa.proforma21;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import de.hsh.grappa.common.MimeType;
 import de.hsh.grappa.common.TaskBoundary;
-import de.hsh.grappa.common.TaskResource;
-import de.hsh.grappa.common.util.proforma.IncludedTaskVariant;
-import de.hsh.grappa.common.util.proforma.ProformaAttachedEmbeddedFileInfo;
-import de.hsh.grappa.common.util.proforma.ProformaSubmissionHelper;
-import de.hsh.grappa.exceptions.NotFoundException;
-import de.hsh.grappa.util.Strings;
-import de.hsh.grappa.util.Zip.ZipContentElement;
-import proforma.ProformaSubmissionZipPathes;
+import de.hsh.grappa.common.util.proforma.ProformaVersion;
+import de.hsh.grappa.common.util.proforma.SubmissionLive;
+import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionHelper;
+import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionTaskHandle;
+import de.hsh.grappa.util.Zip.ZipContent;
 import proforma.xml.AbstractSubmissionType;
-import proforma.xml21.AttachedTxtFileType;
-import proforma.xml21.EmbeddedBinFileType;
 import proforma.xml21.ExternalSubmissionType;
-import proforma.xml21.ExternalTaskType;
 import proforma.xml21.FeedbackLevelType;
-import proforma.xml21.IncludedTaskFileType;
 import proforma.xml21.LmsType;
 import proforma.xml21.ResultSpecType;
 import proforma.xml21.SubmissionFileType;
@@ -30,136 +20,22 @@ import proforma.xml21.SubmissionType;
 
 public class Proforma21SubmissionHelper extends ProformaSubmissionHelper {
 
+	public Proforma21SubmissionHelper(ProformaVersion pv) {
+		super(pv);
+	}
+
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public Class<? extends AbstractSubmissionType> getPojoType() {
 		return SubmissionType.class;
 	}
+	
 
 	@Override
-	public List<ProformaAttachedEmbeddedFileInfo> getSubmissionFiles(AbstractSubmissionType submission, Map<String, ZipContentElement> zipContent) throws UnsupportedEncodingException {
-        SubmissionType s = (SubmissionType) submission;
-		SubmissionFilesType sf = s.getFiles();
-		if (sf == null) return null;
-		
-		ArrayList<ProformaAttachedEmbeddedFileInfo> result = new ArrayList<>();
-		for (SubmissionFileType f : sf.getFile()) {
-            ProformaAttachedEmbeddedFileInfo fi = new Proforma21FileChoiceGroupHelper().
-                	getFromFileChoiceGroup(f.getId(), f.getMimetype(),
-                       f.getEmbeddedBinFile(), f.getEmbeddedTxtFile(), 
-                       f.getAttachedBinFile(), f.getAttachedTxtFile(),
-                       ProformaSubmissionZipPathes.SUBMISSION_DIRECTORY, zipContent);
-            result.add(fi);
-		}
-		return result;
+	public ProformaSubmissionTaskHandle getSubmissionTaskHandle(SubmissionLive submission, TaskBoundary tb) {
+		return new Proforma21SubmissionTaskHandle(submission, tb);
 	}
-	
-	
-	@Override
-	public boolean isTaskExternal(AbstractSubmissionType submission) {
-        SubmissionType s = (SubmissionType) submission;
-        return s.getExternalTask() != null;
-	}
-	
-	@Override
-	public IncludedTaskVariant getTaskIncludedVariant(AbstractSubmissionType submission) {
-        SubmissionType s = (SubmissionType) submission;
-        IncludedTaskFileType included = s.getIncludedTaskFile();
-        if (included == null) {
-        	return IncludedTaskVariant.NONE;
-        }
-        if (null != included.getAttachedXmlFile()) {
-            return IncludedTaskVariant.ATTACHED_XML;
-        } else if (null != included.getAttachedZipFile()) {
-            return IncludedTaskVariant.ATTACHED_ZIP;
-        } else if (null != included.getEmbeddedZipFile()) {
-           return IncludedTaskVariant.EMBEDDED_ZIP;
-        } else if (null != included.getEmbeddedXmlFile()) {
-            return IncludedTaskVariant.EMBEDDED_XML;
-        } else {
-        	throw new IllegalArgumentException("Unknown IncludedTaskFileType");
-        }
-	}
-	
-	@Override
-	public boolean isTaskElement(AbstractSubmissionType submission) {
-        SubmissionType s = (SubmissionType) submission;
-        return s.getTask() != null;
-	}
-	
-	@Override
-	public TaskResource createTaskFromExternal(AbstractSubmissionType submission, TaskBoundary tb) throws Exception {
-        SubmissionType s = (SubmissionType) submission;
-        ExternalTaskType et = s.getExternalTask();
-        
-        String taskUuid = et.getUuid();
-        String taskRepoUrl = et.getUri();
-        if (Strings.isNullOrEmpty(taskRepoUrl)) {
-            if (Strings.isNullOrEmpty(taskUuid))
-                throw new Exception("Neither the task repository url nor the task uuid have been " +
-                    "specified.");
-
-            // If the task repo url is empty and the taskuuid is set, try getting the task from cache
-            try {
-                return tb.getCachedTask(taskUuid);
-            } catch (NotFoundException e) {
-                throw new NotFoundException(String.format("The task uuid '%s' specified in the external task element " +
-                    "(with the task repo url being empty) is not cached by the middleware.", taskUuid), e);
-            }
-        } else {
-            try {
-                return tb.downloadTask(taskRepoUrl);
-            } catch (Exception e) {
-                throw new Exception(String.format("Downloading external task resource failed: %s",
-                    taskRepoUrl), e);
-            }
-        }
-        
-    }
-	
-	
-	
-	@Override
-    public TaskResource createTaskFromAttachedXmlFile(AbstractSubmissionType submission, Map<String, ZipContentElement> zipContent) throws Exception {
-    	SubmissionType s = (SubmissionType) submission;
-        AttachedTxtFileType a= s.getIncludedTaskFile().getAttachedXmlFile();
-        String filePath = a.getValue();
-        return createTaskFromAttachedFile(filePath, MimeType.XML, zipContent);
-    }
-    
-	@Override
-    public TaskResource createTaskFromAttachedZipFile(AbstractSubmissionType submission, Map<String, ZipContentElement> zipContent) throws Exception {
-    	SubmissionType s = (SubmissionType) submission;
-        String filePath= s.getIncludedTaskFile().getAttachedZipFile();
-        return createTaskFromAttachedFile(filePath, MimeType.ZIP, zipContent);
-    }
-    
-    
-    private TaskResource createTaskFromAttachedFile(String filePath, MimeType mimeType, Map<String, ZipContentElement> zipContent) throws Exception {
-        String taskFilePath = ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + filePath;
-        ZipContentElement task= zipContent.get(taskFilePath);
-        if (task == null) {
-            throw new IllegalArgumentException("There is no file '"+taskFilePath+"' inside the ProFormA submission");
-        }
-        return new TaskResource(task.getBytes(), mimeType);
-    }
-    
-    
-	@Override
-    public TaskResource createTaskFromEmbeddedXmlFile(AbstractSubmissionType submission) throws Exception {
-    	SubmissionType s = (SubmissionType) submission;
-        EmbeddedBinFileType e = s.getIncludedTaskFile().getEmbeddedXmlFile();
-        byte[] bytes = e.getValue();
-        return new TaskResource(bytes, MimeType.XML);
-    }
-    
-	@Override
-    public TaskResource createTaskFromEmbeddedZipFile(AbstractSubmissionType submission) throws Exception {
-    	SubmissionType s = (SubmissionType) submission;
-        EmbeddedBinFileType e = s.getIncludedTaskFile().getEmbeddedZipFile();
-        byte[] bytes = e.getValue();
-        return new TaskResource(bytes, MimeType.ZIP);
-    }
 
 
 	@Override
@@ -231,6 +107,21 @@ public class Proforma21SubmissionHelper extends ProformaSubmissionHelper {
 		return result;
 	}
 
-
+	private Proforma21SubmissionFileHandle getSubmissionFileHandle(SubmissionFileType file, ZipContent zipContent) {
+		if (file == null) return null;
+		return new Proforma21SubmissionFileHandle(file, zipContent);
+	}
+		
+	@Override
+	public List<Proforma21SubmissionFileHandle> getSubmissionFileHandles(AbstractSubmissionType submission, ZipContent zipContent) {
+        SubmissionType s = (SubmissionType) submission;
+		SubmissionFilesType sf = s.getFiles();
+		if (sf == null) return null;
+		ArrayList<Proforma21SubmissionFileHandle> list= new ArrayList<>();
+		for (SubmissionFileType file : sf.getFile()) {
+			list.add(getSubmissionFileHandle(file, zipContent));
+		}
+		return list;
+	}
 	
 }

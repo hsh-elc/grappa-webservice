@@ -7,10 +7,12 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class Zip {
+	
     
     /**
      * An in-memory representation of a zip file's entry.
@@ -75,6 +77,12 @@ public class Zip {
         }
     }
     
+    public static class ZipContent extends TreeMap<String, ZipContentElement> {
+    	public ZipContent() {
+    		super();
+    	}
+    }
+    
     
     public static String getTextFileContentFromZip(byte[] zipBytes, String fileName, Charset charset) throws Exception {
         try (ByteArrayInputStream baos = new ByteArrayInputStream(zipBytes)) {
@@ -132,8 +140,8 @@ public class Zip {
      * @return the content of the zip stream as a map pointing paths to elements
      * @throws IOException
      */
-    public static Map<String,ZipContentElement> readZipFileToMap(InputStream zipStream) throws IOException {
-        Map<String,ZipContentElement> result= new TreeMap<>();
+    public static ZipContent readZipFileToMap(InputStream zipStream) throws IOException {
+        ZipContent result= new ZipContent();
         try (ZipArchiveInputStream zip = new ZipArchiveInputStream(new BufferedInputStream(zipStream))) {
             ZipArchiveEntry entry = null;
             byte[] buffer = new byte[10000000]; // 10Mb file
@@ -227,4 +235,29 @@ public class Zip {
 //            throw e;
 //        }
 //    }
+    
+    
+    
+    public static boolean isZip(byte[] bytes) {
+        return bytes.length > 1 && bytes[0] == (byte)'P' && bytes[1] == (byte)'K';        
+    }
+    
+
+    /**
+     * If the given bytes represent a zip file with a single entry, this method returns that entry.
+     * If the bytes do not represent a zip file or it is a zip file with more or less than one file in it, 
+     * this method returns null.
+     * @param bytes
+     * @return
+     */
+    public static ZipContentElement unzipSingleOrNull(byte[] bytes) {
+    	if (!isZip(bytes)) return null;
+    	try {
+			ZipContent map = readZipFileToMap(new ByteArrayInputStream(bytes));
+			if (map.size() != 1) return null;
+			return map.values().iterator().next();
+		} catch (IOException e) {
+			return null;
+		}
+    }
 }

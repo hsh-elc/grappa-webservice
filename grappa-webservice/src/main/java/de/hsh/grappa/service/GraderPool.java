@@ -10,7 +10,7 @@ import de.hsh.grappa.common.BackendPlugin;
 import de.hsh.grappa.common.Boundary;
 import de.hsh.grappa.common.ResponseResource;
 import de.hsh.grappa.common.util.proforma.ProformaVersion;
-import de.hsh.grappa.common.util.proforma.ProformaResponseHelper.Audience;
+import de.hsh.grappa.common.util.proforma.impl.ProformaResponseHelper.Audience;
 import de.hsh.grappa.config.GraderConfig;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.AuthenticationException;
@@ -249,7 +249,11 @@ public class GraderPool {
                     "error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
             log.error(errorMessage);
             log.error(ExceptionUtils.getStackTrace(e));
-            return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY);
+            try {
+				return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY);
+			} catch (Exception e1) {
+				throw new Error(e1);
+			}
         } finally {
             totalGradingProcessesExecuted.incrementAndGet(); // finished one way or the other
             semaphore.release();
@@ -268,10 +272,11 @@ public class GraderPool {
         return lms.get();
     }
 
-    private ResponseResource createInternalErrorResponse(String errorMessage, QueuedSubmission subm, Audience audience) {
+    private ResponseResource createInternalErrorResponse(String errorMessage, QueuedSubmission subm, Audience audience)  throws Exception {
         LmsConfig lmsConfig = getLmsConfig(subm.getLmsId());
         boolean ietm = lmsConfig.getEietamtf();
-        return ProformaVersion.getResponseHelper().createInternalErrorResponse(errorMessage, subm.getSubmission(), boundary, audience, ietm);
+        ProformaVersion pv = ProformaVersion.getDefault();
+        return pv.getResponseHelper().createInternalErrorResponse(errorMessage, subm.getSubmission(), boundary, audience, ietm);
 
         // when eliminating the flag isExpected_internal_error_type_always_merged_test_feedback,
         // then the following call we do:

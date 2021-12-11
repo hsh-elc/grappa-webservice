@@ -3,7 +3,6 @@ package proforma.xml21;
 
 import javax.xml.bind.annotation.*;
 
-
 /**
  * <p>Java class for response-file-type complex type.
  * 

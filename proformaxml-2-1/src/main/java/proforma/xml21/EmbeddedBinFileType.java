@@ -3,8 +3,6 @@ package proforma.xml21;
 
 import javax.xml.bind.annotation.*;
 
-import proforma.xml.AbstractEmbeddedBinFileType;
-
 
 /**
  * <p>Java class for embedded-bin-file-type complex type.
@@ -27,7 +25,7 @@ import proforma.xml.AbstractEmbeddedBinFileType;
 @XmlType(name = "embedded-bin-file-type", namespace = "urn:proforma:v2.1", propOrder = {
     "value"
 })
-public class EmbeddedBinFileType implements AbstractEmbeddedBinFileType {
+public class EmbeddedBinFileType {
 
     @XmlValue
     protected byte[] value;
