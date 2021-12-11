@@ -7,7 +7,6 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -78,7 +77,8 @@ public class Zip {
     }
     
     public static class ZipContent extends TreeMap<String, ZipContentElement> {
-    	public ZipContent() {
+		private static final long serialVersionUID = 2877158655266768531L;
+		public ZipContent() {
     		super();
     	}
     }
