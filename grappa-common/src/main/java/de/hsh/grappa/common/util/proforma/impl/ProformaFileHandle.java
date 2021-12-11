@@ -4,6 +4,7 @@ package de.hsh.grappa.common.util.proforma.impl;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+import de.hsh.grappa.util.PropertyHandle;
 import de.hsh.grappa.util.Strings;
 import de.hsh.grappa.util.Zip;
 import de.hsh.grappa.util.Zip.ZipContent;
@@ -15,8 +16,6 @@ import de.hsh.grappa.util.Zip.ZipContentElement;
  * 
  * <p>The interface abstracts from the ProFormA version by returning and accepting
  * abstract "handles" to interact with embedded or attached / binary or text attachments.</p>
- *
- * @param <F> the file type.
  */
 public abstract class ProformaFileHandle {
 	
@@ -65,19 +64,89 @@ public abstract class ProformaFileHandle {
 		return zipContent;
 	}
 	
-	
+	/**
+	 * In case of an attached file that is part of a submission,
+	 * the file is contained in a subfolder (e. g. "task" or "submission").
+	 * @return the folder or path, that the file is contained in. The prefix must be 
+	 *     prepended to any attached file to get the real path inside the zip.
+	 *     The return value is either the empty string or it ends with a forward slash.
+	 *     The returned path uses the forward slash as the dir separator.
+	 */
 	public String getPathPrefixInsideZip() {
 		return pathPrefixInsideZip;
 	}
 	
 	
-	
+	/**
+	 * Usage (e. g. modify the filename): 
+	 * <pre>
+	 *   ProformaFileHandle pfh = ...;
+	 *   if (pfh.embeddedTxtFileHandle().get() != null) {
+	 *       String filename = pfh.embeddedTxtFileHandle().getFilename();
+	 *       filename = ...
+	 *       pfh.embeddedTxtFileHandle().setFilename(filename);
+	 *   }
+	 * </pre>
+	 * @return the returned handle provides service routines for further processing
+	 *     of an embedded text file (if any). 
+	 */
 	public abstract ProformaEmbeddedTxtFileHandle embeddedTxtFileHandle();
-	
+
+	/**
+	 * Usage: 
+	 * <pre>
+	 *   ProformaFileHandle pfh = ...;
+	 *   if (pfh.embeddedBinFileHandle().get() != null) {
+	 *       byte[] bytes = pfh.embeddedBinFileHandle().getContent();
+	 *       ... manipulate the bytes anyhow ...
+	 *       pfh.embeddedBinFileHandle().setContent(bytes);
+	 *   }
+	 * </pre>
+	 * @return the returned handle provides service routines for further processing
+	 *     of an embedded binary file (if any). 
+	 */
 	public abstract ProformaEmbeddedBinFileHandle embeddedBinFileHandle();
 	
+	/**
+	 * Usage:
+	 * <pre>
+	 *   ProformaFileHandle pfh = ...;
+	 *   if (pfh.attachedTxtFileHandle().get() != null) {
+	 *       String path = pfh.attachedTxtFileHandle().getPath();
+	 *       if ( ... path is invalid ...) {
+	 *           pfh.attachedTxtFileHandle().remove();
+	 *           // ^ this will remove the attached txt file from the pojo only.
+	 *           // now we remove the file from the zip content as well:
+	 *           pfh.getZipContent().remove(path);
+	 *       }
+	 *   }
+	 * </pre>
+	 * @return the returned handle provides service routines for further processing
+	 *     of an attached text file (if any).
+	 */
 	public abstract ProformaAttachedTxtFileHandle attachedTxtFileHandle();
-	
+
+	/**
+	 * Usage (convert attached binary to text file):
+	 * <pre>
+	 *   ProformaFileHandle pfh = ...;
+	 *   String encoding = ...;
+	 *   if (pfh.attachedBinFileHandle().get() != null) {
+	 *       String path = pfh.attachedBinFileHandle().getPath();
+	 *       try {
+	 *           byte[] bytes = pfh.getZipContent().get(path).getBytes();
+	 *           String text = new String(bytes, encoding);
+	 *       } catch (Exception e) {
+	 *           // bytes cannot be processed as text in the given encoding
+	 *       }
+	 *       pfh.attachedTxtFileHandle().createAndSet()
+	 *           .setEncoding(encoding).setPath(path);
+	 *       pfh.attachedBinFileHandle().remove();
+	 *   }
+	 * </pre>
+	 * @return the returned handle provides service routines for further processing
+	 *     of an attached binary file (if any).
+	 */
 	public abstract ProformaAttachedBinFileHandle attachedBinFileHandle();
 	
 	
@@ -199,6 +268,7 @@ public abstract class ProformaFileHandle {
 				.setFilename(attachedFileName)
 				.setContent(b);
 		}
+		getZipContent().remove(fullAttachedFilePath);
 		attachedBinFileHandle().remove();
 	}
 	
@@ -223,6 +293,7 @@ public abstract class ProformaFileHandle {
 			.setFilename(attachedFileName)
 			.setContent(fileContent);
 
+		getZipContent().remove(fullAttachedFilePath);
 		attachedTxtFileHandle().remove();
 	}
 	
@@ -239,8 +310,7 @@ public abstract class ProformaFileHandle {
 	 *    (as guessed by {@link Strings#looksLikeUTF8(byte[])}). Then, the file is embedded as a text file.
 	 * @return true, if file was converted
 	 */
-	protected boolean convertToEmbedded(
-			boolean unzipSingleZipAttachments, boolean convertUTF8BytesToText) {
+	protected boolean convertToEmbedded(boolean unzipSingleZipAttachments, boolean convertUTF8BytesToText) {
 		
 		if (null != embeddedTxtFileHandle().get()) {
 			//if embedded directly skip

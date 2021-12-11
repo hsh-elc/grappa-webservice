@@ -3,6 +3,11 @@ package de.hsh.grappa.proforma21;
 import de.hsh.grappa.common.util.proforma.impl.ProformaExternalTaskHandle;
 import proforma.xml21.ExternalTaskType;
 
+
+/**
+ * This is a ProFormA 2.1 specific implementation of the child elements  
+ * of the <code>external-task-type</code>.
+ */
 public class Proforma21ExternalTaskHandle extends ProformaExternalTaskHandle {
 	public Proforma21ExternalTaskHandle(Object submission, String propertyName) {
 		super(submission, propertyName, ExternalTaskType.class);

@@ -1,5 +1,7 @@
 package de.hsh.grappa.common.util.proforma.impl;
 
+import de.hsh.grappa.util.PropertyHandle;
+
 /**
  * This is an abstraction of an external-task element as part of a submission.
  * It is independent of a specific ProFormA version.

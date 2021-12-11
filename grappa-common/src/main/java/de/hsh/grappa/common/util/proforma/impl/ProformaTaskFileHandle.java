@@ -1,5 +1,6 @@
 package de.hsh.grappa.common.util.proforma.impl;
 
+import de.hsh.grappa.util.PropertyHandle;
 import de.hsh.grappa.util.Strings;
 import de.hsh.grappa.util.Zip.ZipContent;
 

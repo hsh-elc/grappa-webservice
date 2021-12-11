@@ -2,7 +2,6 @@ package de.hsh.grappa.common.util.proforma;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
@@ -25,6 +24,28 @@ import proforma.xml.AbstractProformaType;
  * Helper class to represent a ProFormA task or submission or response in memory. 
  * This could be either a representation of
  * a XML or a ZIP file. 
+ * 
+ * <p>Usage scenario 1 (a task example):</p>
+ * <pre>
+ *   TaskResource resource= ...;
+ *   ProformaVersion pv = ...;
+ *   TaskLive live= new TaskLive(resource, pv);
+ *   AbstractTaskType pojo= live.getTask();
+ *   TaskResource res = live.getResource(); // get the original resource
+ *   // make some changes in the data of pojo.
+ *   pojo.set... ;
+ *   live.markPojoChanged(MarshalOption.none());
+ *   // create a new resource from the changes
+ *   TaskResource newResource= live.getResource();
+ * </pre>
+ * 
+ * <p>Usage scenario 2 (a response example):</p>
+ * <pre>
+ *   AbstractResponseType pojo = ...; // this carries the ProFormA version
+ *   ZipContent zip = ...;
+ *   ResponseLive live = new ResponseLive(pojo, zip, MimeType.ZIP, MarshalOption.of(MarshalOption.CDATA));
+ *   ResponseResource resource = live.getResource();
+ * </pre>
  */
 public abstract class ProformaLiveObject<R extends ProformaResource, P extends AbstractProformaType> {
 
@@ -279,11 +300,6 @@ public abstract class ProformaLiveObject<R extends ProformaResource, P extends A
 
     private void createContentFromResource() throws Exception {
         if (resource.getMimeType().equals(MimeType.ZIP)) {
-try (FileOutputStream fos = new FileOutputStream("D:\\sub-proformalive.zip")) {
-	fos.write(resource.getContent());
-}
-System.out.println(resource.getMimeType());
-System.out.println(java.util.Arrays.toString(resource.getContent()));
             try (ByteArrayInputStream baos = new ByteArrayInputStream(resource.getContent())) {
                 zipContent= Zip.readZipFileToMap(baos);
             }

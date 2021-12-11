@@ -11,19 +11,7 @@ import proforma.xml.AbstractResponseType;
  * <p>Helper class to represent a ProFormA response in memory. This could be either a representation of
  * a XML or a ZIP file. </p>
  * 
- * <p>Usage:</p>
- * <pre>
- * ResponseResource resource= ...;
- * ResponseLive live= new ResponseLive(resource);
- * ProformaResponseHelper ph = ...;  // e. g. ... = ProformaVersion.getResponseHelper();
- * AbstractResponseType pojo= live.getResponse(ph.getPojoType());
- * ResponseResource res = live.getResource(); // get the original resource
- * // make some changes in the data of pojo.
- * pojo.set... ;
- * // create a new resource from the changes
- * ResponseResource newResource= live.toResource(ph.getPojoType(), &lt;grader-specific-JAXB-classes&gt;);
- * live.getResource(); // returns the new resource
- * </pre>
+ * <p>For usage scenarios see {@link ProformaLiveObject}.</p>
  */
 public class ResponseLive extends ProformaLiveObject<ResponseResource, AbstractResponseType>{
 

@@ -193,13 +193,13 @@ public abstract class ProformaSubmissionTaskHandle {
     }
 	
 	
-    public TaskResource createTaskFromAttachedXmlFile() throws Exception {
+    private TaskResource createTaskFromAttachedXmlFile() throws Exception {
     	ZipContent zipContent = getSubmission().getZipContent();
         String filePath = includedTaskFileHandle().attachedXmlFileHandle().getPath();
         return createTaskFromAttachedFile(filePath, MimeType.XML, zipContent);
     }
      
-    public TaskResource createTaskFromAttachedZipFile() throws Exception {
+    private TaskResource createTaskFromAttachedZipFile() throws Exception {
     	ZipContent zipContent = getSubmission().getZipContent();
         String filePath = includedTaskFileHandle().attachedZipFileHandle().getPath();
         return createTaskFromAttachedFile(filePath, MimeType.ZIP, zipContent);
@@ -216,12 +216,12 @@ public abstract class ProformaSubmissionTaskHandle {
     }
     
 
-    public TaskResource createTaskFromEmbeddedXmlFile() throws Exception {
+    private TaskResource createTaskFromEmbeddedXmlFile() throws Exception {
     	byte[] bytes = includedTaskFileHandle().embeddedXmlFileHandle().getContent();
         return new TaskResource(bytes, MimeType.XML);
     }
     
-    public TaskResource createTaskFromEmbeddedZipFile() throws Exception {
+    private TaskResource createTaskFromEmbeddedZipFile() throws Exception {
     	byte[] bytes = includedTaskFileHandle().embeddedZipFileHandle().getContent();
         return new TaskResource(bytes, MimeType.ZIP);
     }
@@ -229,7 +229,7 @@ public abstract class ProformaSubmissionTaskHandle {
     
     
 	
-	public TaskResource createTaskFromExternal() throws Exception {
+    private TaskResource createTaskFromExternal() throws Exception {
         String taskUuid = externalTaskHandle().getUuid();
         String taskRepoUrl = externalTaskHandle().getUri();
         if (Strings.isNullOrEmpty(taskRepoUrl)) {

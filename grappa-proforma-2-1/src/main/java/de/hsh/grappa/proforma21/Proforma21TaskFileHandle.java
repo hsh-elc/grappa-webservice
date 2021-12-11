@@ -5,6 +5,11 @@ import de.hsh.grappa.common.util.proforma.impl.ProformaTaskFileHandle;
 import de.hsh.grappa.util.Zip.ZipContent;
 import proforma.xml21.TaskFileType;
 
+/**
+ * This is a ProFormA 2.1 specific implementation of the child elements for 
+ * attached and embedded files of the <code>task-file-type</code>.
+ * For usage examples see {@link ProformaTaskFileHandle}.
+ */
 public class Proforma21TaskFileHandle extends ProformaTaskFileHandle {
 	
 	private Proforma21EmbeddedTxtFileHandle embeddedTxtFileHandle;

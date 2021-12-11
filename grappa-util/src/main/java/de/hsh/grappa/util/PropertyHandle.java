@@ -1,4 +1,4 @@
-package de.hsh.grappa.common.util.proforma.impl;
+package de.hsh.grappa.util;
 
 import java.lang.reflect.InvocationTargetException;
 

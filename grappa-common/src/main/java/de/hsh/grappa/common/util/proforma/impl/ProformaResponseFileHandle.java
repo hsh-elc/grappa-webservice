@@ -1,5 +1,6 @@
 package de.hsh.grappa.common.util.proforma.impl;
 
+import de.hsh.grappa.util.PropertyHandle;
 import de.hsh.grappa.util.Strings;
 import de.hsh.grappa.util.Zip.ZipContent;
 
@@ -10,8 +11,7 @@ import de.hsh.grappa.util.Zip.ZipContent;
  * <p>This abstract class is independent of a specific ProFormA version.
  * Subclasses are version specific.</p>
  */
-public abstract class ProformaResponseFileHandle
-		extends ProformaFileHandle {
+public abstract class ProformaResponseFileHandle extends ProformaFileHandle {
 	
 	private PropertyHandle titleHandle;
 

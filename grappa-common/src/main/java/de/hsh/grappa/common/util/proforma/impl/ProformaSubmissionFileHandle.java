@@ -13,8 +13,7 @@ import proforma.ProformaSubmissionZipPathes;
  * abstract "handles" to interact with embedded or attached / binary or text attachments.</p>
  *
  */
-public abstract class ProformaSubmissionFileHandle
-		extends ProformaFileHandle {
+public abstract class ProformaSubmissionFileHandle extends ProformaFileHandle {
 	
 	protected ProformaSubmissionFileHandle(Object file, ZipContent zipContent) {
 		super(file, zipContent, ProformaSubmissionZipPathes.SUBMISSION_DIRECTORY + "/");

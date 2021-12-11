@@ -703,7 +703,7 @@ The following diagram shows the modules of the Grappa system and the dependencie
 
 ![Modules](images/components1.png "Modules")
 
-`grappa-webservice` is the largest module and implements the restful webservice. It also operates a Redis cache to store tasks, submissions and responses. The `grappa-webservice` module does not know any details about the ProFormA format. It just pools and queues tasks, submissions and responses as blobs and organizes these blobs for various connected graders in the backend and for various connected learning management systems in the frontend. Any reading of task, submission or response data, that might in fact be necessary - e. g. the task uuid is needed to identify a task in the Redis cache - is delegated from `grappa-webservice` to `grappa-common'.
+`grappa-webservice` is the largest module and implements the restful webservice. It also operates a Redis cache to store tasks, submissions and responses. The `grappa-webservice` module does not know any details about the ProFormA format. It just pools and queues tasks, submissions and responses as blobs and organizes these blobs for various connected graders in the backend and for various connected learning management systems in the frontend. Any reading of task, submission or response data, that might in fact be necessary - e. g. the task uuid is needed to identify a task in the Redis cache - is delegated from `grappa-webservice` to `grappa-common`.
 
 `proformaxml-2-1` hosts all java classes representing a ProForma v2.1 task, submission and response. 
 

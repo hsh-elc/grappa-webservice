@@ -3,6 +3,11 @@ package de.hsh.grappa.proforma21;
 import de.hsh.grappa.common.util.proforma.impl.ProformaChildElementTaskHandle;
 import proforma.xml21.TaskType;
 
+
+/**
+ * This is a ProFormA 2.1 specific implementation of the child elements  
+ * of the <code>task-type</code> elements as part of a <code>submission-type</code>.
+ */
 public class Proforma21ChildElementTaskHandle extends ProformaChildElementTaskHandle {
 	public Proforma21ChildElementTaskHandle(Object submission, String propertyName) {
 		super(submission, propertyName, TaskType.class);

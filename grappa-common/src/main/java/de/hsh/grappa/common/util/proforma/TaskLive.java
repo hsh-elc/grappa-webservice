@@ -15,19 +15,7 @@ import proforma.xml.AbstractTaskType;
  * <p>Helper class to represent a ProFormA task in memory. This could be either a representation of
  * a XML or a ZIP file. </p>
  * 
- * <p>Usage:</p>
- * <pre>
- * TaskResource resource= ...;
- * TaskLive live= new TaskLive(resource);
- * ProformaTaskHelper ph = ...;  // e. g. ... = ProformaVersion.getTaskHelper();
- * AbstractTaskType pojo= live.getTask(ph.getPojoType());
- * TaskResource res = live.getResource(); // get the original resource
- * // make some changes in the data of pojo.
- * pojo.set... ;
- * // create a new resource from the changes
- * TaskResource newResource= live.toResource(ph.getPojoType(), &lt;more-grader-specific-JAXB-classes&gt;);
- * live.getResource(); // returns the new resource
- * </pre>
+ * <p>For usage scenarios see {@link ProformaLiveObject}.</p>
  */
 public class TaskLive extends ProformaLiveObject<TaskResource, AbstractTaskType>{
 

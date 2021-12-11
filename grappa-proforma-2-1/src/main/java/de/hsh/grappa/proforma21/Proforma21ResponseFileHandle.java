@@ -2,9 +2,16 @@ package de.hsh.grappa.proforma21;
 
 
 import de.hsh.grappa.common.util.proforma.impl.ProformaResponseFileHandle;
+import de.hsh.grappa.common.util.proforma.impl.ProformaTaskFileHandle;
 import de.hsh.grappa.util.Zip.ZipContent;
 import proforma.xml21.ResponseFileType;
 
+
+/**
+ * This is a ProFormA 2.1 specific implementation of the child elements for 
+ * attached and embedded files of the <code>response-file-type</code>.
+ * For usage examples see {@link ProformaTaskFileHandle}.
+ */
 public class Proforma21ResponseFileHandle extends ProformaResponseFileHandle {
 	
 	private Proforma21EmbeddedTxtFileHandle embeddedTxtFileHandle;

@@ -1,5 +1,7 @@
 package de.hsh.grappa.common.util.proforma.impl;
 
+import de.hsh.grappa.util.PropertyHandle;
+
 /**
  * This is an abstraction of an embedded binary file, independent of a specific ProFormA version.
  * The type of {@code file} must implement a getter and a setter for a

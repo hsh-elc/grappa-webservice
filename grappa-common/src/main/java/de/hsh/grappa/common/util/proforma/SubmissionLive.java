@@ -16,19 +16,7 @@ import proforma.xml.AbstractSubmissionType;
  * <p>Helper class to represent a ProFormA submission in memory. This could be either a representation of
  * a XML or a ZIP file. </p>
  * 
- * <p>Usage:</p>
- * <pre>
- * SubmissionResource resource= ...;
- * SubmissionLive live= new SubmissionLive(resource);
- * ProformaSubmissionHelper ph = ...;  // e. g. ... = ProformaVersion.getSubmissionHelper();
- * AbstractSubmissionType pojo= live.getSubmission(ph.getPojoType());
- * SubmissionResource res = live.getResource(); // get the original resource
- * // make some changes in the data of pojo.
- * pojo.set... ;
- * // create a new resource from the changes
- * SubmissionResource newResource= live.toResource(ph.getPojoType(), &lt;more-grader-specific-JAXB-classes&gt;);
- * live.getResource(); // returns the new resource
- * </pre>
+ * <p>For usage scenarios see {@link ProformaLiveObject}.</p>
  */
 public class SubmissionLive extends ProformaLiveObject<SubmissionResource, AbstractSubmissionType>{
 
@@ -98,20 +86,46 @@ public class SubmissionLive extends ProformaLiveObject<SubmissionResource, Abstr
 		return getProformaVersion().getSubmissionHelper().getSubmissionId(getSubmission());
 	}
 
+	/**
+	 * The returned object provides service routines to process the task 
+	 * as part of a submission.
+	 * @param tb the task boundary is used to resolve external elements in the task. It can be null,
+	 *     if there a re no external elements.
+	 * @return a handle object.
+	 */
 	public ProformaSubmissionTaskHandle getSubmissionTaskHandle(TaskBoundary tb) {
 		return getProformaVersion().getSubmissionHelper().getSubmissionTaskHandle(this, tb);
 	}
 	
-
+	/**
+	 * @return true, if the submission has files instead of an external submission.
+	 * @throws Exception
+	 */
 	public boolean hasSubmissionFiles() throws Exception {
 		return getProformaVersion().getSubmissionHelper().hasSubmissionFiles(getSubmission());
 	}
+	
+	/**
+	 * @return a list of handles, one for each submitted file. A file handle provides service routines
+	 *     for further processing of each embedded or attached file.
+	 * @throws Exception
+	 */
 	public List<? extends ProformaSubmissionFileHandle> getSubmissionFileHandles() throws Exception {
 		return getProformaVersion().getSubmissionHelper().getSubmissionFileHandles(getSubmission(), getZipContent());
 	}
+	
+	/**
+	 * @return true, if this is a submission from an external source.
+	 * @throws Exception
+	 */
 	public boolean hasExternalSubmission() throws Exception {
 		return getProformaVersion().getSubmissionHelper().hasExternalSubmission(getSubmission());
 	}
+	
+	/**
+	 * @return the URI of the external submission.
+	 * @throws Exception
+	 */
 	public String getExternalSubmissionUri() throws Exception {
 		return getProformaVersion().getSubmissionHelper().getExternalSubmissionUri(getSubmission());
 	}

@@ -6,6 +6,7 @@ import de.hsh.grappa.common.TaskResource;
 import de.hsh.grappa.config.CacheConfig;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.exceptions.NotFoundException;
+import de.hsh.grappa.util.DebugUtils;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
@@ -16,6 +17,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -402,12 +405,22 @@ public class RedisController {
     public synchronized TaskResource getCachedTask(String taskUuid) throws NotFoundException, GrappaException {
         log.debug("[TaskUuid: '{}']: getCachedTask()", taskUuid);
         try (var jedis = jedisPool.getResource()) {
-            byte[] taskBytes = decodeToBytes(jedis.get(TASK_KEY_PREFIX.concat(taskUuid)));
+        	String v = jedis.get(TASK_KEY_PREFIX.concat(taskUuid));
+        	if (v == null) {
+                throw new NotFoundException(String.format("Task with uuid '%s' is not cached", taskUuid));
+        	}
+            byte[] taskBytes = decodeToBytes(v);
             if (null == taskBytes)
                 throw new NotFoundException(String.format("Task with uuid '%s' is not cached", taskUuid));
             return SerializationUtils.deserialize(taskBytes);
         } catch (org.apache.commons.lang3.SerializationException ex) {
             log.debug("[TaskUuid: '{}']: Task is not deserializable.", taskUuid);
+            try (StringWriter sw = new StringWriter();
+            		PrintWriter pw = new PrintWriter(sw)) {
+            	ex.printStackTrace(pw);
+            	log.debug("{}", sw.toString());
+            } catch (Exception e2) {
+            }
             throw new GrappaException(String.format("TaskUuid '%s' was found in" +
                     " the cache but the task could not be restored - internal error.", taskUuid));
         }
