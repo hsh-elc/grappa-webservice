@@ -2,6 +2,10 @@ package de.hsh.grappa.common;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.stream.Stream;
+
+import de.hsh.grappa.util.XmlUtils;
 import de.hsh.grappa.util.Zip;
 
 /**
@@ -58,6 +62,10 @@ public abstract class ProformaResource implements Serializable {
     }
     
     private static MimeType guessMimeType(byte[] bytes) {
-        return Zip.isZip(bytes) ? MimeType.ZIP : MimeType.XML;
+    	if (Zip.isZip(bytes)) return MimeType.ZIP; 
+        if (XmlUtils.isXml(bytes)) return MimeType.XML;
+        throw new IllegalArgumentException("Cant guess mimetype - neither ZP nor XML detected (first 10 bytes are " 
+        		+ Arrays.toString(Stream.of(bytes).limit(10).toArray()) 
+        		+ ")");
     }
 }

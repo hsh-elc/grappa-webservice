@@ -19,6 +19,7 @@ import de.hsh.grappa.util.Zip.ZipContentElement;
  */
 public abstract class ProformaFileHandle {
 	
+	private Object file;
 	private ZipContent zipContent;
 	private String pathPrefixInsideZip;
 	private PropertyHandle idHandle;
@@ -34,10 +35,17 @@ public abstract class ProformaFileHandle {
 	 */
 	protected ProformaFileHandle(Object file, ZipContent zipContent, String pathPrefixInsideZip) {
 		if (file == null) throw new AssertionError(this.getClass() + ": file shouldn't be null");
+		this.file = file;
 		this.zipContent = zipContent;
 		this.pathPrefixInsideZip = pathPrefixInsideZip;
 		this.idHandle = new PropertyHandle(file, "id", String.class);
 		this.mimetypeHandle = new PropertyHandle(file, "mimetype", String.class);
+	}
+	
+	
+	
+	public Object getFile() {
+		return file;
 	}
 	
 	public String getId() {

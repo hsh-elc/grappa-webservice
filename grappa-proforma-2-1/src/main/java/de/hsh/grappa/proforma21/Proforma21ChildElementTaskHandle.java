@@ -20,13 +20,13 @@ public class Proforma21ChildElementTaskHandle extends ProformaChildElementTaskHa
 	
 	@Override
 	public Proforma21ChildElementTaskHandle setUuid(String value) {
-		if (get() == null) throw new NullPointerException("Cannot set uuid because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("set uuid");
 		get().setUuid(value);
 		return this;
 	}
 	@Override
 	public String getUuid() {
-		if (get() == null) throw new NullPointerException("Cannot get uuid because "+this.getClass()+" embraces a null value");
+		assertNotNull("get uuid");
 		return get().getUuid();
 	}
 }

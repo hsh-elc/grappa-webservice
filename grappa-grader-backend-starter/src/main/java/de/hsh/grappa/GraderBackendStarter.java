@@ -8,6 +8,8 @@ import de.hsh.grappa.util.ClassPathClassLoader;
 import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
 import de.hsh.grappa.util.IOUtils;
 import de.hsh.grappa.util.Strings;
+import de.hsh.grappa.util.XmlUtils;
+import de.hsh.grappa.util.Zip;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -21,7 +23,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 /**
  * This class bootstraps and runs a BackendPlugin within a Docker
@@ -118,7 +122,7 @@ public class GraderBackendStarter {
             ResponseResource responseResource = null;
             try {
                 log.info("Initializing grader backend...");
-                bp.init(graderConfig, null); // null = no boundary available in backend starter
+                bp.init(graderConfig, new BackendStarterBoundaryImpl()); 
                 log.info("Starting grading process...");
                 responseResource = bp.grade(submissionResource);
                 log.info("Grading finished.");
@@ -194,9 +198,20 @@ public class GraderBackendStarter {
             mimeType = MimeType.XML;
         } else {
             throw new FileNotFoundException(String.format("Neither '%s' nor '%s' exist.",
-                submZipPath, submZipPath));
+                submXmlPath, submZipPath));
         }
         byte[] submBytes = Files.readAllBytes(submToLoadPath);
+        
+        // validate content
+        if (mimeType.equals(MimeType.ZIP) && !Zip.isZip(submBytes)) {
+            throw new IllegalArgumentException(String.format("The file '%s' seemingly does not contain zip data. (first 10 bytes are %s)",
+            		submZipPath, Arrays.toString(Stream.of(submBytes).limit(10).toArray())));
+        }
+        if (mimeType.equals(MimeType.XML) && !XmlUtils.isXml(submBytes)) {
+            throw new IllegalArgumentException(String.format("The file '%s' seemingly does not contain utf-8 encoded xml data. (first 10 bytes are %s)",
+            		submXmlPath, Arrays.toString(Stream.of(submBytes).limit(10).toArray())));
+        }
+        
         return new SubmissionResource(submBytes, mimeType);
     }
 }

@@ -20,24 +20,24 @@ public class Proforma21ExternalTaskHandle extends ProformaExternalTaskHandle {
 	}
 	@Override
 	public Proforma21ExternalTaskHandle setUuid(String value) {
-		if (get() == null) throw new NullPointerException("Cannot set uuid because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("set uuid");
 		get().setUuid(value);
 		return this;
 	}
 	@Override
 	public Proforma21ExternalTaskHandle setUri(String value) {
-		if (get() == null) throw new NullPointerException("Cannot set uri because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("set uri");
 		get().setUri(value);
 		return this;
 	}
 	@Override
 	public String getUuid() {
-		if (get() == null) throw new NullPointerException("Cannot get uuid because "+this.getClass()+" embraces a null value");
+		assertNotNull("get uuid");
 		return get().getUuid();
 	}
 	@Override
 	public String getUri() {
-		if (get() == null) throw new NullPointerException("Cannot get uri because "+this.getClass()+" embraces a null value");
+		assertNotNull("get uri");
 		return get().getUri();
 	}
 }

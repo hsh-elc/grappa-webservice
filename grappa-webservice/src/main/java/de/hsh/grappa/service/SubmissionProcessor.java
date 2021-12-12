@@ -43,7 +43,6 @@ public class SubmissionProcessor {
 
     private String getTaskUuid() throws Exception {
     	return getTask().getTaskUuid();
-    	//return subm.getProformaVersion().getTaskHelper().getTaskUuid(getTask().getTask());
     }
     
     private TaskLive getTask() throws Exception {

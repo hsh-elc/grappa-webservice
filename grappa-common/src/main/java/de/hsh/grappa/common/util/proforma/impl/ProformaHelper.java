@@ -25,4 +25,6 @@ public abstract class ProformaHelper {
 	
 	public abstract <T extends AbstractProformaType> Class<T> getPojoType();
 	
+	
+	
 }

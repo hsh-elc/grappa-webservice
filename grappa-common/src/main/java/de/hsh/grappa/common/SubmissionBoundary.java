@@ -3,6 +3,8 @@ package de.hsh.grappa.common;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
+import de.hsh.grappa.common.ResourceDownloader.Resource;
+
 public interface SubmissionBoundary {
 	/**
 	 * Load the submission from an internet resource
@@ -14,4 +16,17 @@ public interface SubmissionBoundary {
 	 * @throws IOException in case of other IO errors.
 	 */
 	SubmissionResource downloadSubmission(String submissionRepoUrl) throws MalformedURLException, IOException, Exception;
+	
+	
+	/**
+	 * Load submitted file from an internet resource.
+	 * Currently Grappa does not support {@code anyUrl} denoting a resolvable list of files, such as a web directory. Only
+	 * a single file can be downloaded.
+	 * @param anyUrl
+	 * @return
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 * @throws Exception
+	 */
+	Resource downloadResource(String anyUrl) throws MalformedURLException, IOException, Exception;
 }

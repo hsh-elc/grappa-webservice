@@ -26,7 +26,7 @@ public class Proforma21IncludedTaskFileHandle extends ProformaIncludedTaskFileHa
 
 	@Override
 	public Proforma21AttachedBinFileHandle attachedZipFileHandle() {
-		if (get() == null) throw new NullPointerException("Cannot get attachedZipFile handle because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("get attachedZipFile");
 		if (attachedZipFileHandle == null) {
 			attachedZipFileHandle = new Proforma21AttachedBinFileHandle(get(), "attachedZipFile");
 		}
@@ -35,7 +35,7 @@ public class Proforma21IncludedTaskFileHandle extends ProformaIncludedTaskFileHa
 
 	@Override
 	public Proforma21AttachedTxtFileHandle attachedXmlFileHandle() {
-		if (get() == null) throw new NullPointerException("Cannot get attachedXmlFile handle because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("get attachedXmlFile");
 		if (attachedXmlFileHandle == null) {
 			attachedXmlFileHandle = new Proforma21AttachedTxtFileHandle(get(), "attachedXmlFile");
 		}
@@ -44,7 +44,7 @@ public class Proforma21IncludedTaskFileHandle extends ProformaIncludedTaskFileHa
 
 	@Override
 	public Proforma21EmbeddedBinFileHandle embeddedZipFileHandle() {
-		if (get() == null) throw new NullPointerException("Cannot get embeddedZipFile handle because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("get embeddedZipFile");
 		if (embeddedZipFileHandle == null) {
 			embeddedZipFileHandle = new Proforma21EmbeddedBinFileHandle(get(), "embeddedZipFile");
 		}
@@ -53,7 +53,7 @@ public class Proforma21IncludedTaskFileHandle extends ProformaIncludedTaskFileHa
 
 	@Override
 	public Proforma21EmbeddedBinFileHandle embeddedXmlFileHandle() {
-		if (get() == null) throw new NullPointerException("Cannot get embeddedXmlFile handle because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("get embeddedXmlFile");
 		if (embeddedXmlFileHandle == null) {
 			embeddedXmlFileHandle = new Proforma21EmbeddedBinFileHandle(get(), "embeddedXmlFile");
 		}

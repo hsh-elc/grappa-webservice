@@ -108,7 +108,7 @@ public abstract class ProformaSubmissionTaskHandle {
      */
     protected boolean copyZipElementsFromTaskToSubmission() throws Exception {
     	boolean result = false;
-    	if (getTask().getZipContent() != null) {
+    	if (MimeType.ZIP.equals(getTask().getMimeType())) {
 	    	for (Map.Entry<String, ZipContentElement> entry : getTask().getZipContent().entrySet()) {
 	    		String path = entry.getKey();
 	    		boolean doSkip = ProformaTaskZipPathes.TASK_XML_FILE_NAME.equals(path);
@@ -129,7 +129,7 @@ public abstract class ProformaSubmissionTaskHandle {
 
 
     protected boolean removeAttachedTaskFromSubmissionZip(String relativePath) throws Exception {
-    	if (getSubmission().getZipContent() != null) {
+    	if (MimeType.ZIP.equals(getSubmission().getMimeType())) {
     		String key = ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + relativePath;
     		if (getSubmission().getZipContent().containsKey(key)) {
     			getSubmission().getZipContent().remove(key);
@@ -257,7 +257,27 @@ public abstract class ProformaSubmissionTaskHandle {
 	
 	
 	
+    public boolean convertExternalToEmbeddedTask() throws Exception {
+    	if (externalTaskHandle().get() == null) {
+    		return false;
+    	} 
 
+    	TaskResource taskResource = getTask().getResource();
+    			
+		ProformaIncludedTaskFileHandle itfh = includedTaskFileHandle().createAndSet();
+		if (MimeType.XML.equals(taskResource.getMimeType())) {
+			itfh.embeddedXmlFileHandle().createAndSet().setContent(taskResource.getContent())
+					.setFilename(ProformaTaskZipPathes.TASK_XML_FILE_NAME);
+		} else if (MimeType.ZIP.equals(taskResource.getMimeType())) {
+			itfh.embeddedZipFileHandle().createAndSet().setContent(taskResource.getContent())
+					.setFilename("task.zip");
+		} else {
+			throw new UnsupportedOperationException("Unexpected mimetype '"+taskResource.getMimeType()+"' when embedding external task into submission before starting docker backend");
+		}
+		externalTaskHandle().remove();
+		return true;
+    }
+    
 
 	
 }

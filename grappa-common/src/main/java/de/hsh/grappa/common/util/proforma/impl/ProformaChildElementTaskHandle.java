@@ -17,6 +17,12 @@ public abstract class ProformaChildElementTaskHandle {
 		if (submission == null) throw new AssertionError(this.getClass() + ": submission shouldn't be null");
 	}
 	
+	protected void assertNotNull(String whatToDo) throws NullPointerException {
+		propertyHandle.assertNotNull(whatToDo, this);
+	}
+	
+
+	
 	public Object get() {
 		return propertyHandle.get();
 	}

@@ -1,6 +1,8 @@
 package de.hsh.grappa.common.util.proforma.impl;
 
 import de.hsh.grappa.util.PropertyHandle;
+import de.hsh.grappa.util.Zip;
+import de.hsh.grappa.util.Zip.ZipContentElement;
 
 /**
  * This is an abstraction of an attached binary file, independent of a specific ProFormA version.
@@ -8,7 +10,7 @@ import de.hsh.grappa.util.PropertyHandle;
  * property named "{@code propertyName}" of type {@code clazz}.
  * The type {@code clazz} must implement a default constructor.
  */
-public abstract class ProformaAttachedBinFileHandle {
+public abstract class ProformaAttachedBinFileHandle implements ProformaAttachedOrEmbeddedBonOrTxtFileHandle {
 
 	private PropertyHandle propertyHandle;
 	
@@ -17,6 +19,13 @@ public abstract class ProformaAttachedBinFileHandle {
 		if (file == null) throw new AssertionError(this.getClass() + ": file shouldn't be null");
 	}
 	
+	protected void assertNotNull(String whatToDo) throws NullPointerException {
+		propertyHandle.assertNotNull(whatToDo, this);
+	}
+	
+
+	
+
 	public Object get() {
 		return propertyHandle.get();
 	}
@@ -45,5 +54,7 @@ public abstract class ProformaAttachedBinFileHandle {
 	 * @return the path inside the zip file
 	 */
 	public abstract String getPath();
+	
+	
 	
 }

@@ -94,7 +94,11 @@ public class TaskLive extends ProformaLiveObject<TaskResource, AbstractTaskType>
 	 * @throws Exception
 	 */
 	public List<? extends ProformaTaskFileHandle> getTaskFileHandles() throws Exception {
-		return getProformaVersion().getTaskHelper().getTaskFileHandles(getTask(), getZipContent());
+		ZipContent zc = null;
+		if (MimeType.ZIP.equals(getMimeType())) {
+			zc = getZipContent();
+		}
+		return getProformaVersion().getTaskHelper().getTaskFileHandles(getTask(), zc);
 	}
     
 }

@@ -6,6 +6,12 @@ public abstract class BackendPlugin {
 
     private Boundary boundary;
     
+    /**
+     * A backend plugin might run as part of the JVM running the webapp or as part of a separate JVM
+     * in a docker container. In both cases a backend plugin needs access to external resources.
+     * The return value provides this access. In the latter case of a docker container not all
+     * external resources are available.
+     */
     public Boundary getBoundary() {
         return boundary;
     }

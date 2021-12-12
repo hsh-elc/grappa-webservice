@@ -21,7 +21,7 @@ public class Proforma21SubmissionFileHandle extends ProformaSubmissionFileHandle
 	
 
 	
-	public Proforma21SubmissionFileHandle(SubmissionFileType file, ZipContent zipContent) {
+	public Proforma21SubmissionFileHandle(Object file, ZipContent zipContent) {
 		super(file, zipContent);
 		this.embeddedTxtFileHandle = new Proforma21EmbeddedTxtFileHandle(file, "embeddedTxtFile");
 		this.attachedTxtFileHandle = new Proforma21AttachedTxtFileHandle(file, "attachedTxtFile");

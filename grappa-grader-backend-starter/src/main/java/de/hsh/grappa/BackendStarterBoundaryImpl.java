@@ -1,9 +1,8 @@
-package de.hsh.grappa.boundary;
+package de.hsh.grappa;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.common.Boundary;
 import de.hsh.grappa.common.ResourceDownloader.Resource;
 import de.hsh.grappa.common.ResourceDownloader;
@@ -12,11 +11,11 @@ import de.hsh.grappa.common.TaskResource;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.exceptions.NotFoundException;
 
-public class BoundaryImpl implements Boundary {
+public class BackendStarterBoundaryImpl implements Boundary {
 
 	@Override
 	public TaskResource getCachedTask(String taskUuid) throws NotFoundException, GrappaException {
-		return RedisController.getInstance().getCachedTask(taskUuid);
+		throw new IllegalArgumentException("Currently Grappa does not support grading submissions referring external tasks by uuid in a docker container, since the Redis cache is not reachable from the container.");
 	}
 
 	@Override
@@ -30,8 +29,8 @@ public class BoundaryImpl implements Boundary {
 	}
 
 	@Override
-	public Resource downloadResource(String url) throws MalformedURLException, IOException, GrappaException {
-		return new ResourceDownloader().downloadResource(url);
+	public Resource downloadResource(String anyUrl) throws MalformedURLException, IOException, Exception {
+		return new ResourceDownloader().downloadResource(anyUrl);
 	}
 
 }

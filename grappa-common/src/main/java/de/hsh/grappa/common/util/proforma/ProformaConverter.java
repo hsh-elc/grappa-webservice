@@ -1,5 +1,7 @@
 package de.hsh.grappa.common.util.proforma;
 
+//obsolete file
+//
 //import java.nio.charset.StandardCharsets;
 //
 //import de.hsh.grappa.common.MimeType;

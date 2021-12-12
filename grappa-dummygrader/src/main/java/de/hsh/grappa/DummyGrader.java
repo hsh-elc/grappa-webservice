@@ -2,17 +2,30 @@ package de.hsh.grappa;
 
 import de.hsh.grappa.common.BackendPlugin;
 import de.hsh.grappa.common.MimeType;
+import de.hsh.grappa.common.ResourceDownloader.Resource;
 import de.hsh.grappa.common.ResponseResource;
 import de.hsh.grappa.common.SubmissionResource;
+import de.hsh.grappa.common.util.proforma.ProformaLiveObject;
 import de.hsh.grappa.common.util.proforma.ProformaVersion;
 import de.hsh.grappa.common.util.proforma.ResponseLive;
 import de.hsh.grappa.common.util.proforma.SubmissionLive;
+import de.hsh.grappa.common.util.proforma.TaskLive;
+import de.hsh.grappa.common.util.proforma.impl.ProformaAttachedTxtFileHandle;
 import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionFileHandle;
+import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionSubmissionHandle;
+import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionTaskHandle;
+import de.hsh.grappa.util.FilenameUtils;
 import de.hsh.grappa.util.Strings;
 import de.hsh.grappa.util.XmlUtils.MarshalOption;
+import de.hsh.grappa.util.Zip.ZipContent;
 import de.hsh.grappa.util.Zip.ZipContentElement;
+import proforma.ProformaSubmissionZipPathes;
 import proforma.xml.AbstractResponseType;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
@@ -24,8 +37,8 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 
 /**
- * This dummy grader currently works with ProFormA version 2.1 only.
- *
+ * The dummy grader process the submission and grades a score based on the content of the submitted
+ * file named "score.txt", while the ".txt"-extension is optional.
  */
 public class DummyGrader extends BackendPlugin {
 
@@ -42,28 +55,80 @@ public class DummyGrader extends BackendPlugin {
     @Override
     public void init(Properties properties) throws Exception {
     }
+    
+    private void printFile(StringBuilder feedback, byte[] binContent, String txtContent, String filename) {
+        feedback.append("  filename: ").append(filename).append("<br>\n");
+        if (binContent != null) {
+            feedback.append("  binary content: len = ").append(binContent.length).append("<br>\n");
+            String base64 = Base64.getEncoder().encodeToString(binContent);
+            feedback.append("<span style='color: #000; font-family: monospace; white-space: pre-wrap; overflow-wrap: break-word; '>");
+            if (base64.length() > 100) {
+                feedback.append(base64.subSequence(0, 100)).append("...");
+            } else {
+                feedback.append(base64);
+            }
+            feedback.append("</span><br>\n");
+        }
+        if (txtContent != null) {
+            feedback.append("  text content:<br>\n");
+            feedback.append("<pre>\n");
+            try (Scanner sc = new Scanner(txtContent)) {
+                while (sc.hasNextLine()) {
+                    feedback.append(sc.nextLine()).append("\n");
+                }
+            }
+            feedback.append("</pre>\n");
+        }
+    }
+    
+    private void printZipContent(StringBuilder feedback, ProformaLiveObject<?,?> o) throws Exception {
+    	if (MimeType.ZIP.equals(o.getMimeType())) {
+    		feedback.append("<p>This is a zip resource</p>\n");
+    		feedback.append("<ul>\n");
+    		for (ZipContentElement elem : o.getZipContent().values()) {
+    			feedback.append("<li>").append(elem.getPath())
+    				.append(" (").append(elem.getSize()).append(" bytes)</li>\n");
+    		}
+    		feedback.append("</ul>\n");
+    	} else if (MimeType.XML.equals(o.getMimeType())) {
+    		feedback.append("<p>This is a xml resource</p>\\n");
+    	}
+    }
+    
+    private String readAttachedTxt(ZipContent zipContent, String path, ProformaAttachedTxtFileHandle atfh) throws UnsupportedEncodingException {
+        ZipContentElement elem = zipContent.get(path);
+        if (elem == null) {
+            throw new IllegalArgumentException("the path '" + path + "' does not exist in the zip contents.");
+        }
+        String encoding = atfh.getEncoding();
+        if (Strings.isNullOrEmpty(encoding)) {
+            // TODO: guess encoding from language and content.
+            encoding = StandardCharsets.UTF_8.name();
+        }
+        String txtContent = new String(elem.getBytes(), encoding);
+    	return txtContent;
+    }
 
-    @Override
-    public ResponseResource grade(SubmissionResource submissionResource) throws Exception {
-        ProformaVersion pv = ProformaVersion.getDefault();
-        
-        SubmissionLive submissionLive= new SubmissionLive(submissionResource, pv);
-        
-        StringBuilder feedback = new StringBuilder("<h4>This is dummy feedback from the dummy grader</h4>");
-        feedback.append("Local time: ").append(LocalDateTime.now());
-        
-        // As feedback we give a description of the received submission.
-        // To test this grader, you could try the task in src/main/resources/task.zip
-        
-        double score = 0.0; // the default
-        
-        if (submissionLive.hasSubmissionFiles()) {
+    private byte[] readAttachedBin(ZipContent zipContent, String path) {
+        ZipContentElement elem = zipContent.get(path);
+        if (elem == null) {
+            throw new IllegalArgumentException("the path '" + path + "' does not exist in the zip contents.");
+        }
+        return elem.getBytes();
+    }
+    
+    
+    
+    private void processSubmission(StringBuilder feedback, SubmissionLive submissionLive, double[] inOutScore) throws UnsupportedEncodingException, MalformedURLException, IOException, Exception  {
+        ProformaSubmissionSubmissionHandle pssh = submissionLive.getSubmissionSubmissionHandle(getBoundary());
+        if (pssh.hasSubmissionFiles()) {
             feedback.append("<p><b>Submission files</b></p>\n");
             feedback.append("<ul>");
-            for (ProformaSubmissionFileHandle fi : submissionLive.getSubmissionFileHandles()) {
+            for (ProformaSubmissionFileHandle fi : pssh.submissionFilesHandle().getSubmissionFileHandles()) {
                 feedback.append("<li>id: ").append(fi.getId()).append("<br>\n");
                 feedback.append("  mimetype: ").append(fi.getMimetype()).append("<br>\n");
                 String filename = null;
+                
                 byte[] binContent = null;
                 String txtContent = null;
                 
@@ -78,117 +143,122 @@ public class DummyGrader extends BackendPlugin {
                 if (fi.attachedBinFileHandle().get() != null) {
                 	filename = fi.attachedBinFileHandle().getPath();
                     String path = fi.getPathPrefixInsideZip() + fi.attachedBinFileHandle().getPath();
-                    ZipContentElement elem = submissionLive.getZipContent().get(path);
-                    if (elem == null) {
-                        throw new IllegalArgumentException("the path '" + path + "' does not exist in the zip contents.");
-                    }
-                    binContent = elem.getBytes();
+                    binContent = readAttachedBin(submissionLive.getZipContent(), path);
                 }
                 if (fi.attachedTxtFileHandle().get() != null) {
                 	filename = fi.attachedTxtFileHandle().getPath();
                     String path = fi.getPathPrefixInsideZip() + fi.attachedTxtFileHandle().getPath();
-                    ZipContentElement elem = submissionLive.getZipContent().get(path);
-                    if (elem == null) {
-                        throw new IllegalArgumentException("the path '" + path + "' does not exist in the zip contents.");
-                    }
-                    String encoding = fi.attachedTxtFileHandle().getEncoding();
-                    if (Strings.isNullOrEmpty(encoding)) {
-                        // TODO: guess encoding from language and content.
-                        encoding = StandardCharsets.UTF_8.name();
-                    }
-                    txtContent = new String(elem.getBytes(), encoding);
+                    txtContent = readAttachedTxt(submissionLive.getZipContent(), path, fi.attachedTxtFileHandle());
                 }
-                feedback.append("  filename: ").append(filename).append("<br>\n");
-                if (binContent != null) {
-                    feedback.append("  binary content: len = ").append(binContent.length).append("<br>\n");
-                    String base64 = Base64.getEncoder().encodeToString(binContent);
-                    feedback.append("<span style='color: #000; font-family: monospace; white-space: pre-wrap; overflow-wrap: break-word; '>");
-                    if (base64.length() > 100) {
-                        feedback.append(base64.subSequence(0, 100)).append("...");
-                    } else {
-                        feedback.append(base64);
-                    }
-                    feedback.append("</span><br>\n");
-                }
-                if (txtContent != null) {
-                    feedback.append("  text content:<br>\n");
-                    feedback.append("<pre>\n");
-                    try (Scanner sc = new Scanner(txtContent)) {
-                        while (sc.hasNextLine()) {
-                            feedback.append(sc.nextLine()).append("\n");
-                        }
-                    }
-                    feedback.append("</pre>\n");
-                }
+                printFile(feedback, binContent, txtContent, filename);
                 
-                if ("score".equals(filename)) {
+                if ("score".equals(FilenameUtils.getBasename(filename))) {
                     if (txtContent != null) {
                         try {
-                            score = Double.parseDouble(txtContent);
+                        	inOutScore[0] = Double.parseDouble(txtContent);
                         } catch (Exception e) {
                             feedback.append("<b>Parse double error</b><br>\n");
                         }
                     } else {
-                        feedback.append("<b>Unexpected binary file type</b><br>\n");
+                        feedback.append("<b>Unexpected binary file type when reading score file</b><br>\n");
                     }
                 }
                 feedback.append("</li>");
             }
-            
-//            
-//        	for (ProformaAttachedEmbeddedFileInfo fi : psh.getSubmissionFiles(subm, submissionLive.getZipContent())) {
-//                feedback.append("<li>id: ").append(fi.getId()).append("<br>\n");
-//                feedback.append("  mimetype: ").append(fi.getMimetype()).append("<br>\n");
-//                feedback.append("  filename: ").append(fi.getFilename()).append("<br>\n");
-//                if (fi.getBinContent() != null) {
-//                    feedback.append("  binary content: len = ").append(fi.getBinContent().length).append("<br>\n");
-//                    String base64 = Base64.getEncoder().encodeToString(fi.getBinContent());
-//                    feedback.append("<span style='color: #000; font-family: monospace; white-space: pre-wrap; overflow-wrap: break-word; '>");
-//                    if (base64.length() > 100) {
-//                        feedback.append(base64.subSequence(0, 100)).append("...");
-//                    } else {
-//                        feedback.append(base64);
-//                    }
-//                    feedback.append("</span><br>\n");
-//                }
-//                if (fi.getTxtContent() != null) {
-//                    feedback.append("  text content:<br>\n");
-//                    feedback.append("<pre>\n");
-//                    try (Scanner sc = new Scanner(fi.getTxtContent())) {
-//                        while (sc.hasNextLine()) {
-//                            feedback.append(sc.nextLine()).append("\n");
-//                        }
-//                    }
-//                    feedback.append("</pre>\n");
-//                }
-//                
-//                if ((ProformaSubmissionZipPathes.SUBMISSION_DIRECTORY + "/score").equals(fi.getFilename())) {
-//                    if (fi.getTxtContent() != null) {
-//                        try {
-//                            score = Double.parseDouble(fi.getTxtContent());
-//                        } catch (Exception e) {
-//                            feedback.append("<b>Parse double error</b><br>\n");
-//                        }
-//                    } else {
-//                        feedback.append("<b>Unexpected binary file type</b><br>\n");
-//                    }
-//                }
-//                feedback.append("</li>");
-//            }
-            
             feedback.append("</ul>");
-        } else if (submissionLive.hasExternalSubmission()) {
+        } else if (pssh.hasExternalSubmission()) {
             feedback.append("<p><b>external submission</b></p>\n");
-            String uri = submissionLive.getExternalSubmissionUri();
+            String uri = pssh.externalSubmissionHandle().getUri();
             feedback.append("<p>uri = ").append(uri).append("</p>");
+            
+            Resource res = pssh.externalSubmissionHandle().download();
+            String filename = res.getFileNameOrDefault();
+            byte[] binContent = null;
+            String txtContent = null;
+            if (res.isTextContent()) {
+            	txtContent = new String(res.getContent(), res.getEncodingOrUtf8AsDefault());
+            } else {
+            	binContent = res.getContent();
+            }
+            feedback.append("<p>Details of the downloaded file:<br>\n");
+            feedback.append("  mimetype: ").append(res.getContentType()).append("<br>\n");
+            feedback.append("  encoding: ").append(res.getContentEncoding()).append("<br>\n");
+            printFile(feedback, binContent, txtContent, filename);
+            feedback.append("</p>\n");
         } else {
             throw new IllegalArgumentException("Neither files nor external submission found in submission");
         }
+        feedback.append("<p><b>Submission resource</b></p>\n");
+        printZipContent(feedback, submissionLive);
+    }
+    
+    
+    @Override
+    public ResponseResource grade(SubmissionResource submissionResource) throws Exception {
+        ProformaVersion pv = ProformaVersion.getDefault();
+        
+        SubmissionLive submissionLive= new SubmissionLive(submissionResource, pv);
+        
+        StringBuilder feedback = new StringBuilder("<h4>This is dummy feedback from the dummy grader</h4>");
+        feedback.append("Local time: ").append(LocalDateTime.now());
+        
+        // As feedback we give a description of the received submission.
+        // To test this grader, you could try the task in src/main/resources/task.zip
+        
+        double[] score = { 0.0 }; // the default. Array because of call by reference
+
+        processSubmission(feedback, submissionLive, score);
+
+        ProformaSubmissionSubmissionHandle pssh = submissionLive.getSubmissionSubmissionHandle(getBoundary());
+        if (pssh.unzipToEmbedded(0)) {
+        	feedback.append("<p>After unzipping the single submitted zip file, the submission looks like this...</p>\n");
+        	processSubmission(feedback, submissionLive, score);
+        }
+
+        
+        TaskLive taskLive = submissionLive.getTask(getBoundary());
+        String taskUuid = taskLive.getTaskUuid();
+        feedback.append("<p><b>Task</b></p>\n");
+        feedback.append("<p>UUID = ").append(taskUuid).append("</p>\n");
+        
+        ProformaSubmissionTaskHandle sth = submissionLive.getSubmissionTaskHandle(getBoundary());
+        if (sth.externalTaskHandle().get() != null) {
+            feedback.append("<p>External task</p>\n<ul><li>\n");
+            feedback.append("URI=").append(sth.externalTaskHandle().getUri()).append("<br>\n");
+            feedback.append("UUID=").append(sth.externalTaskHandle().getUuid()).append("<br>\n");
+            feedback.append("</li></ul>\n");
+        } else if (sth.includedTaskFileHandle() != null) {
+            feedback.append("<p>Included task file</p>\n<ul><li>\n");
+            byte[] binContent = null;
+            String txtContent = null;
+            String filename = null;
+            if (sth.includedTaskFileHandle().attachedXmlFileHandle().get() != null) {
+            	filename = ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + sth.includedTaskFileHandle().attachedXmlFileHandle().getPath();
+                txtContent = readAttachedTxt(submissionLive.getZipContent(), filename, sth.includedTaskFileHandle().attachedXmlFileHandle());
+            } else if (sth.includedTaskFileHandle().attachedZipFileHandle().get() != null) {
+            	filename = ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + sth.includedTaskFileHandle().attachedZipFileHandle().getPath();
+                binContent = readAttachedBin(submissionLive.getZipContent(), filename);
+            } else if (sth.includedTaskFileHandle().embeddedXmlFileHandle().get() != null) {
+                filename = sth.includedTaskFileHandle().embeddedXmlFileHandle().getFilename();
+                binContent = sth.includedTaskFileHandle().embeddedXmlFileHandle().getContent();
+            } else if (sth.includedTaskFileHandle().embeddedZipFileHandle().get() != null) {
+                filename = sth.includedTaskFileHandle().embeddedZipFileHandle().getFilename();
+                binContent = sth.includedTaskFileHandle().embeddedZipFileHandle().getContent();
+            }
+            printFile(feedback, binContent, txtContent, filename);
+            feedback.append("</li></ul>\n");
+        } else if (sth.childElementTaskHandle().get() != null) {
+            feedback.append("<p>Native task child element</p>\n<ul><li>\n");
+            feedback.append("UUID=").append(sth.childElementTaskHandle().getUuid()).append("<br>\n");
+            feedback.append("</li></ul>\n");
+        }
+        feedback.append("<p><b>Task resource</b></p>\n");
+        printZipContent(feedback, taskLive);
         
         AbstractResponseType response = pv.getResponseHelper()
         		.createMergedTestFeedbackResponse(
         				feedback.toString(), 
-        				BigDecimal.valueOf(score),
+        				BigDecimal.valueOf(score[0]),
         				submissionLive.getSubmissionId(),
         				this.getClass().getName());
         

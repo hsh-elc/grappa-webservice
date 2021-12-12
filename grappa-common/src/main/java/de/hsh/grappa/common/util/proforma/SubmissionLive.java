@@ -1,11 +1,10 @@
 package de.hsh.grappa.common.util.proforma;
 
-import java.util.List;
-
 import de.hsh.grappa.common.MimeType;
+import de.hsh.grappa.common.SubmissionBoundary;
 import de.hsh.grappa.common.SubmissionResource;
 import de.hsh.grappa.common.TaskBoundary;
-import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionFileHandle;
+import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionSubmissionHandle;
 import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionTaskHandle;
 import de.hsh.grappa.util.XmlUtils.MarshalOption;
 import de.hsh.grappa.util.Zip.ZipContent;
@@ -90,45 +89,57 @@ public class SubmissionLive extends ProformaLiveObject<SubmissionResource, Abstr
 	 * The returned object provides service routines to process the task 
 	 * as part of a submission.
 	 * @param tb the task boundary is used to resolve external elements in the task. It can be null,
-	 *     if there a re no external elements.
+	 *     if there are no external elements.
 	 * @return a handle object.
 	 */
 	public ProformaSubmissionTaskHandle getSubmissionTaskHandle(TaskBoundary tb) {
 		return getProformaVersion().getSubmissionHelper().getSubmissionTaskHandle(this, tb);
 	}
 	
-	/**
-	 * @return true, if the submission has files instead of an external submission.
-	 * @throws Exception
-	 */
-	public boolean hasSubmissionFiles() throws Exception {
-		return getProformaVersion().getSubmissionHelper().hasSubmissionFiles(getSubmission());
-	}
 	
 	/**
-	 * @return a list of handles, one for each submitted file. A file handle provides service routines
-	 *     for further processing of each embedded or attached file.
-	 * @throws Exception
+	 * The returned object provides service routines to process the task 
+	 * as part of a submission.
+	 * @param sb the submission boundary is used to resolve external elements in the submission. It can be null,
+	 *     if there are no external elements.
+	 * @return a handle object.
 	 */
-	public List<? extends ProformaSubmissionFileHandle> getSubmissionFileHandles() throws Exception {
-		return getProformaVersion().getSubmissionHelper().getSubmissionFileHandles(getSubmission(), getZipContent());
+	public ProformaSubmissionSubmissionHandle getSubmissionSubmissionHandle(SubmissionBoundary sb) {
+		return getProformaVersion().getSubmissionHelper().getSubmissionSubmissionHandle(this, sb);
 	}
 	
-	/**
-	 * @return true, if this is a submission from an external source.
-	 * @throws Exception
-	 */
-	public boolean hasExternalSubmission() throws Exception {
-		return getProformaVersion().getSubmissionHelper().hasExternalSubmission(getSubmission());
-	}
+//	/**
+//	 * @return true, if the submission has files instead of an external submission.
+//	 * @throws Exception
+//	 */
+//	public boolean hasSubmissionFiles() throws Exception {
+//		return getProformaVersion().getSubmissionHelper().hasSubmissionFiles(getSubmission());
+//	}
 	
-	/**
-	 * @return the URI of the external submission.
-	 * @throws Exception
-	 */
-	public String getExternalSubmissionUri() throws Exception {
-		return getProformaVersion().getSubmissionHelper().getExternalSubmissionUri(getSubmission());
-	}
+//	/**
+//	 * @return a list of handles, one for each submitted file. A file handle provides service routines
+//	 *     for further processing of each embedded or attached file.
+//	 * @throws Exception
+//	 */
+//	public List<? extends ProformaSubmissionFileHandle> getSubmissionFileHandles() throws Exception {
+//		return getProformaVersion().getSubmissionHelper().getSubmissionFileHandles(getSubmission(), getZipContent());
+//	}
 	
+//	/**
+//	 * @return true, if this is a submission from an external source.
+//	 * @throws Exception
+//	 */
+//	public boolean hasExternalSubmission() throws Exception {
+//		return getProformaVersion().getSubmissionHelper().hasExternalSubmission(getSubmission());
+//	}
+//	
+//	/**
+//	 * @return the URI of the external submission.
+//	 * @throws Exception
+//	 */
+//	public String getExternalSubmissionUri() throws Exception {
+//		return getProformaVersion().getSubmissionHelper().getExternalSubmissionUri(getSubmission());
+//	}
+//	
 	
 }

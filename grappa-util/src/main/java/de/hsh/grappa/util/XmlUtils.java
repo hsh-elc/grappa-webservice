@@ -159,4 +159,19 @@ public class XmlUtils {
             }
         }
     }
+    
+    
+    public static boolean isXml(byte[] bytes) {
+    	int i = 0;
+    	while (i < bytes.length && Character.isWhitespace((char)bytes[i])) {
+    		i++;
+    	}
+    	
+        return bytes.length > i+5 
+        		&& bytes[i++] == (byte)'<' 
+        		&& bytes[i++] == (byte)'?' 
+        		&& bytes[i++] == (byte)'x'
+        		&& bytes[i++] == (byte)'m' 
+        		&& bytes[i++] == (byte)'l';        
+    }
 }

@@ -8,7 +8,7 @@ import de.hsh.grappa.util.PropertyHandle;
  * property named "{@code propertyName}" of type {@code clazz}.
  * The type {@code clazz} must implement a default constructor.
  */
-public abstract class ProformaEmbeddedTxtFileHandle {
+public abstract class ProformaEmbeddedTxtFileHandle  implements ProformaAttachedOrEmbeddedBonOrTxtFileHandle {
 
 	private PropertyHandle  propertyHandle;
 	
@@ -16,6 +16,12 @@ public abstract class ProformaEmbeddedTxtFileHandle {
 		propertyHandle = new PropertyHandle (file, propertyName, clazz);
 		if (file == null) throw new AssertionError(this.getClass() + ": file shouldn't be null");
 	}
+	
+	protected void assertNotNull(String whatToDo) throws NullPointerException {
+		propertyHandle.assertNotNull(whatToDo, this);
+	}
+	
+
 	
 	public Object get() {
 		return propertyHandle.get();

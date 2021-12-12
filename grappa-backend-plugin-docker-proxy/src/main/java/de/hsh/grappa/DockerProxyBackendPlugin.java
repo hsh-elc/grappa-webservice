@@ -11,10 +11,14 @@ import de.hsh.grappa.common.BackendPlugin;
 import de.hsh.grappa.common.MimeType;
 import de.hsh.grappa.common.ResponseResource;
 import de.hsh.grappa.common.SubmissionResource;
+import de.hsh.grappa.common.util.proforma.ProformaVersion;
+import de.hsh.grappa.common.util.proforma.SubmissionLive;
+import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionSubmissionHandle;
+import de.hsh.grappa.common.util.proforma.impl.ProformaSubmissionTaskHandle;
 import de.hsh.grappa.util.FilenameUtils;
 import de.hsh.grappa.util.IOUtils;
 import de.hsh.grappa.util.Strings;
-
+import de.hsh.grappa.util.XmlUtils.MarshalOption;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,15 +86,10 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
         log.debug("[GraderId: '{}', GradeProcId: '{}']: Entering DockerProxyBackendPlugin.grade()...",
                 graderId, gradeProcId);
         
-        // TODO: implement conversion of external task to included task.
-        // TODO: implement conversion of external submission to submission files.
-        
-        // Or alternatively provide a specific Boundary implementation that is 
-        // instantiated by GraderBackendStarter that reads externally referenced 
-        // task and submission files from a dedicated folder inside the docker
-        // container.
-        
-        // Or should we delegate external task and submission handling to the grader?
+        log.info("[GraderId: '{}', GradeProcId: '{}']: Check for external task/submission - then try to embed task/submission",
+                graderId, gradeProcId);
+
+        submission = embedSubmissionAndTaskIfExternal(submission);
         
         log.info("[GraderId: '{}', GradeProcId: '{}']: Setting up docker connection to: {}",
             graderId, gradeProcId, dockerHost);
@@ -233,7 +232,23 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
             return responseResource;
         }
     }
+    
+    
+    private SubmissionResource embedSubmissionAndTaskIfExternal(SubmissionResource submission) throws Exception {
+       	SubmissionLive subLive = new SubmissionLive(submission, ProformaVersion.getDefault());
+    	ProformaSubmissionTaskHandle th = subLive.getSubmissionTaskHandle(getBoundary());
+    	ProformaSubmissionSubmissionHandle sh = subLive.getSubmissionSubmissionHandle(getBoundary());
+    	
+    	boolean converted = th.convertExternalToEmbeddedTask() | sh.convertExternalToEmbeddedSubmission();
+    	
+    	if (converted) {
+    		subLive.markPojoChanged(MarshalOption.none());
+    		return subLive.getResource();
+    	}
+   		return submission;
+    }
 
+    
     private void copySubmissionToContainer(DockerClient dockerClient, String containerId,
                                            SubmissionResource subm) throws Exception {
         String submDestFileName = subm.getMimeType()

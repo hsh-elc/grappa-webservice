@@ -6,7 +6,6 @@ import de.hsh.grappa.common.TaskResource;
 import de.hsh.grappa.config.CacheConfig;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.exceptions.NotFoundException;
-import de.hsh.grappa.util.DebugUtils;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;

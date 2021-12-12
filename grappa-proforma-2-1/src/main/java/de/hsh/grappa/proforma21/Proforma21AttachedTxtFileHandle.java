@@ -15,35 +15,35 @@ class Proforma21AttachedTxtFileHandle extends ProformaAttachedTxtFileHandle {
 	
 	@Override
 	public Proforma21AttachedTxtFileHandle setPath(String path) {
-		if (get() == null) throw new NullPointerException("Cannot set path because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("set path");
 		get().setValue(path);
 		return this;
 	}
 	@Override
 	public Proforma21AttachedTxtFileHandle setNaturalLang(String naturalLang) {
-		if (get() == null) throw new NullPointerException("Cannot set naturallang because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("set naturallang");
 		get().setNaturalLang(naturalLang);
 		return this;
 	}
 	@Override
 	public Proforma21AttachedTxtFileHandle setEncoding(String encoding) {
-		if (get() == null) throw new NullPointerException("Cannot set encoding because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("set encoding");
 		get().setEncoding(encoding);
 		return this;
 	}
 	@Override
 	public String getPath() {
-		if (get() == null) throw new NullPointerException("Cannot get path because "+this.getClass()+" embraces a null value");
+		assertNotNull("get path");
 		return get().getValue();
 	}
 	@Override
 	public String getNaturalLang() {
-		if (get() == null) throw new NullPointerException("Cannot get naturallang because "+this.getClass()+" embraces a null value");
+		assertNotNull("get naturallang");
 		return get().getNaturalLang();
 	}
 	@Override
 	public String getEncoding() {
-		if (get() == null) throw new NullPointerException("Cannot get encoding because "+this.getClass()+" embraces a null value");
+		assertNotNull("get encoding");
 		return get().getEncoding();
 	}
 }

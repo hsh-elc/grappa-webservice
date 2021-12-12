@@ -59,4 +59,10 @@ public class PropertyHandle  {
 	public String getPropertyName() {
 		return propertyName;
 	}
+	
+	public void assertNotNull(String whatToDo, Object embracingObject) throws NullPointerException {
+		if (get() == null) 
+			throw new NullPointerException("Cannot "+whatToDo+" because "+embracingObject.getClass()+" embraces a null value. You should call createAndSet() first.");
+	}
+
 }

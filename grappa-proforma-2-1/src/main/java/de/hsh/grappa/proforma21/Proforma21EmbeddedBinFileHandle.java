@@ -15,24 +15,24 @@ class Proforma21EmbeddedBinFileHandle extends ProformaEmbeddedBinFileHandle {
 	
 	@Override
 	public Proforma21EmbeddedBinFileHandle setFilename(String filename) {
-		if (get() == null) throw new NullPointerException("Cannot set filename because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("set filename");
 		get().setFilename(filename);
 		return this;
 	}
 	@Override
 	public Proforma21EmbeddedBinFileHandle setContent(byte[] content) {
-		if (get() == null) throw new NullPointerException("Cannot set content because "+this.getClass()+" embraces a null value. You should call createAndSet() first.");
+		assertNotNull("set content");
 		get().setValue(content);
 		return this;
 	}
 	@Override
 	public String getFilename() {
-		if (get() == null) throw new NullPointerException("Cannot get filename because "+this.getClass()+" embraces a null value");
+		assertNotNull("get filename");
 		return get().getFilename();
 	}
 	@Override
 	public byte[] getContent() {
-		if (get() == null) throw new NullPointerException("Cannot get content because "+this.getClass()+" embraces a null value");
+		assertNotNull("get content");
 		return get().getValue(); 
 	}
 }
