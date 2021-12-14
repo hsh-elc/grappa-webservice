@@ -3,21 +3,21 @@ package de.hsh.grappa.service;
 import com.google.common.collect.MinMaxPriorityQueue;
 
 import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.backendplugin.BackendPlugin;
 import de.hsh.grappa.boundary.BoundaryImpl;
 import de.hsh.grappa.cache.QueuedSubmission;
 import de.hsh.grappa.cache.RedisController;
-import de.hsh.grappa.common.BackendPlugin;
-import de.hsh.grappa.common.Boundary;
-import de.hsh.grappa.common.ResponseResource;
-import de.hsh.grappa.common.util.proforma.ProformaVersion;
-import de.hsh.grappa.common.util.proforma.impl.ProformaResponseHelper.Audience;
 import de.hsh.grappa.config.GraderConfig;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.AuthenticationException;
-import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.util.ClassPathClassLoader;
 import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
-import de.hsh.grappa.util.XmlUtils;
+import proforma.util.ProformaVersion;
+import proforma.util.ProformaResponseHelper.Audience;
+import proforma.util.boundary.Boundary;
+import proforma.util.div.XmlUtils;
+import proforma.util.exception.NotFoundException;
+import proforma.util.resource.ResponseResource;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;

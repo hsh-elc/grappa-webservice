@@ -1,11 +1,11 @@
 package de.hsh.grappa.test;
 
 import de.hsh.grappa.application.GrappaServlet;
-import de.hsh.grappa.common.MimeType;
-import de.hsh.grappa.common.SubmissionResource;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.service.SubmissionProcessor;
-import de.hsh.grappa.util.IOUtils;
+import proforma.util.div.IOUtils;
+import proforma.util.resource.MimeType;
+import proforma.util.resource.SubmissionResource;
 
 import org.junit.After;
 import org.junit.Before;

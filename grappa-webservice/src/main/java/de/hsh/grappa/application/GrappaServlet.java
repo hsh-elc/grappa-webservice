@@ -4,11 +4,11 @@ import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import de.hsh.grappa.cache.RedisController;
-import de.hsh.grappa.common.util.proforma.ProformaVersion;
 import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.GradingEnvironmentSetup;
 import de.hsh.grappa.util.ClassLoaderHelper;
+import proforma.util.ProformaVersion;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;

@@ -3,10 +3,10 @@ package de.hsh.grappa.rest;
 
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
-import de.hsh.grappa.common.MimeType;
-import de.hsh.grappa.common.ResponseResource;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.util.Json;
+import proforma.util.resource.MimeType;
+import proforma.util.resource.ResponseResource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +100,7 @@ public class GradeProcessResource {
             return Response.status(Response.Status.ACCEPTED).entity(jsonResp)
                 .type(MediaType.APPLICATION_JSON + "; charset=utf-8").build();
         }
-        throw new de.hsh.grappa.exceptions.NotFoundException(String.format("gradeProcessId '%s' was neither found in " +
+        throw new proforma.util.exception.NotFoundException(String.format("gradeProcessId '%s' was neither found in " +
             "the submission queue nor in an active grading process.", gradeProcessId));
     }
 
@@ -119,7 +119,7 @@ public class GradeProcessResource {
                 return Response.status(Response.Status.OK).build();
             }
         }
-         throw new de.hsh.grappa.exceptions.NotFoundException(String.format("gradeProcessId '%s' was neither found in" +
+         throw new proforma.util.exception.NotFoundException(String.format("gradeProcessId '%s' was neither found in" +
              " the submission queue nor in an active grading process.", gradeProcessId));
     }
 }

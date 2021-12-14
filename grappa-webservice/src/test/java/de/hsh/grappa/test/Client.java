@@ -9,8 +9,8 @@ import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.test.utils.TestConfig;
-import de.hsh.grappa.util.FilenameUtils;
-import de.hsh.grappa.util.IOUtils;
+import proforma.util.div.FilenameUtils;
+import proforma.util.div.IOUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 

@@ -1,11 +1,12 @@
 package de.hsh.grappa.cache;
 
-import de.hsh.grappa.common.ResponseResource;
-import de.hsh.grappa.common.SubmissionResource;
-import de.hsh.grappa.common.TaskResource;
 import de.hsh.grappa.config.CacheConfig;
 import de.hsh.grappa.exceptions.GrappaException;
-import de.hsh.grappa.exceptions.NotFoundException;
+import proforma.util.exception.NotFoundException;
+import proforma.util.exception.UnexpectedDataException;
+import proforma.util.resource.ResponseResource;
+import proforma.util.resource.SubmissionResource;
+import proforma.util.resource.TaskResource;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
@@ -300,7 +301,7 @@ public class RedisController {
      * @throws NotFoundException if a corresponding submission object for the gradeProcId does not exist (likely due
      * to TTL expiration)
      */
-    public synchronized QueuedSubmission popSubmission(String graderId) throws NotFoundException, GrappaException {
+    public synchronized QueuedSubmission popSubmission(String graderId) throws NotFoundException, UnexpectedDataException {
         log.debug("[GraderId: '{}']: popSubmission()", graderId);
         String gradeProcId = null;
         try (var jedis = jedisPool.getResource()) {
@@ -332,7 +333,7 @@ public class RedisController {
                 return new QueuedSubmission(gradeProcId, lmsId, SerializationUtils.deserialize(subm));
             } catch (org.apache.commons.lang3.SerializationException ex) {
                 log.debug("[graderId: '{}']: submission is not deserializable.", graderId);
-                throw new GrappaException(String.format("a submission for graderId '%s' was found in" +
+                throw new UnexpectedDataException(String.format("a submission for graderId '%s' was found in" +
                         " the cache but the submission could not be restored - internal error.", graderId));
             }                
         }
@@ -401,7 +402,7 @@ public class RedisController {
         setTimestamp(taskKey, cacheConfig.getTask_ttl_seconds());
     }
 
-    public synchronized TaskResource getCachedTask(String taskUuid) throws NotFoundException, GrappaException {
+    public synchronized TaskResource getCachedTask(String taskUuid) throws NotFoundException, UnexpectedDataException {
         log.debug("[TaskUuid: '{}']: getCachedTask()", taskUuid);
         try (var jedis = jedisPool.getResource()) {
         	String v = jedis.get(TASK_KEY_PREFIX.concat(taskUuid));
@@ -420,7 +421,7 @@ public class RedisController {
             	log.debug("{}", sw.toString());
             } catch (Exception e2) {
             }
-            throw new GrappaException(String.format("TaskUuid '%s' was found in" +
+            throw new UnexpectedDataException(String.format("TaskUuid '%s' was found in" +
                     " the cache but the task could not be restored - internal error.", taskUuid));
         }
     }

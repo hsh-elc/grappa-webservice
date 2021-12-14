@@ -3,17 +3,18 @@ package de.hsh.grappa.service;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.boundary.BoundaryImpl;
 import de.hsh.grappa.cache.RedisController;
-import de.hsh.grappa.common.Boundary;
-import de.hsh.grappa.common.SubmissionResource;
-import de.hsh.grappa.common.TaskResource;
-import de.hsh.grappa.common.util.proforma.ProformaVersion;
-import de.hsh.grappa.common.util.proforma.SubmissionLive;
-import de.hsh.grappa.common.util.proforma.TaskLive;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.BadRequestException;
 import de.hsh.grappa.exceptions.GrappaException;
-import de.hsh.grappa.exceptions.NotFoundException;
 import de.hsh.grappa.util.ObjectId;
+import proforma.util.ProformaVersion;
+import proforma.util.SubmissionLive;
+import proforma.util.TaskLive;
+import proforma.util.boundary.Boundary;
+import proforma.util.exception.NotFoundException;
+import proforma.util.resource.SubmissionResource;
+import proforma.util.resource.TaskResource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

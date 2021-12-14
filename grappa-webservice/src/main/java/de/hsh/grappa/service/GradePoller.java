@@ -2,8 +2,8 @@ package de.hsh.grappa.service;
 
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
-import de.hsh.grappa.common.ResponseResource;
 import de.hsh.grappa.exceptions.GrappaException;
+import proforma.util.resource.ResponseResource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

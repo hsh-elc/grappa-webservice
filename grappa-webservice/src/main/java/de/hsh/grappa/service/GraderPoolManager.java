@@ -4,7 +4,8 @@ import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GraderConfig;
 import de.hsh.grappa.exceptions.GrappaException;
-import de.hsh.grappa.exceptions.NotFoundException;
+import proforma.util.exception.NotFoundException;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

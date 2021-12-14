@@ -21,11 +21,15 @@
         </dependency>
         <dependency>
             <groupId>de.hsh.grappa</groupId>
-            <artifactId>grappa-common</artifactId>
+            <artifactId>grappa-backendplugin</artifactId>
         </dependency>
         <dependency>
-            <groupId>de.hsh.grappa</groupId>
-            <artifactId>grappa-proforma-2-1</artifactId>
+            <groupId>proforma</groupId>
+            <artifactId>proformautil</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>proforma</groupId>
+            <artifactId>proformautil-2-1</artifactId>
             <!-- No direct dependency, but it should be in the war at the end -->
         </dependency>
         <dependency>

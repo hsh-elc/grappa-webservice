@@ -1,10 +1,10 @@
 package de.hsh.grappa.rest;
 
-import de.hsh.grappa.exceptions.NotFoundException;
-
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import proforma.util.exception.NotFoundException;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -14,7 +14,7 @@ import javax.ws.rs.ext.Provider;
 
 @Provider
 public class NotFoundExceptionMapper implements
-    ExceptionMapper<de.hsh.grappa.exceptions.NotFoundException> {
+    ExceptionMapper<proforma.util.exception.NotFoundException> {
     private static final Logger log = LoggerFactory.getLogger(NotFoundExceptionMapper.class);
 
     @Override
