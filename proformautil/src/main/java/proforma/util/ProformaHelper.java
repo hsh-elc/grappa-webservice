@@ -2,7 +2,6 @@ package proforma.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import proforma.xml.AbstractProformaType;
 
 
@@ -23,7 +22,6 @@ public abstract class ProformaHelper {
 	}
 	
 	public abstract <T extends AbstractProformaType> Class<T> getPojoType();
-	
-	
+    
 	
 }

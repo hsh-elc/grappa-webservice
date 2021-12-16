@@ -38,5 +38,10 @@ public class Proforma21Version extends ProformaVersion {
 	public String getVersionNumber() {
 		return "2.1";
 	}
+
+	@Override
+	public String getXmlNamespaceUri() {
+		return "urn:proforma:v2.1";
+	}
 	
 }

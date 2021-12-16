@@ -7,7 +7,6 @@ import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.BadRequestException;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.util.ObjectId;
-import proforma.util.ProformaVersion;
 import proforma.util.SubmissionLive;
 import proforma.util.TaskLive;
 import proforma.util.boundary.Boundary;
@@ -35,7 +34,7 @@ public class SubmissionProcessor {
 
     public SubmissionProcessor(/*GrappaConfig config,*/ SubmissionResource subm, String graderId, LmsConfig lmsConfig) throws Exception {
         //this.config = config;
-    	this.subm = new SubmissionLive(subm, ProformaVersion.getDefault());
+    	this.subm = new SubmissionLive(subm);
         //this.subm = createProformaSubmission(subm);
         this.graderId = graderId;
         this.lmsConfig = lmsConfig;

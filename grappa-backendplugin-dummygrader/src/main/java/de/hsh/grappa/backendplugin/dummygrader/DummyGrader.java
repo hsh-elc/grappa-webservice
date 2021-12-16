@@ -6,7 +6,6 @@ import proforma.util.ProformaSubmissionFileHandle;
 import proforma.util.ProformaSubmissionSubmissionHandle;
 import proforma.util.ProformaSubmissionTaskHandle;
 import proforma.util.ProformaSubmissionZipPathes;
-import proforma.util.ProformaVersion;
 import proforma.util.ResponseLive;
 import proforma.util.SubmissionLive;
 import proforma.util.TaskLive;
@@ -195,9 +194,7 @@ public class DummyGrader extends BackendPlugin {
     
     @Override
     public ResponseResource grade(SubmissionResource submissionResource) throws Exception {
-        ProformaVersion pv = ProformaVersion.getDefault();
-        
-        SubmissionLive submissionLive= new SubmissionLive(submissionResource, pv);
+        SubmissionLive submissionLive= new SubmissionLive(submissionResource);
         
         StringBuilder feedback = new StringBuilder("<h4>This is dummy feedback from the dummy grader</h4>");
         feedback.append("Local time: ").append(LocalDateTime.now());
@@ -255,7 +252,7 @@ public class DummyGrader extends BackendPlugin {
         feedback.append("<p><b>Task resource</b></p>\n");
         printZipContent(feedback, taskLive);
         
-        AbstractResponseType response = pv.getResponseHelper()
+        AbstractResponseType response = submissionLive.getProformaVersion().getResponseHelper()
         		.createMergedTestFeedbackResponse(
         				feedback.toString(), 
         				BigDecimal.valueOf(score[0]),

@@ -13,6 +13,7 @@ import de.hsh.grappa.exceptions.AuthenticationException;
 import de.hsh.grappa.util.ClassPathClassLoader;
 import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
 import proforma.util.ProformaVersion;
+import proforma.util.SubmissionLive;
 import proforma.util.ProformaResponseHelper.Audience;
 import proforma.util.boundary.Boundary;
 import proforma.util.div.XmlUtils;
@@ -271,11 +272,21 @@ public class GraderPool {
             throw new AuthenticationException("Unknown lmsId '"+lmsId+"'.");
         return lms.get();
     }
+    
+    private ProformaVersion detectProformaVersion(QueuedSubmission subm) {
+        try {
+            return new SubmissionLive(subm.getSubmission()).getProformaVersion();
+        } catch (UnsupportedOperationException ex) {
+            return ProformaVersion.getDefault();
+        } catch (Throwable t) {
+            throw new AssertionError("Unexpected error ", t);
+        }
+    }
 
     private ResponseResource createInternalErrorResponse(String errorMessage, QueuedSubmission subm, Audience audience)  throws Exception {
         LmsConfig lmsConfig = getLmsConfig(subm.getLmsId());
         boolean ietm = lmsConfig.getEietamtf();
-        ProformaVersion pv = ProformaVersion.getDefault();
+        ProformaVersion pv = detectProformaVersion(subm);
         return pv.getResponseHelper().createInternalErrorResponse(errorMessage, subm.getSubmission(), boundary, audience, ietm);
 
         // when eliminating the flag isExpected_internal_error_type_always_merged_test_feedback,

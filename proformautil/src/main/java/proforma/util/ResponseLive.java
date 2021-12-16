@@ -19,8 +19,8 @@ public class ResponseLive extends ProformaLiveObject<ResponseResource, AbstractR
      * @param resource The given resource
      * @throws Exception
      */
-    public ResponseLive(ResponseResource resource, ProformaVersion pv, Class<?> ... contextClasses) throws Exception {
-        super(resource, pv, contextClasses);
+    public ResponseLive(ResponseResource resource, Class<?> ... contextClasses) throws Exception {
+        super(resource, contextClasses);
     }
 
     /**

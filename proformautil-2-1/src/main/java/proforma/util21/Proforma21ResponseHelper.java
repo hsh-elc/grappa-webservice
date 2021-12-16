@@ -131,7 +131,7 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
     private SeparateTestFeedbackType tryCreateInternalErrorSeparateTestFeedback(String errorMessage, SubmissionResource subm, TaskBoundary tb, Audience audience) {
         SeparateTestFeedbackType separate = null;
         try {
-            SubmissionLive sw = new SubmissionLive(subm, getProformaVersion());
+            SubmissionLive sw = new SubmissionLive(subm);
             SubmissionType submPojo = sw.getSubmission();
             String structure = submPojo.getResultSpec().getStructure();
             if ("separate-test-feedback".equals(structure)) {

@@ -21,8 +21,8 @@ public class SubmissionLive extends ProformaLiveObject<SubmissionResource, Abstr
      * @param submissionResource The given resource
      * @throws Exception
      */
-    public SubmissionLive(SubmissionResource submissionResource, ProformaVersion pv, Class<?> ... contextClasses) throws Exception {
-        super(submissionResource, pv, contextClasses);
+    public SubmissionLive(SubmissionResource submissionResource, Class<?> ... contextClasses) throws Exception {
+        super(submissionResource, contextClasses);
     }
     
     
@@ -88,8 +88,9 @@ public class SubmissionLive extends ProformaLiveObject<SubmissionResource, Abstr
 	 * @param tb the task boundary is used to resolve external elements in the task. It can be null,
 	 *     if there are no external elements.
 	 * @return a handle object.
+	 * @throws Exception 
 	 */
-	public ProformaSubmissionTaskHandle getSubmissionTaskHandle(TaskBoundary tb) {
+	public ProformaSubmissionTaskHandle getSubmissionTaskHandle(TaskBoundary tb) throws Exception {
 		return getProformaVersion().getSubmissionHelper().getSubmissionTaskHandle(this, tb);
 	}
 	
@@ -100,8 +101,9 @@ public class SubmissionLive extends ProformaLiveObject<SubmissionResource, Abstr
 	 * @param sb the submission boundary is used to resolve external elements in the submission. It can be null,
 	 *     if there are no external elements.
 	 * @return a handle object.
+	 * @throws Exception 
 	 */
-	public ProformaSubmissionSubmissionHandle getSubmissionSubmissionHandle(SubmissionBoundary sb) {
+	public ProformaSubmissionSubmissionHandle getSubmissionSubmissionHandle(SubmissionBoundary sb) throws Exception {
 		return getProformaVersion().getSubmissionHelper().getSubmissionSubmissionHandle(this, sb);
 	}
 	

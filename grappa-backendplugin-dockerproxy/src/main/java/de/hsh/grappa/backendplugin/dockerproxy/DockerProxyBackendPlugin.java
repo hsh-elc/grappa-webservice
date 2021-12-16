@@ -10,7 +10,6 @@ import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
 import de.hsh.grappa.backendplugin.BackendPlugin;
 import proforma.util.ProformaSubmissionSubmissionHandle;
 import proforma.util.ProformaSubmissionTaskHandle;
-import proforma.util.ProformaVersion;
 import proforma.util.SubmissionLive;
 import proforma.util.div.FilenameUtils;
 import proforma.util.div.IOUtils;
@@ -236,7 +235,7 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
     
     
     private SubmissionResource embedSubmissionAndTaskIfExternal(SubmissionResource submission) throws Exception {
-       	SubmissionLive subLive = new SubmissionLive(submission, ProformaVersion.getDefault());
+       	SubmissionLive subLive = new SubmissionLive(submission);
     	ProformaSubmissionTaskHandle th = subLive.getSubmissionTaskHandle(getBoundary());
     	ProformaSubmissionSubmissionHandle sh = subLive.getSubmissionSubmissionHandle(getBoundary());
     	

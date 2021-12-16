@@ -87,7 +87,7 @@ public abstract class ProformaSubmissionTaskHandle {
 				}
 	        }
         	if (taskResource != null) {
-        		return new TaskLive(taskResource, getSubmission().getProformaVersion(), getSubmission().getContextClasses());
+        		return new TaskLive(taskResource, getSubmission().getContextClasses());
         	}
         }
         throw new IllegalArgumentException("Unknown task element in submission");        

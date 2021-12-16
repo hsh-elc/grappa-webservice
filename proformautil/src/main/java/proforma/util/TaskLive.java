@@ -21,8 +21,8 @@ public class TaskLive extends ProformaLiveObject<TaskResource, AbstractTaskType>
      * @param resource The given resource
      * @throws Exception
      */
-    public TaskLive(TaskResource resource, ProformaVersion pv, Class<?> ... contextClasses) throws Exception {
-        super(resource, pv, contextClasses);
+    public TaskLive(TaskResource resource, Class<?> ... contextClasses) throws Exception {
+        super(resource, contextClasses);
     }
     
     /**

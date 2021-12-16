@@ -5,11 +5,21 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import proforma.util.div.XmlUtils;
 import proforma.util.div.Zip;
@@ -77,8 +87,7 @@ public abstract class ProformaLiveObject<R extends ProformaResource, P extends A
      * @param resource The given resource
      * @throws Exception
      */
-    protected ProformaLiveObject(R resource, ProformaVersion version, Class<?> ... contextClasses) throws Exception {
-        this.proformaVersion = version;
+    protected ProformaLiveObject(R resource, Class<?> ... contextClasses) throws Exception {
         this.contextClasses = contextClasses;
         this.mimeType= resource.getMimeType();
         this.resource = resource;
@@ -87,7 +96,7 @@ public abstract class ProformaLiveObject<R extends ProformaResource, P extends A
 
     
     protected ProformaLiveObject(P pojo, ZipContent otherZipContentExceptMainXmlFile, MimeType mimeType, MarshalOption[] marshalOptions, Class<?> ... contextClasses) throws Exception {
-    	this.proformaVersion = ProformaVersion.getInstance(pojo.proFormAVersionNumber());
+        this.proformaVersion = ProformaVersion.getInstanceByVersionNumber(pojo.proFormAVersionNumber());
         this.contextClasses = contextClasses;
         this.pojo = pojo;
         this.mimeType = mimeType;
@@ -123,39 +132,82 @@ public abstract class ProformaLiveObject<R extends ProformaResource, P extends A
         } else {
             xmlContent= xmlBytes;
         }
-	    this.resource = null;
+        this.resource = null;
     }    
 
     public void markPojoChanged(MarshalOption[] marshalOptions) throws Exception {
-	    createContentFromPojo(marshalOptions);
+        createContentFromPojo(marshalOptions);
     }
     
     
-    public ProformaVersion getProformaVersion() {
-    	return proformaVersion;
+    public ProformaVersion getProformaVersion() throws Exception {
+        if (proformaVersion == null) {
+            detectProformaVersionFromContent();
+        }
+        return proformaVersion;
     }
     
+    
+    private void detectProformaVersionFromContent() throws ParserConfigurationException, SAXException, IOException {
+        byte[] xmlFileBytes = getXmlFileBytes();
+        ByteArrayInputStream bais = new ByteArrayInputStream(xmlFileBytes);
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(bais);
+        Element root = doc.getDocumentElement();
+
+        ArrayList<Node> nodes = new ArrayList<>(); 
+        nodes.add(root);
+        
+        NodeList childNodes = root.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            nodes.add(childNodes.item(i));
+        }
+        
+        HashSet<String> namespaces = new HashSet<>();
+        for (Node node : nodes) {
+            //log.debug("detectProformaVersionFromContent: node = " + node.getNodeName() + ", " + node.getNodeType() + ", " + node.getNamespaceURI());            
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                String ns = node.getNamespaceURI();
+                if (ns != null) {
+                    namespaces.add(ns);
+                }
+            }
+        }
+        
+        for (String ns : namespaces) {
+            try {
+                proformaVersion = ProformaVersion.getInstanceByNamespaceUri(ns);
+                return;
+            } catch (Throwable t) {
+                // continue
+            }
+        }
+        
+        throw new UnsupportedOperationException("Unsupported XML file with namespace(s) " + namespaces);
+    }
     
     public MimeType getMimeType() {
         return mimeType;
     }
     
     public Class<?>[] getContextClasses() {
-    	return contextClasses;
+        return contextClasses;
     }
     
     public ProformaResource getResource() throws Exception {
-    	if (resource == null) {
-    		createResourceFromContent();
-    	}
+        if (resource == null) {
+            createResourceFromContent();
+        }
         return resource;
     }
     
     private void nowDoMarshalPojoToContent() throws Exception {
-    	if (lazyMarshalPojoToContent != null) {
-    		lazyMarshalPojoToContent.run();
-    		lazyMarshalPojoToContent = null;
-    	}
+        if (lazyMarshalPojoToContent != null) {
+            lazyMarshalPojoToContent.run();
+            lazyMarshalPojoToContent = null;
+        }
     }
     
     /**
@@ -166,10 +218,10 @@ public abstract class ProformaLiveObject<R extends ProformaResource, P extends A
      */
     protected <T extends P> T getPojo(Class<T> pojoType) throws Exception {
         if (pojo == null) {
-        	createPojoFromContent(pojoType);
+            createPojoFromContent(pojoType);
         }
         try {
-        	return pojoType.cast(pojo);
+            return pojoType.cast(pojo);
         } catch (ClassCastException ex) {
             throw new UnsupportedOperationException("TODO: implement type '" + pojoType + "' (unknown ProFormA version '" + pojo.proFormAVersionNumber() + "')");
         }
@@ -185,7 +237,7 @@ public abstract class ProformaLiveObject<R extends ProformaResource, P extends A
      */
     public ZipContentElement getZipContentElement(String path) throws Exception {
         log.trace("getZipContentElement('{}')", path);
-    	nowDoMarshalPojoToContent();
+        nowDoMarshalPojoToContent();
         if (getMimeType().equals(MimeType.ZIP)) {
             log.trace("  keyset: " + zipContent.keySet());
             return zipContent.get(path);
@@ -202,7 +254,7 @@ public abstract class ProformaLiveObject<R extends ProformaResource, P extends A
      */
     public ZipContent getZipContent() throws Exception {
         log.trace("getZipContent()");
-    	nowDoMarshalPojoToContent();
+        nowDoMarshalPojoToContent();
         if (getMimeType().equals(MimeType.ZIP)) {
             return zipContent;
         }
@@ -213,6 +265,11 @@ public abstract class ProformaLiveObject<R extends ProformaResource, P extends A
     
 
     private <T extends P> void createPojoFromContent(Class<T> pojoType) throws Exception {
+        byte[] xmlFileBytes = getXmlFileBytes();
+        this.pojo= XmlUtils.unmarshalToObject(xmlFileBytes, pojoType);
+    }
+    
+    private byte[] getXmlFileBytes() {
         byte[] xmlFileBytes;
         if (xmlContent != null) {
             xmlFileBytes= xmlContent;
@@ -220,9 +277,9 @@ public abstract class ProformaLiveObject<R extends ProformaResource, P extends A
             ZipContentElement elem= getMainXmlFromZipContent();
             xmlFileBytes= elem.getBytes();
         } else {
-        	throw new AssertionError("Neither xml nor zip content in " + ProformaLiveObject.class + "::createPojoFromContent");
+            throw new AssertionError("Neither xml nor zip content in " + ProformaLiveObject.class + "::createPojoFromContent");
         }
-        this.pojo= XmlUtils.unmarshalToObject(xmlFileBytes, pojoType);
+        return xmlFileBytes;
     }
     
 
@@ -234,22 +291,22 @@ public abstract class ProformaLiveObject<R extends ProformaResource, P extends A
 //     * @throws Exception
 //     */
 //    public R toResource(MarshalOption[] marshalOptions, Class<?> ... contextClasses) throws Exception {
-//	    // Check, whether there were data changes via the pojo handle:
-//	    if (pojo != null) {
-//	        byte[] xmlBytes = toXmlBytes(pojo, marshalOptions, contextClasses);
-//	        
-//	        if (zipContent != null) {
-//	            ZipContentElement elem= getMainXmlFromZipContent();
-//	            elem.setBytes(xmlBytes);
-//	        } else {
-//	            xmlContent= xmlBytes;
-//	        }
-//	        
-//	    } // else: nothing to do, since the Pojo has never been created
-//	
-//	    createResourceFromContent();
-//	    return this.resource;
-//	}
+//        // Check, whether there were data changes via the pojo handle:
+//        if (pojo != null) {
+//            byte[] xmlBytes = toXmlBytes(pojo, marshalOptions, contextClasses);
+//            
+//            if (zipContent != null) {
+//                ZipContentElement elem= getMainXmlFromZipContent();
+//                elem.setBytes(xmlBytes);
+//            } else {
+//                xmlContent= xmlBytes;
+//            }
+//            
+//        } // else: nothing to do, since the Pojo has never been created
+//    
+//        createResourceFromContent();
+//        return this.resource;
+//    }
     
     
     private ZipContentElement getMainXmlFromZipContent() {
@@ -273,7 +330,7 @@ public abstract class ProformaLiveObject<R extends ProformaResource, P extends A
     }
     
     private void createResourceFromContent() throws Exception {
-    	nowDoMarshalPojoToContent();
+        nowDoMarshalPojoToContent();
         MimeType mimeType = null;
         byte[] bytes = null;
         int cnt = 0;

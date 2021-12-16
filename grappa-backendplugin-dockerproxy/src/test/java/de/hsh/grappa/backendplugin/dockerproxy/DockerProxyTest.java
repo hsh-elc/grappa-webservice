@@ -6,7 +6,6 @@ import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
 
-import de.hsh.grappa.backendplugin.dockerproxy.DockerController;
 import de.hsh.grappa.util.FileUtils;
 import proforma.util.resource.MimeType;
 import proforma.util.resource.SubmissionResource;
