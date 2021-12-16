@@ -1,8 +1,6 @@
 package proforma.util;
 
 import proforma.util.div.PropertyHandle;
-import proforma.util.div.Zip;
-import proforma.util.div.Zip.ZipContentElement;
 
 /**
  * This is an abstraction of an attached binary file, independent of a specific ProFormA version.
