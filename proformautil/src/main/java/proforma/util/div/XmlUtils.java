@@ -2,54 +2,50 @@ package proforma.util.div;
 
 import javax.xml.bind.*;
 import javax.xml.bind.annotation.XmlSchema;
-
-import org.xml.sax.SAXException;
-
-import com.sun.xml.txw2.output.XMLWriter;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.ThreadFactory;
-import java.util.regex.Pattern;
 
 public class XmlUtils {
-	
-	public static enum MarshalOption {
-		/**
-		 * leads to marshaling POJO into XML-String using CDATA-tags if element 
-		 * contains XML-control-characters (instead of transform them to XML-entities)
-		 */
-		CDATA;
+    
+    public static enum MarshalOption {
+        /**
+         * leads to marshaling POJO into XML-String using CDATA-tags if element 
+         * contains XML-control-characters (instead of transform them to XML-entities)
+         */
+        CDATA;
 
-		private static final MarshalOption[] NONE = new MarshalOption[0];
-		
-		public static MarshalOption[] none() {
-			return NONE;
-		}
+        private static final MarshalOption[] NONE = new MarshalOption[0];
+        
+        public static MarshalOption[] none() {
+            return NONE;
+        }
 
-		public static MarshalOption[] of(MarshalOption ... o) {
-			return o;
-		}
-		
-		public static boolean isCData(MarshalOption[] options) {
-			return isContained(CDATA, options);
-		}
-		
-		private static boolean isContained(MarshalOption option, MarshalOption[] options) {
-			for (MarshalOption o : options) {
-				if (option.equals(o)) return true;
-			}
-			return false;
-		}
-	}
-	
+        public static MarshalOption[] of(MarshalOption ... o) {
+            return o;
+        }
+        
+        public static boolean isCData(MarshalOption[] options) {
+            return isContained(CDATA, options);
+        }
+        
+        private static boolean isContained(MarshalOption option, MarshalOption[] options) {
+            for (MarshalOption o : options) {
+                if (option.equals(o)) return true;
+            }
+            return false;
+        }
+    }
+    
     /**
      * @param source: POJO that should be marshaled
      * @param marshalOptions options
@@ -60,20 +56,33 @@ public class XmlUtils {
      */
     public static String marshalToXml(Object source, MarshalOption[] marshalOptions, Class<?>... type) throws IOException, JAXBException {
         String result;
-        StringWriter sw = new StringWriter();
         JAXBContext jaxbContext;
         jaxbContext=JAXBContext.newInstance(type);
         Marshaller marshaller=jaxbContext.createMarshaller();
         
-        if (MarshalOption.isCData(marshalOptions)) {
-            //see: https://stackoverflow.com/questions/3136375/how-to-generate-cdata-block-using-jaxb#answer-39557646
-            CDataContentHandler cdataHandler=new CDataContentHandler(sw, StandardCharsets.UTF_8);
-            marshaller.marshal(source,cdataHandler);
-        } else {
-            marshaller.marshal(source, sw);
+        XMLOutputFactory xof = XMLOutputFactory.newInstance();
+        XMLStreamWriter streamWriter= null;
+        ByteArrayOutputStream baos= new ByteArrayOutputStream();
+        try {
+            streamWriter = xof.createXMLStreamWriter(baos, StandardCharsets.UTF_8.name());
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
         }
+
+        if (MarshalOption.isCData(marshalOptions)) {
+            CDataContentHandler cdataStreamWriter = new CDataContentHandler( streamWriter );
+            streamWriter = cdataStreamWriter;
+        }
+        marshaller.setProperty(Marshaller.JAXB_ENCODING, StandardCharsets.UTF_8.name());
+        marshaller.marshal(source, streamWriter);
         
-        result = sw.toString();
+        try {
+            streamWriter.flush();
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
+        }
+
+        result = baos.toString(StandardCharsets.UTF_8.name());
         return result;
     }
 
@@ -137,41 +146,17 @@ public class XmlUtils {
         }
     }
     
-    //from: https://stackoverflow.com/questions/3136375/how-to-generate-cdata-block-using-jaxb#answer-39557646
-    //class XMLWriter contained in grappa-backend-plugin-api already
-    private static class CDataContentHandler extends XMLWriter {
-        // public class CDataContentHandler extends com.sun.xml.txw2.output.XMLWriter{
-        public CDataContentHandler(Writer writer, Charset encoding) throws IOException {
-            super(writer, encoding.name());
-        }
-
-        // see http://www.w3.org/TR/xml/#syntax
-        private static final Pattern XML_CHARS = Pattern.compile("[<>&]");
-
-        public void characters(char[] ch, int start, int length) throws SAXException {
-            boolean useCData = XML_CHARS.matcher(new String(ch, start, length)).find();
-            if (useCData) {
-                super.startCDATA();
-            }
-            super.characters(ch, start, length);
-            if (useCData) {
-                super.endCDATA();
-            }
-        }
-    }
-    
-    
     public static boolean isXml(byte[] bytes) {
-    	int i = 0;
-    	while (i < bytes.length && Character.isWhitespace((char)bytes[i])) {
-    		i++;
-    	}
-    	
+        int i = 0;
+        while (i < bytes.length && Character.isWhitespace((char)bytes[i])) {
+            i++;
+        }
+        
         return bytes.length > i+5 
-        		&& bytes[i++] == (byte)'<' 
-        		&& bytes[i++] == (byte)'?' 
-        		&& bytes[i++] == (byte)'x'
-        		&& bytes[i++] == (byte)'m' 
-        		&& bytes[i++] == (byte)'l';        
+                && bytes[i++] == (byte)'<' 
+                && bytes[i++] == (byte)'?' 
+                && bytes[i++] == (byte)'x'
+                && bytes[i++] == (byte)'m' 
+                && bytes[i++] == (byte)'l';        
     }
 }

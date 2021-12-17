@@ -8,6 +8,7 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
 
 import de.hsh.grappa.backendplugin.BackendPlugin;
+import de.hsh.grappa.util.DebugUtils;
 import proforma.util.ProformaSubmissionSubmissionHandle;
 import proforma.util.ProformaSubmissionTaskHandle;
 import proforma.util.SubmissionLive;
@@ -19,7 +20,6 @@ import proforma.util.resource.MimeType;
 import proforma.util.resource.ResponseResource;
 import proforma.util.resource.SubmissionResource;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,7 +157,7 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
                 } catch (Exception e) {
                     log.error("[GraderId: '{}', GradeProcId: '{}']: Could not load grader stack trace file '{}'.",
                         graderId, gradeProcId, GRADER_EXCEPTION_STACKTRACE_FILE_PATH);
-                    log.error(ExceptionUtils.getStackTrace(e));
+                    log.error(DebugUtils.getStackTrace(e));
                 }
             } else {
                 // Thread interruption: Do not expect (nor care about) any result or container log
@@ -173,7 +173,7 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
                         log.error("[GraderId: '{}', GradeProcId: '{}']: Failed to fetch response file from container.",
                             graderId, gradeProcId);
                         log.error(e.getMessage());
-                        log.error(ExceptionUtils.getStackTrace(e));
+                        log.error(DebugUtils.getStackTrace(e));
                     }
                 }
             }
@@ -203,7 +203,7 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
                     log.error("[GraderId: '{}', GradeProcId: '{}']: Fetching container log failed.",
                         graderId, gradeProcId);
                     log.error(e.getMessage());
-                    log.error(ExceptionUtils.getStackTrace(e));
+                    log.error(DebugUtils.getStackTrace(e));
                 }
             }
 

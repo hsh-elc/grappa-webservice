@@ -11,6 +11,7 @@ import proforma.util.SubmissionLive;
 import proforma.util.TaskLive;
 import proforma.util.boundary.ResourceDownloader.Resource;
 import proforma.util.div.FilenameUtils;
+import proforma.util.div.StringEscapeUtils;
 import proforma.util.div.Strings;
 import proforma.util.div.XmlUtils.MarshalOption;
 import proforma.util.div.Zip.ZipContent;
@@ -73,7 +74,7 @@ public class DummyGrader extends BackendPlugin {
             feedback.append("<pre>\n");
             try (Scanner sc = new Scanner(txtContent)) {
                 while (sc.hasNextLine()) {
-                    feedback.append(sc.nextLine()).append("\n");
+                    feedback.append(StringEscapeUtils.escapeHtml4(sc.nextLine())).append("\n");
                 }
             }
             feedback.append("</pre>\n");
@@ -81,17 +82,17 @@ public class DummyGrader extends BackendPlugin {
     }
     
     private void printZipContent(StringBuilder feedback, ProformaLiveObject<?,?> o) throws Exception {
-    	if (MimeType.ZIP.equals(o.getMimeType())) {
-    		feedback.append("<p>This is a zip resource</p>\n");
-    		feedback.append("<ul>\n");
-    		for (ZipContentElement elem : o.getZipContent().values()) {
-    			feedback.append("<li>").append(elem.getPath())
-    				.append(" (").append(elem.getSize()).append(" bytes)</li>\n");
-    		}
-    		feedback.append("</ul>\n");
-    	} else if (MimeType.XML.equals(o.getMimeType())) {
-    		feedback.append("<p>This is a xml resource</p>\\n");
-    	}
+        if (MimeType.ZIP.equals(o.getMimeType())) {
+            feedback.append("<p>This is a zip resource</p>\n");
+            feedback.append("<ul>\n");
+            for (ZipContentElement elem : o.getZipContent().values()) {
+                feedback.append("<li>").append(elem.getPath())
+                    .append(" (").append(elem.getSize()).append(" bytes)</li>\n");
+            }
+            feedback.append("</ul>\n");
+        } else if (MimeType.XML.equals(o.getMimeType())) {
+            feedback.append("<p>This is a xml resource</p>\n");
+        }
     }
     
     private String readAttachedTxt(ZipContent zipContent, String path, ProformaAttachedTxtFileHandle atfh) throws UnsupportedEncodingException {
@@ -105,7 +106,7 @@ public class DummyGrader extends BackendPlugin {
             encoding = StandardCharsets.UTF_8.name();
         }
         String txtContent = new String(elem.getBytes(), encoding);
-    	return txtContent;
+        return txtContent;
     }
 
     private byte[] readAttachedBin(ZipContent zipContent, String path) {
@@ -140,12 +141,12 @@ public class DummyGrader extends BackendPlugin {
                     txtContent = fi.embeddedTxtFileHandle().getContent();
                 }
                 if (fi.attachedBinFileHandle().get() != null) {
-                	filename = fi.attachedBinFileHandle().getPath();
+                    filename = fi.attachedBinFileHandle().getPath();
                     String path = fi.getPathPrefixInsideZip() + fi.attachedBinFileHandle().getPath();
                     binContent = readAttachedBin(submissionLive.getZipContent(), path);
                 }
                 if (fi.attachedTxtFileHandle().get() != null) {
-                	filename = fi.attachedTxtFileHandle().getPath();
+                    filename = fi.attachedTxtFileHandle().getPath();
                     String path = fi.getPathPrefixInsideZip() + fi.attachedTxtFileHandle().getPath();
                     txtContent = readAttachedTxt(submissionLive.getZipContent(), path, fi.attachedTxtFileHandle());
                 }
@@ -154,7 +155,7 @@ public class DummyGrader extends BackendPlugin {
                 if ("score".equals(FilenameUtils.getBasename(filename))) {
                     if (txtContent != null) {
                         try {
-                        	inOutScore[0] = Double.parseDouble(txtContent);
+                            inOutScore[0] = Double.parseDouble(txtContent);
                         } catch (Exception e) {
                             feedback.append("<b>Parse double error</b><br>\n");
                         }
@@ -175,9 +176,9 @@ public class DummyGrader extends BackendPlugin {
             byte[] binContent = null;
             String txtContent = null;
             if (res.isTextContent()) {
-            	txtContent = new String(res.getContent(), res.getEncodingOrUtf8AsDefault());
+                txtContent = new String(res.getContent(), res.getEncodingOrUtf8AsDefault());
             } else {
-            	binContent = res.getContent();
+                binContent = res.getContent();
             }
             feedback.append("<p>Details of the downloaded file:<br>\n");
             feedback.append("  mimetype: ").append(res.getContentType()).append("<br>\n");
@@ -208,8 +209,8 @@ public class DummyGrader extends BackendPlugin {
 
         ProformaSubmissionSubmissionHandle pssh = submissionLive.getSubmissionSubmissionHandle(getBoundary());
         if (pssh.unzipToEmbedded(0)) {
-        	feedback.append("<p>After unzipping the single submitted zip file, the submission looks like this...</p>\n");
-        	processSubmission(feedback, submissionLive, score);
+            feedback.append("<p>After unzipping the single submitted zip file, the submission looks like this...</p>\n");
+            processSubmission(feedback, submissionLive, score);
         }
 
         
@@ -230,10 +231,10 @@ public class DummyGrader extends BackendPlugin {
             String txtContent = null;
             String filename = null;
             if (sth.includedTaskFileHandle().attachedXmlFileHandle().get() != null) {
-            	filename = ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + sth.includedTaskFileHandle().attachedXmlFileHandle().getPath();
+                filename = ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + sth.includedTaskFileHandle().attachedXmlFileHandle().getPath();
                 txtContent = readAttachedTxt(submissionLive.getZipContent(), filename, sth.includedTaskFileHandle().attachedXmlFileHandle());
             } else if (sth.includedTaskFileHandle().attachedZipFileHandle().get() != null) {
-            	filename = ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + sth.includedTaskFileHandle().attachedZipFileHandle().getPath();
+                filename = ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + sth.includedTaskFileHandle().attachedZipFileHandle().getPath();
                 binContent = readAttachedBin(submissionLive.getZipContent(), filename);
             } else if (sth.includedTaskFileHandle().embeddedXmlFileHandle().get() != null) {
                 filename = sth.includedTaskFileHandle().embeddedXmlFileHandle().getFilename();
@@ -253,11 +254,11 @@ public class DummyGrader extends BackendPlugin {
         printZipContent(feedback, taskLive);
         
         AbstractResponseType response = submissionLive.getProformaVersion().getResponseHelper()
-        		.createMergedTestFeedbackResponse(
-        				feedback.toString(), 
-        				BigDecimal.valueOf(score[0]),
-        				submissionLive.getSubmissionId(),
-        				this.getClass().getName());
+                .createMergedTestFeedbackResponse(
+                        feedback.toString(), 
+                        BigDecimal.valueOf(score[0]),
+                        submissionLive.getSubmissionId(),
+                        this.getClass().getName());
         
         ResponseLive responseLive = new ResponseLive(response, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA));
         return responseLive.getResource();
