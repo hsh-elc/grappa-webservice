@@ -1,16 +1,28 @@
 package de.hsh.grappa.config;
 
+import java.util.Properties;
+
 public class GraderConfig {
   private String id;
   private String name;
   private boolean enabled;
-  private String class_path;
-  private String file_extension;
-  private String class_name;
-  private String config_path;
   private int timeout_seconds = 120;
   private int concurrent_grading_processes = 5;
   private String logging_level;
+  
+//  private String class_path;
+//  private String file_extension;
+//  private String class_name;
+//  private String config_path;
+  
+  private String subdir;
+  private String backend_plugin_classname;
+  private String relative_classpathes="";
+  private String fileextensions=".jar";
+  
+  private Properties grader_plugin_defaults;
+  
+  private String operating_mode;
 
   public String getId() {
     return id;
@@ -32,38 +44,6 @@ public class GraderConfig {
 
   public void setEnabled(boolean enabled) { this.enabled = enabled; }
 
-  public String getClass_path() {
-    return class_path;
-  }
-
-  public void setClass_path(String class_path) {
-    this.class_path = class_path;
-  }
-
-  public String getFile_extension() {
-    return file_extension;
-  }
-
-  public void setFile_extension(String file_extension) {
-    this.file_extension = file_extension;
-  }
-
-  public String getClass_name() {
-    return class_name;
-  }
-
-  public void setClass_name(String class_name) {
-    this.class_name = class_name;
-  }
-
-  public String getConfig_path() {
-    return config_path;
-  }
-
-  public void setConfig_path(String config_path) {
-    this.config_path = config_path;
-  }
-
   public int getTimeout_seconds() {
     return timeout_seconds;
   }
@@ -79,8 +59,6 @@ public class GraderConfig {
   public void setConcurrent_grading_processes(int concurrent_grading_processes) {
     this.concurrent_grading_processes = concurrent_grading_processes;
   }
-
-  
   
   public String getLogging_level() {
 	return logging_level;
@@ -89,20 +67,69 @@ public class GraderConfig {
   public void setLogging_level(String logging_level) {
 	this.logging_level = logging_level;
   }
-
-@Override
-  public String toString() {
-    return "Grader{" +
-            "id='" + id + '\'' +
-            ", name=" + name + '\'' +
-            ", enabled='" + enabled + '\'' +
-            ", class_path=" + class_path + '\'' +
-            ", file_extension=" + file_extension + '\'' +
-            ", class_name='" + class_name + '\'' +
-            ", config_path='" + config_path + '\'' +
-            ", max_runtime_seconds=" + timeout_seconds +
-            ", max_concurrent_grade_processes=" + concurrent_grading_processes +
-            ", logging_level=" + logging_level +
-            '}';
+  
+  public String getSubdir(){
+    return subdir;
+  }
+  
+  public void setSubdir(String subdir){
+    this.subdir=subdir;
+  }
+  
+  public String getBackend_plugin_classname(){
+    return backend_plugin_classname;
+  }
+  
+  public void setBackend_plugin_classname(String backend_plugin_classname){
+    this.backend_plugin_classname=backend_plugin_classname;
+  }
+  
+  public String getRelative_classpathes(){
+    return relative_classpathes;
+  }
+  
+  public void setRelative_classpathes(String relative_classpathes){
+    this.relative_classpathes=relative_classpathes;
+  }
+  
+  public String getFileextensions(){
+    return fileextensions;
+  }
+  
+  public void setFileextensions(String fileextensions){
+    this.fileextensions=fileextensions;
+  }
+  
+  public Properties getGrader_plugin_defaults(){
+    return grader_plugin_defaults;
+  }
+  
+  public void setGrader_plugin_defaults(Properties grader_plugin_defaults){
+    this.grader_plugin_defaults=grader_plugin_defaults;
+  }
+  
+  public String getOperating_mode(){
+    return operating_mode;
+  }
+  
+  public void setOperating_mode(String operating_mode){
+    this.operating_mode=operating_mode;
+  }
+  
+  @Override
+  public String toString(){
+    return "GraderConfig{"
+        +"id="+id
+        +", name="+name
+        +", enabled="+enabled
+        +", timeout_seconds="+timeout_seconds
+        +", concurrent_grading_processes="+concurrent_grading_processes
+        +", logging_level="+logging_level
+        +", subdir="+subdir
+        +", backend_plugin_classname="+backend_plugin_classname
+        +", relative_classpathes="+relative_classpathes
+        +", fileextensions="+fileextensions
+        +", grader_plugin_defaults="+grader_plugin_defaults
+        +", operating_mode="+operating_mode+"}";
   }
 }
