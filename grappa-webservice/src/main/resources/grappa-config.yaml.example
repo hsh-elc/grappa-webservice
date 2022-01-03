@@ -13,20 +13,88 @@ lms:
     password_hash: "test"
     # expected internal error type always merged test feedback (temporary switch, default: false)
     eietamtf: false
+
+# Parent directory of all graders. Below this directory there is one subdirectory per 
+# backend-plugin.
+graders_home: "/usr/local/graders"
     
 graders:
   - id: "DummyGrader"
     name: "DummyGrader" # user friendly name
     enabled: true  # enable or disable grader
-    class_path: "path to grappa-backend-plugin-docker-proxy.jar"
-    class_name: "de.hsh.grappa.DockerProxyBackendPlugin"
-    file_extension: ".jar"
-    config_path: "path to grappa-backend-plugin-docker-proxy.properties"
     timeout_seconds: 60
     # concurrent_grading_processes sets the number of max grader instances in a grader pool
     concurrent_grading_processes: 5
     logging_level: "WARN"    # optional, if different from service setting above
 
+    # Name of the subdirectory below 'graders_home', where jars 
+    # of the grader backendplugin are installed.
+    # Mandatory.
+    subdir: "dummygrader" 
+    # Dot-style java-class fully qualified name of the graderbackend plugin.
+    # This class is expected in classpath, in 'host_jvm_bp.plugin_jar_name', 
+    # or optionally in {graders_home}/{subdir}/graderBP.jar.
+    # Mandatory.
+    backend_plugin_classname: "de.hsh.grappa.DockerProxyBackendPlugin"
+    # Semicolon separated relative path(es) below {graders_home}/{subdir} 
+    # to files or directories that are to be loaded to the classpath.
+    # The file {graders_home}/{subdir}/graderBP.jar does not need to be mentioned here, 
+    # since it is loaded by default.
+    # Optional. Default: (empty string)
+    relative_classpathes: ""
+    # Semicolon separated file extensions that grappa should load to the classpath.
+    # Optional. Default value: .jar
+    fileextensions: ".jar"
+    
+    # Grader-specific properties
+    # Properties (key/value pairs only) set here, will be forwarded to backend plugin 
+    # before each grading process.
+    # (These should be default values that may be overwritten by LMS in future.)
+    # Optional.
+    grader_plugin_defaults:
+      my.property.1: "value 1"
+      another.property: 42
+      
+    # Decides whether the grader will be run in host's JVM or within a docker-container.
+    # Mandatory. Possible values: host_jvm_bp | docker_jvm_bp 
+    operating_mode: host_jvm_bp
+    #operating_mode: docker_jvm_bp
+
+    # Additional preferences for running grader in host's JVM only
+    # Optional.
+    host_jvm_bp:
+        # Semicolon separated absolute path(es) to files or directories that are to be 
+        # loaded to the classpath when running on the host's JVM.
+        # Optional. Default: (empty string)
+        # hostonly_classpathes: "/usr/local/whatever/lib.jar"
+        
+        # Name of jar-file of the backend plugin below {graders_home}/{subdir}.
+        # Optional. Default value: graderBP.jar
+        plugin_jar_name: "DummyGraderGrappaV2.jar"
+
+    # Mandatory if 'operating_mode' was set to 'docker_jvm_bp'
+    docker_jvm_bp:        
+        # The Name of the docker image to create a container from. 
+        # If image is not found locally, docker will search for remote one.
+        # For registries different from local or DockerHub the general design of this name
+        # is: registry:port/repo/image:tag
+        # Mandatory.
+        image_name: "grappa-backend-graja-2.2"
+        # Username with readonly-access and password or PAT to retrieve a private image.
+        # Optional.
+        # Currently not used.
+        #username:
+        #password_pat:
+
+# Needs to be defined if at least one grader uses grappa-backend-plugin-docker-proxy
+docker_proxy:
+    # The class path and name to the grappa-backend-plugin-docker-proxy
+    class_path: "/usr/local/graders/docker-proxy/grappa-backend-plugin-docker-proxy.jar"
+    # dot-style java-class fully qualified name of the grappa-backend-plugin-docker-proxy
+    class_name: "de.hsh.grappa.DockerProxyBackendPlugin"
+    # docker host uri (including port)
+    host: "tcp://127.0.0.1:2375"
+    
 cache:
   submission_ttl_seconds: 86400 # 1 day
   task_ttl_seconds: 2592000 # 30 days

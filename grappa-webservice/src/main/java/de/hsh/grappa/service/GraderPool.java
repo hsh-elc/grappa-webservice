@@ -168,6 +168,7 @@ public class GraderPool {
     		//DOCKER BP
     		
         	DockerProxyConfig dockerConfig=GrappaServlet.CONFIG.getDocker_proxy();
+        	if(dockerConfig==null)throw new IllegalArgumentException(String.format("Missing definition of 'docker_proxy' for operating_mode: %s.",OP_MODE_DOCKER_VM));
         	String dockerBpClassPath=dockerConfig.getClass_path();
     		String dockerBpClassName=dockerConfig.getClass_name();
         	
@@ -202,7 +203,9 @@ public class GraderPool {
     		//"NORMAL" BP
     		
         	String gradersHomeDir=GrappaServlet.CONFIG.getGraders_home();
+        	if(gradersHomeDir==null)throw new IllegalArgumentException(String.format("Missing 'graders_home' definition."));
         	String graderSubDir=graderConfig.getSubdir();
+        	if(graderSubDir==null)throw new IllegalArgumentException(String.format("Missing 'subdir' definition."));
         	String absoluteGraderDir=gradersHomeDir+"/"+graderSubDir;
         	
         	String absoluteClassPathes="";        	
