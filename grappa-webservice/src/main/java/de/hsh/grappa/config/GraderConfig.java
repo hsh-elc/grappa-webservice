@@ -23,6 +23,8 @@ public class GraderConfig {
   private Properties grader_plugin_defaults;
   
   private String operating_mode;
+  private GraderDockerJvmBpConfig docker_jvm_bp;
+  private GraderHostJvmBpConfig host_jvm_bp;
 
   public String getId() {
     return id;
@@ -115,6 +117,22 @@ public class GraderConfig {
   public void setOperating_mode(String operating_mode){
     this.operating_mode=operating_mode;
   }
+
+  public GraderDockerJvmBpConfig getDocker_jvm_bp(){
+    return docker_jvm_bp;
+  }
+  
+  public void setDocker_jvm_bp(GraderDockerJvmBpConfig docker_jvm_bp){
+    this.docker_jvm_bp=docker_jvm_bp;
+  }
+  
+  public GraderHostJvmBpConfig getHost_jvm_bp(){
+    return host_jvm_bp;
+  }
+  
+  public void setHost_jvm_bp(GraderHostJvmBpConfig host_jvm_bp){
+    this.host_jvm_bp=host_jvm_bp;
+  }
   
   @Override
   public String toString(){
@@ -130,6 +148,8 @@ public class GraderConfig {
         +", relative_classpathes="+relative_classpathes
         +", fileextensions="+fileextensions
         +", grader_plugin_defaults="+grader_plugin_defaults
-        +", operating_mode="+operating_mode+"}";
-  }
+        +", operating_mode="+operating_mode
+        +", docker_jvm_bp="+docker_jvm_bp
+        +", host_jvm_bp="+host_jvm_bp+"}";
+    }
 }
