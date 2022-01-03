@@ -24,6 +24,10 @@
             <artifactId>grappa-backendplugin</artifactId>
         </dependency>
         <dependency>
+            <groupId>de.hsh.grappa</groupId>
+            <artifactId>grappa-backendplugin-dockerproxy</artifactId>
+        </dependency>
+        <dependency>
             <groupId>proforma</groupId>
             <artifactId>proformautil</artifactId>
         </dependency>
