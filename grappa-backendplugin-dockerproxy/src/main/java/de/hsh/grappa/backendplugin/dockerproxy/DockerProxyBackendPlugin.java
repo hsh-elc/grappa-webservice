@@ -315,8 +315,11 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
 		//TODO: check whether jars are in /opt/grader/ or in /opt/grader/<SUBDIR>
 		String containerClassPathes=GRADER_HOME_IN_CONTAINER+"/"+GRADER_BP_JAR_FILENAME;
 		String relativeCPs=gbsAdditionalRelativeClassPaths;
-		if(relativeCPs!=null && !relativeCPs.equals("")) {
-			containerClassPathes+=";"+relativeCPs;
+		if(relativeCPs!=null && !relativeCPs.equals("")){
+			String[] relativeCPsArray=relativeCPs.split(";");
+			for(String relCP:relativeCPsArray){
+				containerClassPathes+=";"+GRADER_HOME_IN_CONTAINER+"/"+relCP;
+			}
 		}
 		
 		String fileExtensions=gbsFileExtensions;
