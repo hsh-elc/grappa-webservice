@@ -73,12 +73,7 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
     private String gbsAdditionalRelativeClassPaths;
     private String gbsFileExtensions;
     
-    private String logLevel; // logLevel inside the container
-
-//    private static final String GRAPPA_CONTEXT_GRADER_ID = "Grappa.Context.GraderId";
-//    private static final String GRAPPA_CONTEXT_GRADE_PROCESS_ID = "Grappa.Context.GraderProcessId";
-    private static final String GRAPPA_CONTEXT_LOG_LEVEL = "Grappa.Context.LogLevel";
-
+    //private String logLevel; // logLevel inside the container
     
 	private static final String STARTER_CFG_PROPERTIES_FILENAME = "grappa-grader-backend-starter.properties";
 	private static final String STARTER_CFG_DIRECTORY_PATH = "/opt/grader/starter";
@@ -105,8 +100,6 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
         //set these paths fix, since the BackendStarter relies on them
         copySubmissionToDirectoryPath=COPY_SUBMISSION_TO_DIRECTORY_PATH;
         responseResultDirectoryPath=RESPONSE_RESULT_DIRECTORY_PATH;
-        
-        logLevel = props.getProperty(GRAPPA_CONTEXT_LOG_LEVEL);
     }
     public void setContext(String graderId, String graderProcessId){
     	this.graderId=graderId;

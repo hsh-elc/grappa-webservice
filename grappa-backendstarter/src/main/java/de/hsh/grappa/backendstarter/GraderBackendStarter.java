@@ -122,7 +122,7 @@ public class GraderBackendStarter {
             ResponseResource responseResource = null;
             try {
                 log.info("Initializing grader backend...");
-                bp.init(graderConfig, new BackendStarterBoundaryImpl()); 
+                bp.init(graderConfig, new BackendStarterBoundaryImpl(), System.getProperty("logging.level")); 
                 log.info("Starting grading process...");
                 responseResource = bp.grade(submissionResource);
                 log.info("Grading finished.");

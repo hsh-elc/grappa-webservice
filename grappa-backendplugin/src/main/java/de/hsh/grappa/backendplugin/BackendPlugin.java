@@ -10,6 +10,8 @@ public abstract class BackendPlugin {
 
     private Boundary boundary;
     
+    protected String logLevel;
+    
     /**
      * A backend plugin might run as part of the JVM running the webapp or as part of a separate JVM
      * in a docker container. In both cases a backend plugin needs access to external resources.
@@ -26,8 +28,9 @@ public abstract class BackendPlugin {
      * @param Boundary boundary
      * @throws Exception
      */
-    public void init(Properties props, Boundary boundary) throws Exception {
+    public void init(Properties props, Boundary boundary, String logLevel) throws Exception {
         this.boundary = boundary;
+        this.logLevel=logLevel;
         init(props);
     }
 
