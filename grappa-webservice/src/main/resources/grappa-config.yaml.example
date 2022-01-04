@@ -79,7 +79,7 @@ graders:
         # For registries different from local or DockerHub the general design of this name
         # is: registry:port/repo/image:tag
         # Mandatory.
-        image_name: "grappa-backend-graja-2.2"
+        image_name: "grappa-backend-dummygrader"
         # Username with readonly-access and password or PAT to retrieve a private image.
         # Optional.
         # Currently not used.
