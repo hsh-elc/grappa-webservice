@@ -35,7 +35,7 @@ graders:
     # This class is expected in classpath, in 'host_jvm_bp.plugin_jar_name', 
     # or optionally in {graders_home}/{subdir}/graderBP.jar.
     # Mandatory.
-    backend_plugin_classname: "de.hsh.grappa.DockerProxyBackendPlugin"
+    backend_plugin_classname: "de.hsh.grappa.backendplugin.dummygrader.DummyGrader"
     # Semicolon separated relative path(es) below {graders_home}/{subdir} 
     # to files or directories that are to be loaded to the classpath.
     # The file {graders_home}/{subdir}/graderBP.jar does not need to be mentioned here, 
@@ -91,7 +91,7 @@ docker_proxy:
     # The class path and name to the grappa-backend-plugin-docker-proxy
     class_path: "/usr/local/graders/docker-proxy/grappa-backend-plugin-docker-proxy.jar"
     # dot-style java-class fully qualified name of the grappa-backend-plugin-docker-proxy
-    class_name: "de.hsh.grappa.DockerProxyBackendPlugin"
+    class_name: "de.hsh.grappa.backendplugin.dockerproxy.DockerProxyBackendPlugin"
     # docker host uri (including port)
     host: "tcp://127.0.0.1:2375"
     
