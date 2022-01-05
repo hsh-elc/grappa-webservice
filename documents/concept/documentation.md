@@ -168,58 +168,103 @@ lms:
 # The graders part
 # Every grader definition here represents a grader pool
 # with a specified number of grader instances in that pool.
-graders:
+graders:  
 
-  # Submission requests must supply the target grader pool's ID
-  # This particular grader pool uses a Docker proxy backend plugin,
-  # acting as a layer in between Grappa and the 'real' grader backend
-  # plugin that resides within a Docker container. Every submission
-  # request delegated to the real grader plugin.
-  # It should be noted that it is not required to use the Docker proxy
-  # backend plugin if Docker is not intended to be used. In that case,
-  # class_path, class_name, and config_path should point to the real
-  # grader backend plugin.
-  - id: "ProxiedGrader"
-
+  # Submission requests must supply the target grader pool's ID.
+  - id: "DummyGrader"
     # A user-friendly name for this grader pool
-    name: "ProxiedGrader"
-
+    name: "DummyGrader" # user friendly name
+    
     # A grader pool may be enabled or disabled. Disabled grader pools
     # are ignored and not utilized by Grappa. Neither do they show up
     # in the result when a client polls for available grader types.
-    enabled: true # values: true|false
-
-    # The class pathes of a backend plugin. It may contain multiple
-    # pathes, separated by a semicolon. class_path may also contain 
-    # pathes to directories.
-    class_path: "/opt/Grappa/plugins/grappa-backend-plugin-docker-proxy-0.1.jar"
-
-    # In case the class_path property contains a directory, only files with
-    # the file extension set in file_extension will be loaded to the class path.
-    # Direcotories may also contain sub directories, which will be traversed
-    # recursively.
-    # file_extension may contain multiple file extensions, separated by a semicolon.
-    file_extension: ".jar"
-
-    class_name: "de.hsh.grappa.DockerProxyBackendPlugin"
-
-    # The path to the configuration file used to initialize a grader
-    # Backend Plugin
-    config_path: "/etc/grappa/grappa-backend-plugin-docker-proxy.properties"
-
+    enabled: true  # values: true|false
+    
     # The timeout in seconds dictates the maximum time for a submission
     # to be graded after which the grading process is forcibly
     # interrupted. Timed out submissions are considered failed
     # submissions, either due to the student's code or an internal
     # server problem.
     timeout_seconds: 60
-
+    
     # Sets the number of maximum grader instances in this grader pool
-    concurrent_grading_processes: 10
+    concurrent_grading_processes: 5
     
     # optional, if different from service setting above
-    logging_level: "WARN"
+    logging_level: "WARN"    # optional, if different from service setting above
 
+    # Name of the subdirectory below 'graders_home', where jars 
+    # of the grader backendplugin are installed.
+    # Mandatory.
+    subdir: "dummygrader" 
+    
+    # Dot-style java-class fully qualified name of the graderbackend plugin.
+    # This class is expected in classpath, in 'host_jvm_bp.plugin_jar_name', 
+    # or optionally in {graders_home}/{subdir}/graderBP.jar.
+    # Mandatory.
+    backend_plugin_classname: "de.hsh.grappa.backendplugin.dummygrader.DummyGrader"
+    
+    # Semicolon separated relative path(es) below {graders_home}/{subdir} 
+    # to files or directories that are to be loaded to the classpath.
+    # The file {graders_home}/{subdir}/graderBP.jar does not need to be mentioned here, 
+    # since it is loaded by default.
+    # Optional. Default: (empty string)
+    relative_classpathes: ""
+    
+    # Semicolon separated file extensions that grappa should load to the classpath.
+    # Optional. Default value: .jar
+    fileextensions: ".jar"
+    
+    # Grader-specific properties
+    # Properties (key/value pairs only) set here, will be forwarded to backend plugin 
+    # before each grading process.
+    # (These should be default values that may be overwritten by LMS in future.)
+    # Optional.
+    grader_plugin_defaults:
+      my.property.1: "value 1"
+      another.property: 42
+      
+    # Decides whether the grader will be run in host's JVM or within a docker-container.
+    # Mandatory. Possible values: host_jvm_bp | docker_jvm_bp 
+    operating_mode: host_jvm_bp
+    #operating_mode: docker_jvm_bp
+
+    # Additional preferences for running grader in host's JVM only
+    # Optional.
+    host_jvm_bp:
+        # Semicolon separated absolute path(es) to files or directories that are to be 
+        # loaded to the classpath when running on the host's JVM.
+        # Optional. Default: (empty string)
+        # hostonly_classpathes: "/usr/local/whatever/lib.jar"
+        
+        # Name of jar-file of the backend plugin below {graders_home}/{subdir}.
+        # Optional. Default value: graderBP.jar
+        plugin_jar_name: "DummyGraderGrappaV2.jar"
+
+    # Mandatory if 'operating_mode' was set to 'docker_jvm_bp'
+    docker_jvm_bp:        
+        # The Name of the docker image to create a container from. 
+        # If image is not found locally, docker will search for remote one.
+        # For registries different from local or DockerHub the general design of this name
+        # is: registry:port/repo/image:tag
+        # Mandatory.
+        image_name: "grappa-backend-dummygrader"
+
+# Defines classpath and classname for locally installed Docker proxy backend plugin,
+# acting as a layer in between Grappa and the 'real' grader backend plugin that resides 
+# within a Docker container. Every submission request is delegated to the real grader 
+# plugin. This only needs to be defined if at least one grader uses grappa-backend-plugin-
+# docker-proxy. It should be noted that it is not required to use the Docker proxy backend
+# plugin if Docker is not intended to be used. In that case, choose 
+# 'operating_mode: host_jvm_bp' for all graders.
+docker_proxy:
+    # The class path and name to the grappa-backend-plugin-docker-proxy
+    class_path: "/usr/local/graders/docker-proxy/grappa-backend-plugin-docker-proxy.jar"
+    # dot-style java-class fully qualified name of the grappa-backend-plugin-docker-proxy
+    class_name: "de.hsh.grappa.backendplugin.dockerproxy.DockerProxyBackendPlugin"
+    # docker host uri (including port)
+    host: "tcp://127.0.0.1:2376"
+    
 # Storage part
 # Redis is used as a cache storage
 # Redis should be configured so that the cache persists in spite of system
@@ -673,28 +718,42 @@ public class PythonGrader extends BackendPlugin {
 
 ### 4.3 grappa-backend-plugin-docker-proxy module
 
-A grader pool may use a docker proxy backend plugin acting as a layer in between Grappa and the 'real' grader backend plugin that resides within a Docker container. Every submission request is delegated from the proxy plugin to the real grader plugin.
+A grader pool may use a docker proxy backend plugin acting as a layer in between Grappa and the 'real' grader backend plugin that resides within a Docker container. 
+Every submission request is delegated from the proxy plugin to the real grader plugin.
 
-It should be noted that it is not required to use the Docker proxy backend plugin if Docker is not intended to be used. In that case, the properties `class_path`, `class_name`, and `config_path` in Grappa's configuration file should point to the actual grader backend plugin.
+It should be noted that it is not required to use the Docker proxy backend plugin if Docker is not intended to be used.
+In that case, choose `operating_mode: host_jvm_bp` for all graders.
+<!--In that case, the properties `class_path`, `class_name`, and `config_path` in Grappa's configuration file should point to the actual grader backend plugin.-->
 
-If the docker proxy backend plugin is to be used, an additional layer of configuration is required. In the Grappa configuration file, the property `config_path` would need to point to a dedicated docker proxy configuration file. That configuration file would look something like follows:
 
-**Docker Proxy Configuration File**
+If the docker proxy backend plugin is to be used, an additional layer of configuration is required within `grappa-config.yaml`.
+<!--In the Grappa configuration file, the property `config_path` would need to point to a dedicated docker proxy configuration file. 
+That configuration file would look something like follows:-->
+
+**Docker Proxy Configuration Part**
 
 ```
-# The Docker Host URI, including port.
-# If Grappa and Docker do not run on the same server,
-# the IP address must be configured accordingly,
-# otherwise it should be localhost.
-dockerproxybackendplugin.docker_host=tcp://127.0.0.1:2376
+docker_proxy:
+    # The class path and name to the grappa-backend-plugin-docker-proxy
+    class_path: "/usr/local/graders/docker-proxy/grappa-backend-plugin-docker-proxy.jar"
+    # dot-style java-class fully qualified name of the grappa-backend-plugin-docker-proxy
+    class_name: "de.hsh.grappa.backendplugin.dockerproxy.DockerProxyBackendPlugin"
+    # docker host uri (including port)
+    host: "tcp://127.0.0.1:2376"
+```
 
-# The Name of the docker image to create a container from. 
-dockerproxybackendplugin.container_image=grappa-remote-backend-dummygrader
-
-# The directories within the Docker filesystem used to copy submissions to
-# and retrieve responses from.
-dockerproxybackendplugin.copy_submission_to_directory_path=/var/grb_starter/tmp
-dockerproxybackendplugin.response_result_directory_path=/var/grb_starter/tmp
+**Docker Grader Info within Grader-Config**
+```
+graders
+  - [...]
+    operating_mode: docker_jvm_bp
+    docker_jvm_bp:        
+        # The Name of the docker image to create a container from. 
+        # If image is not found locally, docker will search for remote one.
+        # For registries different from local or DockerHub the general design of this name
+        # is: registry:port/repo/image:tag
+        # Mandatory.
+        image_name: "grappa-backend-dummygrader"
 ```
 
 # 5 Modules
