@@ -154,6 +154,7 @@ public class GraderPool {
     private BackendPlugin loadAndInitBackendPlugin(String submId) throws Exception{
     	BackendPlugin bp=null;
     	Properties props=graderConfig.getGrader_plugin_defaults();
+        if (props == null) props = new Properties(); // empty map instead of null
 
         String logLevel=graderConfig.getLogging_level();
         String graderId=graderConfig.getId();
