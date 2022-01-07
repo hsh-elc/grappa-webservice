@@ -15,6 +15,7 @@ import proforma.util.div.Zip.ZipContent;
 import proforma.util.resource.MimeType;
 import proforma.util.resource.ResponseResource;
 import proforma.util.resource.SubmissionResource;
+import proforma.xml.AbstractProformaType;
 import proforma.xml.AbstractResponseType;
 import proforma.xml21.FeedbackLevelType;
 import proforma.xml21.FeedbackListType;
@@ -68,8 +69,8 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Class<? extends AbstractResponseType> getPojoType() {
-		return ResponseType.class;
+	public <T extends AbstractProformaType> Class<T>  getPojoType() {
+		return (Class<T>) ResponseType.class;
 	}
 
 

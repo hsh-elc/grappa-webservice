@@ -68,7 +68,7 @@ public abstract class ProformaVersion {
             }
             ProformaVersion pv;
             try {
-                pv = ch.newInstance();
+                pv = ch.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 log.warn("Unable to register {} -> {} ({}, {})", proformaVersion, className, e.getClass(), e.getMessage());
                 return;

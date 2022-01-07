@@ -45,9 +45,9 @@ public class PropertyHandle  {
 	}
 	public void createAndSet() {
 		try {
-			Object f = propertyType.newInstance();
+			Object f = propertyType.getDeclaredConstructor().newInstance();
 			set(f);
-		} catch (IllegalAccessException | IllegalArgumentException | SecurityException | InstantiationException e) {
+		} catch (IllegalAccessException | IllegalArgumentException | SecurityException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
 			throw new AssertionError(e);
 		}
 	}

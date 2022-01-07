@@ -4,7 +4,6 @@ package proforma.util21;
 import proforma.util.ProformaSubmissionFileHandle;
 import proforma.util.ProformaTaskFileHandle;
 import proforma.util.div.Zip.ZipContent;
-import proforma.xml21.SubmissionFileType;
 
 
 /**
