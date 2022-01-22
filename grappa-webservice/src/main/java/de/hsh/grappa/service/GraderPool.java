@@ -8,6 +8,7 @@ import de.hsh.grappa.boundary.BoundaryImpl;
 import de.hsh.grappa.cache.QueuedSubmission;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GraderConfig;
+import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.AuthenticationException;
 import de.hsh.grappa.util.ClassPathClassLoader;
@@ -73,7 +74,7 @@ public class GraderPool {
 
     public GraderPool(GraderConfig graderConfig, GraderPoolManager graderManager) throws Exception {
         this.graderConfig = graderConfig;
-        this.backendPluginLoader = new ClassPathClassLoader<>(BackendPlugin.class, graderConfig.getId());
+        this.backendPluginLoader = new ClassPathClassLoader<>(BackendPlugin.class, graderConfig.getId().toString());
         this.boundary = new BoundaryImpl();
         
         if(0 >= graderConfig.getConcurrent_grading_processes())
@@ -150,14 +151,14 @@ public class GraderPool {
      * @param graderId
      * @param gradeProcId
      */
-    private Properties getGraderConfigWithContextIds(String graderId, String gradeProcId) {
+    private Properties getGraderConfigWithContextIds(GraderID graderId, String gradeProcId) {
         Properties propsWithLoggingContext = new Properties();
         synchronized (graderConfigInitProps) {
             graderConfigInitProps.forEach((key, value) -> {
                 propsWithLoggingContext.setProperty((String)key, (String)value);
             });
         }
-        propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_GRADER_ID, graderId);
+        propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_GRADER_ID, graderId.toString());
         propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_GRADE_PROCESS_ID, gradeProcId);
         propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_LOG_LEVEL, this.graderConfig.getLogging_level());
         return propsWithLoggingContext;

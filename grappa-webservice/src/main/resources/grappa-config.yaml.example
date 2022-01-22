@@ -15,8 +15,11 @@ lms:
     eietamtf: false
     
 graders:
-  - id: "DummyGrader"
-    name: "DummyGrader" # user friendly name
+  - id:
+      name: "DummyGrader" # must not contain a '$' character
+      version: "1.0" # must not contain a '$' character
+    display_name: "DummyGrader" # user friendly name
+    proglangs: ["java", "php", "c++", "xml"] # optional
     enabled: true  # enable or disable grader
     class_path: "path to grappa-backend-plugin-docker-proxy.jar"
     class_name: "de.hsh.grappa.DockerProxyBackendPlugin"
@@ -26,6 +29,11 @@ graders:
     # concurrent_grading_processes sets the number of max grader instances in a grader pool
     concurrent_grading_processes: 5
     logging_level: "WARN"    # optional, if different from service setting above
+    result_spec: # optional
+      format: "xml"
+      structure: "separate-test-feedback"
+      teacher_feedback_level: "debug"
+      student_feedback_level: "info"
 
 cache:
   submission_ttl_seconds: 86400 # 1 day

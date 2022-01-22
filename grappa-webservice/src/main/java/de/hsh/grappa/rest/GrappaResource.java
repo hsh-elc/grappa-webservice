@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.GraderStatistics;
 import org.slf4j.Logger;
@@ -45,7 +46,7 @@ public class GrappaResource {
         service.addProperty("staticConfigPath", GrappaServlet.CONFIG_FILENAME_PATH);
 
         GraderStatistics total = new GraderStatistics();
-        for (Map.Entry<String, GraderStatistics> e : graderStat.entrySet())
+        for (Map.Entry<GraderID, GraderStatistics> e : graderStat.entrySet())
             total = total.add(e.getValue());
         service.addProperty("totalGradingProcessesExecuted", total.getExecuted());
         service.addProperty("totalGradingProcessesSucceeded", total.getSucceeded());

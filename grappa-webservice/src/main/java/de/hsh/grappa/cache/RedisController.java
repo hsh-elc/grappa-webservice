@@ -1,7 +1,9 @@
 package de.hsh.grappa.cache;
 
 import de.hsh.grappa.config.CacheConfig;
+import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.exceptions.GrappaException;
+import de.hsh.grappa.service.GraderPoolManager;
 import proforma.util.exception.NotFoundException;
 import proforma.util.exception.UnexpectedDataException;
 import proforma.util.resource.ResponseResource;
@@ -25,6 +27,7 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 /**
@@ -181,11 +184,11 @@ public class RedisController {
      * @param graderId
      * @return
      */
-    public synchronized long getSubmissionQueueCount(String graderId) {
+    public synchronized long getSubmissionQueueCount(GraderID graderId) {
         // TODO: validate graderId
         // don't spam this: log.debug("[GraderId: '{}']: getSubmissionQueueCount()", graderId);
         try (var jedis = jedisPool.getResource()) {
-            return jedis.llen(SUBMISSION_QUEUE_PREFIX.concat(graderId));
+            return jedis.llen(SUBMISSION_QUEUE_PREFIX.concat(graderId.toRedisString()));
         }
     }
 
@@ -195,10 +198,10 @@ public class RedisController {
      * @param gradeProcId
      * @param submissionResource
      */
-    public synchronized void pushSubmission(String graderId, String lmsId, String gradeProcId,
+    public synchronized void pushSubmission(GraderID graderId, String lmsId, String gradeProcId,
                                             String taskUuid, SubmissionResource submissionResource,
                                             boolean prioritize) {
-        log.debug("[GraderId: '{}', GradeProcId: '{}']: pushSubmission(): {}", graderId, gradeProcId,
+        log.debug("[GraderId: '{}', GradeProcId: '{}']: pushSubmission(): {}", graderId.toString(), gradeProcId,
             submissionResource);
         // cache the submission data
         String submKey = SUBMISSION_KEY_PREFIX.concat(gradeProcId);
@@ -212,10 +215,10 @@ public class RedisController {
         try (var jedis= jedisPool.getResource()) {
             long listSize;
             if (prioritize)
-                listSize = jedis.lpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
+                listSize = jedis.lpush(SUBMISSION_QUEUE_PREFIX.concat(graderId.toRedisString()), gradeProcId);
             else
-                listSize = jedis.rpush(SUBMISSION_QUEUE_PREFIX.concat(graderId), gradeProcId);
-            log.debug("[GraderId: '{}', GradeProcId: '{}']: new queue size: {}", graderId, gradeProcId,
+                listSize = jedis.rpush(SUBMISSION_QUEUE_PREFIX.concat(graderId.toRedisString()), gradeProcId);
+            log.debug("[GraderId: '{}', GradeProcId: '{}']: new queue size: {}", graderId.toString(), gradeProcId,
                 listSize);
         }
     }
@@ -223,7 +226,7 @@ public class RedisController {
     private synchronized void validateGraderProcId(String gradeProcId) throws NotFoundException {
         // If no graderId is mapped to this gradeProcId, then this
         // gradeProcId has never been created for a submission.
-        String graderId = getAssociatedGraderId(gradeProcId);
+        GraderID graderId = getAssociatedGraderId(gradeProcId);
 //        if(null == graderId)
 //            throw new NotFoundException(String.format("GradeProcId '%s' does not exist.", gradeProcId));
     }
@@ -231,9 +234,9 @@ public class RedisController {
     public synchronized boolean isSubmissionQueued(String gradeProcId) throws NotFoundException {
         log.debug("[GradeProcId: '{}']: isSubmissionQueued() called.", gradeProcId);
         validateGraderProcId(gradeProcId);
-        String graderId = getAssociatedGraderId(gradeProcId);
+        GraderID graderId = getAssociatedGraderId(gradeProcId);
         try (var jedis= jedisPool.getResource()) {
-            List<String> graderQueue = jedis.lrange(SUBMISSION_QUEUE_PREFIX.concat(graderId), 0, -1);
+            List<String> graderQueue = jedis.lrange(SUBMISSION_QUEUE_PREFIX.concat(graderId.toRedisString()), 0, -1);
             int index = IntStream.range(0, graderQueue.size())
                 .filter(i -> gradeProcId.equals(graderQueue.get(i)))
                 .findFirst().orElse(-1);
@@ -252,9 +255,9 @@ public class RedisController {
     public synchronized int getQueuedSubmissionIndex(String gradeProcId) throws NotFoundException {
         log.debug("[GradeProcId: '{}']: getSubmissionQueueIndex() called.", gradeProcId);
         validateGraderProcId(gradeProcId);
-        String graderId = getAssociatedGraderId(gradeProcId);
+        GraderID graderId = getAssociatedGraderId(gradeProcId);
         try (var jedis = jedisPool.getResource()) {
-            List<String> graderQueue = jedis.lrange(SUBMISSION_QUEUE_PREFIX.concat(graderId), 0, -1);
+            List<String> graderQueue = jedis.lrange(SUBMISSION_QUEUE_PREFIX.concat(graderId.toRedisString()), 0, -1);
             return IntStream.range(0, graderQueue.size())
                 .filter(i -> gradeProcId.equals(graderQueue.get(i)))
                 .findFirst().orElse(-1);
@@ -272,10 +275,10 @@ public class RedisController {
     public synchronized boolean removeSubmission(String gradeProcId) {
         log.debug("[GradeProcId: '{}']: removeSubmission() called.", gradeProcId);
         try (var jedis = jedisPool.getResource()) {
-            String graderId = jedis.get(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId));
-            if (null != graderId) {
-                long remCount = jedis.lrem(SUBMISSION_QUEUE_PREFIX.concat(graderId), 1, gradeProcId);
-                assert remCount <= 1 : "Removed more than one occurrance of the same gardeProcId in a grader queue";
+            String graderIdRedisString = jedis.get(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId));
+            if (null != graderIdRedisString) {
+                long remCount = jedis.lrem(SUBMISSION_QUEUE_PREFIX.concat(graderIdRedisString), 1, gradeProcId);
+                assert remCount <= 1 : "Removed more than one occurrence of the same gradeProcId in a grader queue";
                 if (1 == remCount) {
                     log.debug("[GradeProcId: '{}']: removeSubmission(): Submission removed from queue.", gradeProcId);
                     return true;
@@ -301,11 +304,11 @@ public class RedisController {
      * @throws NotFoundException if a corresponding submission object for the gradeProcId does not exist (likely due
      * to TTL expiration)
      */
-    public synchronized QueuedSubmission popSubmission(String graderId) throws NotFoundException, UnexpectedDataException {
-        log.debug("[GraderId: '{}']: popSubmission()", graderId);
+    public synchronized QueuedSubmission popSubmission(GraderID graderId) throws NotFoundException, UnexpectedDataException {
+        log.debug("[GraderId: '{}']: popSubmission()", graderId.toString());
         String gradeProcId = null;
         try (var jedis = jedisPool.getResource()) {
-            gradeProcId = jedis.lpop(SUBMISSION_QUEUE_PREFIX.concat(graderId));
+            gradeProcId = jedis.lpop(SUBMISSION_QUEUE_PREFIX.concat(graderId.toRedisString()));
             //log.debug("Popped submission for grader '{}' with gradeProcId '{}'.",
             //        graderId, gradeProcId);
         }
@@ -332,9 +335,9 @@ public class RedisController {
             try {
                 return new QueuedSubmission(gradeProcId, lmsId, SerializationUtils.deserialize(subm));
             } catch (org.apache.commons.lang3.SerializationException ex) {
-                log.debug("[graderId: '{}']: submission is not deserializable.", graderId);
+                log.debug("[graderId: '{}']: submission is not deserializable.", graderId.toString());
                 throw new UnexpectedDataException(String.format("a submission for graderId '%s' was found in" +
-                        " the cache but the submission could not be restored - internal error.", graderId));
+                        " the cache but the submission could not be restored - internal error.", graderId.toString()));
             }                
         }
         return null; // submission queue is empty
@@ -384,10 +387,10 @@ public class RedisController {
         }
     }
 
-    public synchronized long getSubmissionQueueSize(String graderId) {
-        log.debug("[GraderId: '{}']: getSubmissionQueueSize()", graderId);
+    public synchronized long getSubmissionQueueSize(GraderID graderId) {
+        log.debug("[GraderId: '{}']: getSubmissionQueueSize()", graderId.toString());
         try (var jedis = jedisPool.getResource()) {
-            return jedis.llen(SUBMISSION_QUEUE_PREFIX.concat(graderId));
+            return jedis.llen(SUBMISSION_QUEUE_PREFIX.concat(graderId.toRedisString()));
         }
     }
 
@@ -442,16 +445,18 @@ public class RedisController {
      * @param gradeProcId
      * @return the associated gradeId for the gradeProcId, or null if the gradeProcId does not exist
      */
-    public String getAssociatedGraderId(String gradeProcId) throws NotFoundException {
-        String id = this.getString(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId));
-        if (null != id)
-            return id;
+    public GraderID getAssociatedGraderId(String gradeProcId) throws NotFoundException {
+        String id = (this.getString(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId)));
+        if (null != id) {
+            String[] graderIdSeperated = id.split(Pattern.quote(GraderID.REDIS_SEPARATOR));
+            return GraderPoolManager.getInstance().getGraderId(graderIdSeperated[0], graderIdSeperated[1]);
+        }
         throw new NotFoundException(String.format("No associated graderId exists for gradeProcId '%s'.",
             gradeProcId));
     }
 
-    private void mapGraderProcIdToGraderId(String gradeProcId, String graderId) {
-        set(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId), graderId,
+    private void mapGraderProcIdToGraderId(String gradeProcId, GraderID graderId) {
+        set(GRADEPROCID_TO_GRADERID_MAP.concat(gradeProcId), graderId.toRedisString(),
             cacheConfig.getSubmission_ttl_seconds());
     }
 

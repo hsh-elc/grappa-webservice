@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.config.GraderConfig;
+import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.service.GraderPoolManager;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -35,22 +36,39 @@ public class AllGraderResources {
     }
 
     /**
-     *
-     * @return a JSON array of mappings (graderId, graderName) of *online* graders.
+     * @return a JSON array with graderInformation (name, version, display_name, proglangs, result_spec) of *online* graders
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")
-    public Response getGraderIdArray() {
-        JsonArray ids = new JsonArray();
-        for (String graderId : GraderPoolManager.getInstance().getGraderIds()) {
+    public Response getGraderInfoArray() {
+        JsonArray graderInfos = new JsonArray();
+        for (GraderID graderId : GraderPoolManager.getInstance().getGraderIds()) {
             var gc = GrappaServlet.CONFIG.getGraders().stream()
                 .filter(g -> g.getId().equals(graderId)).findFirst().get();
+
             JsonObject g = new JsonObject();
-            g.addProperty(gc.getId(), gc.getName());
-            ids.add(g);
+            g.addProperty("name", gc.getId().getName());
+            g.addProperty("version", gc.getId().getVersion());
+            g.addProperty("display_name", gc.getDisplay_name());
+            if (gc.getProglangs() != null) {
+                JsonArray proglangs = new JsonArray();
+                for (String proglang : gc.getProglangs()) {
+                    proglangs.add(proglang);
+                }
+                g.add("proglangs", proglangs);
+            }
+            if (gc.getResult_spec() != null) {
+                JsonObject resultSpec = new JsonObject();
+                resultSpec.addProperty("format", gc.getResult_spec().getFormat());
+                resultSpec.addProperty("structure", gc.getResult_spec().getStructure());
+                resultSpec.addProperty("teacher_feedback_level", gc.getResult_spec().getTeacher_feedback_level());
+                resultSpec.addProperty("student_feedback_level", gc.getResult_spec().getStudent_feedback_level());
+                g.add("result_spec", resultSpec);
+            }
+            graderInfos.add(g);
         }
         JsonObject gradersJson = new JsonObject();
-        gradersJson.add("graders", ids);
+        gradersJson.add("graders", graderInfos);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return Response.ok().entity(gson.toJson(gradersJson)).build();
     }

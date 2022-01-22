@@ -171,6 +171,8 @@ lms:
 graders:
 
   # Submission requests must supply the target grader pool's ID
+  # An ID consists of: gradername and graderversion
+  # The gradername and graderversion must not contain a '$' character
   # This particular grader pool uses a Docker proxy backend plugin,
   # acting as a layer in between Grappa and the 'real' grader backend
   # plugin that resides within a Docker container. Every submission
@@ -179,10 +181,16 @@ graders:
   # backend plugin if Docker is not intended to be used. In that case,
   # class_path, class_name, and config_path should point to the real
   # grader backend plugin.
-  - id: "ProxiedGrader"
+  - id: 
+      name: "ProxiedGrader"
+      version: "1.0"
 
     # A user-friendly name for this grader pool
-    name: "ProxiedGrader"
+    display_name: "ProxiedGrader"
+    
+    # optional, A list of programming languages
+    # that are supported by the particular grader
+    proglangs: ["java", "php"]
 
     # A grader pool may be enabled or disabled. Disabled grader pools
     # are ignored and not utilized by Grappa. Neither do they show up
@@ -219,6 +227,16 @@ graders:
     
     # optional, if different from service setting above
     logging_level: "WARN"
+    
+    # optional, Provides the LMS the information which 
+    # result specifications should be used as default values 
+    # when requesting the result specifications from the grader
+    result_spec:
+      format: "xml"
+      structure: "separate-test-feedback"
+      teacher_feedback_level: "debug"
+      student_feedback_level: "info"
+      
 
 # Storage part
 # Redis is used as a cache storage
@@ -284,8 +302,9 @@ Get the web service's status information, such as runtime infos.
         "totalAllExceptExecuted": 0,
         "graderRuntimeInfo": [
           {
-            "id": "javaGrader-v1.0",
-            "name": "Java Grader",
+            "name": "javaGrader",
+            "version" : "1.0",
+            "displayName": "Java Grader",
             "poolSize": 10,
             "busyInstances": 0,
             "queuedSubmissions": 0,
@@ -296,8 +315,9 @@ Get the web service's status information, such as runtime infos.
             "gradingProcessesTimedOut": 0
           },
           {
-            "id": "sqlGrader-v1.42",
-            "name": "SQL Grader",
+            "name": "sqlGrader",
+            "version": "1.42",
+            "displayName": "SQL Grader",
             "poolSize": 10,
             "busyInstances": 0,
             "queuedSubmissions": 0,
@@ -330,7 +350,7 @@ Submit a Proforma submission for grading.
 
 * **URL**
 
-  `/:lmsid/gradeprocesses?graderId=:graderId&async=:async`
+  `/:lmsid/gradeprocesses?graderName=:graderName&graderVersion=:graderVersion&async=:async`
 
 * **Method**
   
@@ -340,7 +360,9 @@ Submit a Proforma submission for grading.
 
   * `lmsid=[string]`: The LMS-ID, which represents the client ID.
    
-  * `graderId=[string]`: The grader instance to be used for grading a submission.
+  * `graderName=[string]`: The name of the grader instance to be used for grading a submission.
+  
+  * `graderVersion=[string]`: The version of a grader instance to be used for grading a submission.
    
   **Optional URL Params**
    
@@ -378,7 +400,7 @@ Submit a Proforma submission for grading.
   * **Code:** `404 Not Found` <br/>
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
-    **Description**: Parameter `:lmsid` or `:graderId` does not exist.
+    **Description**: Parameter `:lmsid`, `:graderName` or `:graderVersion` does not exist.
 
   * **Code:** `500 Internal Server Error` <br/>
     **Content**: `{ error : "message" }` <br/>
@@ -509,10 +531,37 @@ Get the list of graders that are enabled and ready to take on submissions.
     **Content**: Example graders:
     ```
     {
-        "graders": {
-            "graderId1": "human-friendly grader name 1"
-            "graderId2": "human-friendly grader name 2"
-        }
+        "graders": [
+            {
+                "name": "CGrader",
+                "version": "1.0",
+                "display_name": "CGrader (Version 1.0)",
+                "proglangs": [
+                    "c",
+                    "c++"
+                ],
+                "result_spec": {
+                    "format": "xml",
+                    "structure": "separate-test-feedback",
+                    "teacher_feed_level": "debug",
+                    "student_feedback_level": "info"
+                }
+            },
+            {
+                "name": "JavaGrader",
+                "version": "2.3",
+                "display_name": "Grader for Java programs",
+                "proglangs": [
+                    "java"
+                ], 
+                "result_spec": {
+                    "format": "zip",
+                    "structure": "merged-test-feedback",
+                    "teacher_feedback_level": "debug",
+                    "student_feedback_level": "info"
+                }
+            }
+        ]
     }
     ```
     **Content Type**: `application/json` <br/>
@@ -534,7 +583,7 @@ Get the status, e.g. grader statistics, of a specific grader.
     
 * **URL**
 
-  `/graders/:graderId`
+  `/graders/:graderName/:graderVersion`
 
 * **Method**
   
@@ -542,7 +591,8 @@ Get the status, e.g. grader statistics, of a specific grader.
   
 * **Required URL Params**
  
-  `graderId=[string]`
+  `graderName=[string]`
+  `graderVersion=[string]`
 
 * **HTTP Responses**
   
@@ -550,8 +600,9 @@ Get the status, e.g. grader statistics, of a specific grader.
     **Content**:
     ```
     {
-      "id": "sqlGrader",
-      "name": "SQL Grader",
+      "name": "sqlGrader",
+      "version": "1.0",
+      "displayName": "SQL Grader",
       "poolSize": 10,
       "busyInstances": 0,
       "queuedSubmissions": 0,
