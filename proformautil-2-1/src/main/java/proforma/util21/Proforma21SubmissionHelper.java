@@ -7,6 +7,7 @@ import proforma.util.ProformaVersion;
 import proforma.util.SubmissionLive;
 import proforma.util.boundary.SubmissionBoundary;
 import proforma.util.boundary.TaskBoundary;
+import proforma.xml.AbstractProformaType;
 import proforma.xml.AbstractSubmissionType;
 import proforma.xml21.FeedbackLevelType;
 import proforma.xml21.LmsType;
@@ -22,8 +23,8 @@ public class Proforma21SubmissionHelper extends ProformaSubmissionHelper {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Class<? extends AbstractSubmissionType> getPojoType() {
-		return SubmissionType.class;
+	public <T extends AbstractProformaType> Class<T> getPojoType() {
+		return (Class<T>) SubmissionType.class;
 	}
 	
 

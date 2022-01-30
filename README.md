@@ -1,8 +1,8 @@
 # Grappa Webservice #
 
-TODO Describe the webservice shortly here.
+A web service for connecting multiple Learn Management Systems to multiple automatic graders with a unified interface.
 
-TODO Provide more detailed description here.
+Find documentation here: [`documents/concept/documentation.md`](documents/concept/documentation.md)
 
 ## License ##
 

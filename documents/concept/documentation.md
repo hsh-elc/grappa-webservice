@@ -116,154 +116,7 @@ Any changes to Grappa's configuration file will require a web service restart to
 
 Grappa's configuration file's location and file name must be `/etc/grappa/grappa-config.yaml`.
 
-```
-# Service part
-service:
-
-  # Grappa measures the time taken to grade all task-specific
-  # submissions and returns that value to the client for every
-  # subsequent task-specific grading request. Since there is
-  # no measured time data available on system startup, the
-  # default_estimated_grading_seconds property sets the initial
-  # value for every submission request. After the first submission
-  # has been graded and the time measured, every subsequent
-  # task-specific submission request will receive the actual
-  # estimated time remaining for a task-specific submission to
-  # finish its grade process.
-  default_estimated_grading_seconds: 20
-
-  # A task-specific submission's estimated grading time is based on
-  # the arithmetic mean of previously measured grading processes.
-  # The amount of the most recent grading processes indicates
-  # the number of task-specific submissions taken into
-  # account when estimating a submission's new grading time.
-  prev_grading_seconds_max_list_size: 10
-
-  # Sets the logging level of the web service
-  # (possible values: OFF, ERROR, WARN, INFO, DEBUG, TRACE and ALL)
-  logging_level: "DEBUG"
-
-  # Grading requests to Grappa can be either synchronous or
-  # asynchronous. Synchronous requests will block the calling function
-  # while asynchronous requests will return immediately for the caller
-  # to retrieve the grading result at a later time.
-  # This property sets the wait timeout for Grappa for synchronous
-  # submission requests by clients.
-  synchronous_submission_timeout_seconds: 120
-
-  # The class path and name to the module used to setup a vagrant
-  # environment for the web service
-  # Note: Grappa does not currently use these properties.
-  # They can be left out for now.
-  # default_grading_environment_setup_class_path: "path to jar"
-  # default_grading_environment_setup_class_name: "de.hsh.grappa.VagrantHostSetup"
-
-# Client LMS authentification
-# All REST API calls by a client to the web service must be authorized
-lms:
-  - name: "test@HsH" # user-friendly name
-    id: "test"
-    password_hash: "test"
-
-# The graders part
-# Every grader definition here represents a grader pool
-# with a specified number of grader instances in that pool.
-graders:
-
-  # Submission requests must supply the target grader pool's ID
-  # An ID consists of: gradername and graderversion
-  # The gradername and graderversion must not contain a '$' character
-  # This particular grader pool uses a Docker proxy backend plugin,
-  # acting as a layer in between Grappa and the 'real' grader backend
-  # plugin that resides within a Docker container. Every submission
-  # request delegated to the real grader plugin.
-  # It should be noted that it is not required to use the Docker proxy
-  # backend plugin if Docker is not intended to be used. In that case,
-  # class_path, class_name, and config_path should point to the real
-  # grader backend plugin.
-  - id: 
-      name: "ProxiedGrader"
-      version: "1.0"
-
-    # A user-friendly name for this grader pool
-    display_name: "ProxiedGrader"
-    
-    # optional, A list of programming languages
-    # that are supported by the particular grader
-    proglangs: ["java", "php"]
-
-    # A grader pool may be enabled or disabled. Disabled grader pools
-    # are ignored and not utilized by Grappa. Neither do they show up
-    # in the result when a client polls for available grader types.
-    enabled: true # values: true|false
-
-    # The class pathes of a backend plugin. It may contain multiple
-    # pathes, separated by a semicolon. class_path may also contain 
-    # pathes to directories.
-    class_path: "/opt/Grappa/plugins/grappa-backend-plugin-docker-proxy-0.1.jar"
-
-    # In case the class_path property contains a directory, only files with
-    # the file extension set in file_extension will be loaded to the class path.
-    # Direcotories may also contain sub directories, which will be traversed
-    # recursively.
-    # file_extension may contain multiple file extensions, separated by a semicolon.
-    file_extension: ".jar"
-
-    class_name: "de.hsh.grappa.DockerProxyBackendPlugin"
-
-    # The path to the configuration file used to initialize a grader
-    # Backend Plugin
-    config_path: "/etc/grappa/grappa-backend-plugin-docker-proxy.properties"
-
-    # The timeout in seconds dictates the maximum time for a submission
-    # to be graded after which the grading process is forcibly
-    # interrupted. Timed out submissions are considered failed
-    # submissions, either due to the student's code or an internal
-    # server problem.
-    timeout_seconds: 60
-
-    # Sets the number of maximum grader instances in this grader pool
-    concurrent_grading_processes: 10
-    
-    # optional, if different from service setting above
-    logging_level: "WARN"
-    
-    # optional, Provides the LMS the information which 
-    # result specifications should be used as default values 
-    # when requesting the result specifications from the grader
-    result_spec:
-      format: "xml"
-      structure: "separate-test-feedback"
-      teacher_feedback_level: "debug"
-      student_feedback_level: "info"
-      
-
-# Storage part
-# Redis is used as a cache storage
-# Redis should be configured so that the cache persists in spite of system
-# and/or web service shutdowns and restarts
-cache:
-
-  # Submissions requested for grading by clients are instantly queued for
-  # grading. After a submission has been graded, it is not instantly
-  # removed. Instead, it remains in cache until its time runs out, at which
-  # point it is permanently removed from the system.
-  submission_ttl_seconds: 86400 # 1 day
-
-  # The TTL of task objects
-  task_ttl_seconds: 2592000 # 30 days
-
-  # The TTL of response (submission result) objects. It does not matter if
-  # a response has been retrieved by the client at any point. Once the TTL
-  # runs out, so does the response object.
-  response_ttl_seconds: 2592000 # 30 days
-
-  # Redis connection info
-  redis:
-    host: "192.168.1.57"
-    port: 6379
-    password: "foobared"
-```
+An example file can be found in [`grappa-webservice/src/main/resources/grappa-config.yaml.example`](../../grappa-webservice/src/main/resources/grappa-config.yaml.example).
 
 ## 3 REST API
 
@@ -724,28 +577,42 @@ public class PythonGrader extends BackendPlugin {
 
 ### 4.3 grappa-backend-plugin-docker-proxy module
 
-A grader pool may use a docker proxy backend plugin acting as a layer in between Grappa and the 'real' grader backend plugin that resides within a Docker container. Every submission request is delegated from the proxy plugin to the real grader plugin.
+A grader pool may use a docker proxy backend plugin acting as a layer in between Grappa and the 'real' grader backend plugin that resides within a Docker container. 
+Every submission request is delegated from the proxy plugin to the real grader plugin.
 
-It should be noted that it is not required to use the Docker proxy backend plugin if Docker is not intended to be used. In that case, the properties `class_path`, `class_name`, and `config_path` in Grappa's configuration file should point to the actual grader backend plugin.
+It should be noted that it is not required to use the Docker proxy backend plugin if Docker is not intended to be used.
+In that case, choose `operating_mode: host_jvm_bp` for all graders.
+<!--In that case, the properties `class_path`, `class_name`, and `config_path` in Grappa's configuration file should point to the actual grader backend plugin.-->
 
-If the docker proxy backend plugin is to be used, an additional layer of configuration is required. In the Grappa configuration file, the property `config_path` would need to point to a dedicated docker proxy configuration file. That configuration file would look something like follows:
 
-**Docker Proxy Configuration File**
+If the docker proxy backend plugin is to be used, an additional layer of configuration is required within `grappa-config.yaml`.
+<!--In the Grappa configuration file, the property `config_path` would need to point to a dedicated docker proxy configuration file. 
+That configuration file would look something like follows:-->
+
+**Docker Proxy Configuration Part**
 
 ```
-# The Docker Host URI, including port.
-# If Grappa and Docker do not run on the same server,
-# the IP address must be configured accordingly,
-# otherwise it should be localhost.
-dockerproxybackendplugin.docker_host=tcp://127.0.0.1:2376
+docker_proxy:
+    # The class path and name to the grappa-backendplugin-dockerproxy
+    class_path: "/usr/local/graders/docker-proxy/grappa-backendplugin-dockerproxy.jar"
+    # dot-style java-class fully qualified name of the grappa-backendplugin-dockerproxy
+    class_name: "de.hsh.grappa.backendplugin.dockerproxy.DockerProxyBackendPlugin"
+    # docker host uri (including port)
+    host: "tcp://127.0.0.1:2376"
+```
 
-# The Name of the docker image to create a container from. 
-dockerproxybackendplugin.container_image=grappa-remote-backend-dummygrader
-
-# The directories within the Docker filesystem used to copy submissions to
-# and retrieve responses from.
-dockerproxybackendplugin.copy_submission_to_directory_path=/var/grb_starter/tmp
-dockerproxybackendplugin.response_result_directory_path=/var/grb_starter/tmp
+**Docker Grader Info within Grader-Config**
+```
+graders
+  - [...]
+    operating_mode: docker_jvm_bp
+    docker_jvm_bp:        
+        # The Name of the docker image to create a container from. 
+        # If image is not found locally, docker will search for remote one.
+        # For registries different from local or DockerHub the general design of this name
+        # is: registry:port/repo/image:tag
+        # Mandatory.
+        image_name: "grappa-backend-dummygrader"
 ```
 
 # 5 Modules

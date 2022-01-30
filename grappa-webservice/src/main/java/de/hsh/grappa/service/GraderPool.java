@@ -1,39 +1,50 @@
 package de.hsh.grappa.service;
 
-import com.google.common.collect.MinMaxPriorityQueue;
-
-import de.hsh.grappa.application.GrappaServlet;
-import de.hsh.grappa.backendplugin.BackendPlugin;
-import de.hsh.grappa.boundary.BoundaryImpl;
-import de.hsh.grappa.cache.QueuedSubmission;
-import de.hsh.grappa.cache.RedisController;
-import de.hsh.grappa.config.GraderConfig;
-import de.hsh.grappa.config.GraderID;
-import de.hsh.grappa.config.LmsConfig;
-import de.hsh.grappa.exceptions.AuthenticationException;
-import de.hsh.grappa.util.ClassPathClassLoader;
-import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
-import proforma.util.ProformaVersion;
-import proforma.util.SubmissionLive;
-import proforma.util.ProformaResponseHelper.Audience;
-import proforma.util.boundary.Boundary;
-import proforma.util.div.XmlUtils;
-import proforma.util.exception.NotFoundException;
-import proforma.util.resource.ResponseResource;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
+import com.google.common.collect.MinMaxPriorityQueue;
+
+import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.backendplugin.BackendPlugin;
+import de.hsh.grappa.backendplugin.dockerproxy.DockerProxyBackendPlugin;
+import de.hsh.grappa.boundary.BoundaryImpl;
+import de.hsh.grappa.cache.QueuedSubmission;
+import de.hsh.grappa.cache.RedisController;
+import de.hsh.grappa.config.DockerProxyConfig;
+import de.hsh.grappa.config.GraderConfig;
+import de.hsh.grappa.config.GraderID;
+import de.hsh.grappa.config.GraderDockerJvmBpConfig;
+import de.hsh.grappa.config.GraderHostJvmBpConfig;
+import de.hsh.grappa.config.LmsConfig;
+import de.hsh.grappa.exceptions.AuthenticationException;
+import de.hsh.grappa.util.ClassPathClassLoader;
+import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
+import proforma.util.ProformaResponseHelper.Audience;
+import proforma.util.ProformaVersion;
+import proforma.util.SubmissionLive;
+import proforma.util.boundary.Boundary;
+import proforma.util.div.XmlUtils;
+import proforma.util.exception.NotFoundException;
+import proforma.util.resource.ResponseResource;
 
 /**
  * Manages worker threads for a specific graderId.
@@ -53,14 +64,13 @@ public class GraderPool {
     private final AtomicLong totalGradingProcessesTimedOut =
         new AtomicLong(0);
 
-    private GraderConfig graderConfig;
+    private final GraderConfig graderConfig;
     private ClassPathClassLoader<BackendPlugin> backendPluginLoader;
     private Boundary boundary;
 
-    private static final String GRAPPA_CONTEXT_GRADER_ID = "Grappa.Context.GraderId";
-    private static final String GRAPPA_CONTEXT_GRADE_PROCESS_ID = "Grappa.Context.GraderProcessId";
-    private static final String GRAPPA_CONTEXT_LOG_LEVEL = "Grappa.Context.LogLevel";
-    private Properties graderConfigInitProps;
+    private static final String OP_MODE_LOCAL_VM="host_jvm_bp";
+    private static final String OP_MODE_DOCKER_VM="docker_jvm_bp";
+	private static final String GRADER_BP_JAR_FILENAME = "graderBP.jar";
 
     private ConcurrentHashMap<String /*gradeProcId*/, Future<ResponseResource>> gpMap =
         new ConcurrentHashMap<>();
@@ -81,7 +91,6 @@ public class GraderPool {
             throw new IllegalArgumentException(String.format("concurrent_grading_processes must not be less than 1 " +
                 "for graderId '%s'.", graderConfig.getConcurrent_grading_processes()));
 
-        loadBackendPlugin(graderConfig);
         log.info("Using grader '{}' with {} concurrent instances.",
             graderConfig.getId(), graderConfig.getConcurrent_grading_processes());
         this.semaphore = new Semaphore(graderConfig.getConcurrent_grading_processes());
@@ -142,28 +151,105 @@ public class GraderPool {
         }
         return false; // will not grade (all workers are busy)
     }
+    
+    private BackendPlugin loadAndInitBackendPlugin(String submId) throws Exception{
+    	BackendPlugin bp=null;
+    	Properties props=graderConfig.getGrader_plugin_defaults();
+        if (props == null) props = new Properties(); // empty map instead of null
+        String logLevel=graderConfig.getLogging_level();
+        GraderID graderId=graderConfig.getId();
+        
+        String bpClassName=graderConfig.getBackend_plugin_classname();
+		String bpRelativeClassPaths=graderConfig.getRelative_classpathes();
+		String bpFileExtensions=graderConfig.getFileextensions();
 
-    /**
-     * Sets additional grading context properties for the plugin.
-     *
-     * Sets the graderId and gradeProcessId, so plugins, such as the docker proxy plugin,
-     * can use these ids in the plugin's logging context.
-     * @param graderId
-     * @param gradeProcId
-     */
-    private Properties getGraderConfigWithContextIds(GraderID graderId, String gradeProcId) {
-        Properties propsWithLoggingContext = new Properties();
-        synchronized (graderConfigInitProps) {
-            graderConfigInitProps.forEach((key, value) -> {
-                propsWithLoggingContext.setProperty((String)key, (String)value);
-            });
-        }
-        propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_GRADER_ID, graderId.toString());
-        propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_GRADE_PROCESS_ID, gradeProcId);
-        propsWithLoggingContext.setProperty(GRAPPA_CONTEXT_LOG_LEVEL, this.graderConfig.getLogging_level());
-        return propsWithLoggingContext;
+        //Determines whether dockerProxy is used
+    	String operatingMode=graderConfig.getOperating_mode();
+    	if(operatingMode.equals(OP_MODE_DOCKER_VM)) {
+    		//DOCKER BP
+    		
+        	DockerProxyConfig dockerConfig=GrappaServlet.CONFIG.getDocker_proxy();
+        	if(dockerConfig==null)throw new IllegalArgumentException(String.format("Missing definition of 'docker_proxy' for operating_mode: %s.",OP_MODE_DOCKER_VM));
+        	String dockerBpClassPath=dockerConfig.getClass_path();
+    		String dockerBpClassName=dockerConfig.getClass_name();
+        	
+        	//TODO: this is always *.jar since we build this plugin, right?
+        	String dockerBpFileExtension="*.jar";
+    		
+            log.info("Loading grader plugin '{}' with classpathes '{}'...", graderId, dockerBpClassPath);
+            backendPluginLoader.configure(Classpath.of(dockerBpClassPath, dockerBpFileExtension));
+    		DockerProxyBackendPlugin dockerBp=(DockerProxyBackendPlugin)backendPluginLoader.instantiateClass(dockerBpClassName);
+    		
+        	//init and call 3 additional DockerBP methods
+            log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing DockerProxyBackendPlugin...",graderId,submId);
+    		dockerBp.init(props,boundary,logLevel);
+    		
+    		dockerBp.setContext(graderId.toString(),submId);
+    		
+    		//docker prefs
+    		String dockerHost=dockerConfig.getHost();
+    		GraderDockerJvmBpConfig dockerBPConfig=graderConfig.getDocker_jvm_bp();
+    		if(dockerBPConfig==null)throw new IllegalArgumentException(String.format("Missing '%s' for operating_mode.",OP_MODE_DOCKER_VM));
+    		String imageName=dockerBPConfig.getImage_name();
+    		String username=dockerBPConfig.getUsername();
+    		String passwordPat=dockerBPConfig.getPassword_pat();
+    		dockerBp.setDockerPrefs(dockerHost,imageName, username, passwordPat);
+            
+    		//backend-starter prefs
+    		dockerBp.setBackendStarterPrefs(bpClassName,bpRelativeClassPaths,bpFileExtensions);
+            
+            bp = dockerBp;
+
+    	}else if(operatingMode.equals(OP_MODE_LOCAL_VM)) {
+    		//"NORMAL" BP
+    		
+        	String gradersHomeDir=GrappaServlet.CONFIG.getGraders_home();
+        	if(gradersHomeDir==null)throw new IllegalArgumentException(String.format("Missing 'graders_home' definition."));
+        	String graderSubDir=graderConfig.getSubdir();
+        	if(graderSubDir==null)throw new IllegalArgumentException(String.format("Missing 'subdir' definition."));
+        	String absoluteGraderDir=gradersHomeDir+"/"+graderSubDir;
+        	
+        	String absoluteClassPathes="";        	
+    		if(bpRelativeClassPaths!=null && !bpRelativeClassPaths.equals("")) {
+    			String[] relativeCPsArray=bpRelativeClassPaths.split(";");
+    			for(String relCP:relativeCPsArray){
+    				absoluteClassPathes+=absoluteGraderDir+"/"+relCP+";";				
+    			}
+    			//remove trailing ";"
+    			absoluteClassPathes=absoluteClassPathes.substring(0, absoluteClassPathes.length() - 1);
+    		}
+    		
+    		GraderHostJvmBpConfig bpConfig=graderConfig.getHost_jvm_bp();
+    		if(bpConfig!=null){
+    			String additionalAbsolutePathes=bpConfig.getHostonly_classpathes();
+    			if(additionalAbsolutePathes!=null && !additionalAbsolutePathes.equals("")){
+    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+additionalAbsolutePathes;
+    			}
+    			String pluginJarName=bpConfig.getPlugin_jar_name();
+    			if(pluginJarName!=null && !pluginJarName.equals("")){
+    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+pluginJarName;
+    			}else{
+    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+GRADER_BP_JAR_FILENAME;
+    			}
+    		}else{
+				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+GRADER_BP_JAR_FILENAME;
+    		}
+        	
+            log.info("Loading grader plugin '{}' with classpathes '{}'...", graderId, absoluteClassPathes);
+            backendPluginLoader.configure(Classpath.of(absoluteClassPathes, bpFileExtensions));
+            bp = backendPluginLoader.instantiateClass(bpClassName);
+            
+            log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing BackendPlugin...",graderId,submId);
+            bp.init(props, boundary, logLevel);
+
+    	}else {
+    		//neither host_jvm_bp nor docker_jvm_bp 
+            throw new IllegalArgumentException(String.format("operating_mode must be either '%s' or '%s'. Given was '%s'.",OP_MODE_DOCKER_VM,OP_MODE_LOCAL_VM,operatingMode));        		
+    	}
+    	return bp;
     }
 
+    
     public ResponseResource runGradingProcess(QueuedSubmission subm) {
         @SuppressWarnings("serial")
         class NoResultGraderExecption extends Exception {
@@ -171,16 +257,14 @@ public class GraderPool {
         }
         try {
             LocalDateTime beginTime = LocalDateTime.now();
-            Properties props = getGraderConfigWithContextIds(graderConfig.getId(), subm.getGradeProcId());
             // Create a fresh backend plugin instance for every grading request
             if (backendPluginLoader == null) {
                 log.error("Class loader of BackendPlugin '{}' not found", graderConfig.getId());
                 throw new Exception("Class loader of backend plugin '" + graderConfig.getId() + "' not found");
             }
-            BackendPlugin bp = backendPluginLoader.instantiateClass(graderConfig.getClass_name());
-            log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing BackendPlugin...",
-                graderConfig.getId(), subm.getGradeProcId());
-            bp.init(props, boundary);
+            
+            BackendPlugin bp=loadAndInitBackendPlugin(subm.getGradeProcId());
+            
             FutureTask<ResponseResource> futureTask = null;
             int timeoutSeconds = graderConfig.getTimeout_seconds();
             try {
@@ -371,16 +455,6 @@ public class GraderPool {
 
     public boolean isGradeProcIdBeingGradedRightNow(String gradeProcId) {
         return gpMap.containsKey(gradeProcId);
-    }
-
-    private void loadBackendPlugin(GraderConfig grader) throws Exception {
-        log.info("Loading grader plugin '{}' with classpathes '{}'...", grader.getId(), grader.getClass_path());
-        backendPluginLoader.configure(Classpath.of(grader.getClass_path(), grader.getFile_extension()));
-        log.info("Loading grader config file '{}'...", grader.getConfig_path());
-        graderConfigInitProps = new Properties();
-        try (InputStream is = new FileInputStream(new File(grader.getConfig_path()))) {
-            graderConfigInitProps.load(is);
-        }
     }
 
     public long getTotalGradingProcessesExecuted() {

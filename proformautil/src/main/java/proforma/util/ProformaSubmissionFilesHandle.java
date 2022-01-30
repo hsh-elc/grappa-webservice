@@ -72,8 +72,8 @@ public abstract class ProformaSubmissionFilesHandle {
 	
 	public ProformaSubmissionFileHandle createNewFileHandleFromScratch() {
 		try {
-			return createNewFileHandle(getElementClass().newInstance());
-		} catch (InstantiationException | IllegalAccessException e) {
+			return createNewFileHandle(getElementClass().getDeclaredConstructor().newInstance());
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 			throw new AssertionError(e);
 		}
 	}

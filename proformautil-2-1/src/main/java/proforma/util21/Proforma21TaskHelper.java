@@ -7,6 +7,7 @@ import proforma.util.ProformaTaskHelper;
 import proforma.util.ProformaVersion;
 import proforma.util.div.Strings;
 import proforma.util.div.Zip.ZipContent;
+import proforma.xml.AbstractProformaType;
 import proforma.xml.AbstractTaskType;
 import proforma.xml21.TaskFileType;
 import proforma.xml21.TaskFilesType;
@@ -20,8 +21,8 @@ public class Proforma21TaskHelper extends ProformaTaskHelper {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Class<? extends AbstractTaskType> getPojoType() {
-		return TaskType.class;
+	public <T extends AbstractProformaType> Class<T> getPojoType() {
+		return (Class<T>) TaskType.class;
 	}
 	
 	

@@ -5,7 +5,7 @@
     <groupId>de.hsh.grappa</groupId>
     <artifactId>grappa-webservice-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
 
     <name>grappa-webservice</name>
     <description>A web service for connecting multiple Learn Management Systems (e.g. moodle, LON-CAPA) to multiple
@@ -18,6 +18,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <de.hsh.grappa.grappa-util.version>0.1</de.hsh.grappa.grappa-util.version>
         <de.hsh.grappa.grappa-backendplugin.version>0.1</de.hsh.grappa.grappa-backendplugin.version>
+        <de.hsh.grappa.grappa-backendplugin-dockerproxy.version>0.1</de.hsh.grappa.grappa-backendplugin-dockerproxy.version>
         <de.hsh.grappa.grappa-webservice.version>2.0.1</de.hsh.grappa.grappa-webservice.version>
         <proforma.proformaxml.version>0.1</proforma.proformaxml.version>
         <proforma.proformautil.version>0.1</proforma.proformautil.version>
@@ -50,6 +51,11 @@
                 <groupId>de.hsh.grappa</groupId>
                 <artifactId>grappa-backendplugin</artifactId>
                 <version>${de.hsh.grappa.grappa-backendplugin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.hsh.grappa</groupId>
+                <artifactId>grappa-backendplugin-dockerproxy</artifactId>
+                <version>${de.hsh.grappa.grappa-backendplugin-dockerproxy.version}</version>
             </dependency>
             <dependency>
                 <groupId>de.hsh.grappa</groupId>
@@ -147,6 +153,11 @@
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.0</version>
+                    <configuration>
+                        <compilerArgs>
+                            <arg>-Xlint:all</arg>
+                        </compilerArgs>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
