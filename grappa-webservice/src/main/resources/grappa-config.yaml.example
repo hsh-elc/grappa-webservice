@@ -94,10 +94,10 @@ graders:
     # result specifications should be used as default values
     # when requesting the result specifications from the grader
     result_spec:
-      format: "xml"
-      structure: "separate-test-feedback"
-      teacher_feedback_level: "debug"
-      student_feedback_level: "info"
+      format: "xml" # possible values: "zip", "xml"
+      structure: "separate-test-feedback" # possible values: "separate-test-feedback", "merged-test-feedback"
+      teacher_feedback_level: "debug" # possible values: "debug", "info", "warn", "error"
+      student_feedback_level: "info" # possible values: "debug", "info", "warn", "error"
 
     # Name of the subdirectory below 'graders_home', where jars 
     # of the grader backendplugin are installed.
