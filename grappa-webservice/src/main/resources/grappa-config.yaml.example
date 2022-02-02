@@ -70,7 +70,9 @@ graders:
 
     # optional, a list of programming languages
     # that are supported by the particular grader
-    proglangs: ["java", "php"]
+    # for possible values see: Appendix B of the ProFormA Format Whitepaper
+    # (https://github.com/ProFormA/proformaxml/blob/master/Whitepaper.md#appendix-b-list-of-programming-languages)
+    proglangs: ["java", "python"]
 
     # A grader pool may be enabled or disabled. Disabled grader pools
     # are ignored and not utilized by Grappa. Neither do they show up
