@@ -31,6 +31,7 @@ import de.hsh.grappa.cache.QueuedSubmission;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.DockerProxyConfig;
 import de.hsh.grappa.config.GraderConfig;
+import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.config.GraderDockerJvmBpConfig;
 import de.hsh.grappa.config.GraderHostJvmBpConfig;
 import de.hsh.grappa.config.LmsConfig;
@@ -83,7 +84,7 @@ public class GraderPool {
 
     public GraderPool(GraderConfig graderConfig, GraderPoolManager graderManager) throws Exception {
         this.graderConfig = graderConfig;
-        this.backendPluginLoader = new ClassPathClassLoader<>(BackendPlugin.class, graderConfig.getId());
+        this.backendPluginLoader = new ClassPathClassLoader<>(BackendPlugin.class, graderConfig.getId().toString());
         this.boundary = new BoundaryImpl();
         
         if(0 >= graderConfig.getConcurrent_grading_processes())
@@ -157,7 +158,7 @@ public class GraderPool {
         if (props == null) props = new Properties(); // empty map instead of null
 
         String logLevel=graderConfig.getLogging_level();
-        String graderId=graderConfig.getId();
+        GraderID graderId=graderConfig.getId();
         
         String bpClassName=graderConfig.getBackend_plugin_classname();
 		String bpRelativeClassPaths=graderConfig.getRelative_classpathes();
@@ -183,8 +184,8 @@ public class GraderPool {
         	//init and call 3 additional DockerBP methods
             log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing DockerProxyBackendPlugin...",graderId,submId);
     		dockerBp.init(props,boundary,logLevel);
-    		
-    		dockerBp.setContext(graderId,submId);
+
+    		dockerBp.setContext(graderId.toString(),submId);
     		
     		//docker prefs
     		String dockerHost=dockerConfig.getHost();
@@ -246,7 +247,7 @@ public class GraderPool {
     		//neither host_jvm_bp nor docker_jvm_bp 
             throw new IllegalArgumentException(String.format("operating_mode must be either '%s' or '%s'. Given was '%s'.",OP_MODE_DOCKER_VM,OP_MODE_LOCAL_VM,operatingMode));        		
     	}
-    	return bp;   
+    	return bp;
     }
 
     

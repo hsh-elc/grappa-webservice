@@ -1,6 +1,7 @@
 package de.hsh.grappa.test;
 
 import de.hsh.grappa.application.GrappaServlet;
+import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.service.SubmissionProcessor;
 import proforma.util.div.IOUtils;
@@ -9,7 +10,6 @@ import proforma.util.resource.SubmissionResource;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.FileInputStream;
@@ -30,7 +30,6 @@ public class SubmissionProcessorTest {
         grapServlet.contextDestroyed(null);
     }
 
-    @Ignore
     @Test
     public void testSubmissionProcessor() throws Exception {
         try (FileInputStream fis = new FileInputStream(proformaSubmissionFilePath)) {
@@ -39,7 +38,8 @@ public class SubmissionProcessorTest {
             lmsConfig.setId("test");
             lmsConfig.setName("test@SubmissionProcessorTest");
             lmsConfig.setPassword_hash("test");
-            SubmissionProcessor proc = new SubmissionProcessor(subm, "DummyGrader", lmsConfig);
+            GraderID newGrader = new GraderID("DummyGrader", "1.0");
+            SubmissionProcessor proc = new SubmissionProcessor(subm, newGrader, lmsConfig);
             proc.process(false);
         }
     }

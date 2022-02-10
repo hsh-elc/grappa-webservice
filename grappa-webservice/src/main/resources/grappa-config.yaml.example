@@ -57,11 +57,22 @@ graders_home: "/usr/local/graders"
 # with a specified number of grader instances in that pool.    
 graders:
 
-  # Submission requests must supply the target grader pool's ID.
-  - id: "DummyGrader"
+  # Submission requests must supply the target grader pool's ID
+  # An ID consists of: gradername and graderversion
+  # The gradername and graderversion must not contain a '$' character
+  # A grader version is structured as follows: major separated from minor with a dot: {major}.{minor}
+  - id:
+      name: "DummyGrader"
+      version: "1.0"
 
     # A user-friendly name for this grader pool
-    name: "DummyGrader" # user friendly name
+    display_name: "DummyGrader" # user friendly name
+
+    # optional, a list of programming languages
+    # that are supported by the particular grader
+    # for possible values see: Appendix B of the ProFormA Format Whitepaper
+    # (https://github.com/ProFormA/proformaxml/blob/master/Whitepaper.md#appendix-b-list-of-programming-languages)
+    proglangs: ["java", "python"]
 
     # A grader pool may be enabled or disabled. Disabled grader pools
     # are ignored and not utilized by Grappa. Neither do they show up
@@ -80,6 +91,15 @@ graders:
 
     # optional, if different from service setting above
     #logging_level: "WARN"
+
+    # optional, provides the LMS the information which
+    # result specifications should be used as default values
+    # when requesting the result specifications from the grader
+    result_spec:
+      format: "xml" # possible values: "zip", "xml"
+      structure: "separate-test-feedback" # possible values: "separate-test-feedback", "merged-test-feedback"
+      teacher_feedback_level: "debug" # possible values: "debug", "info", "warn", "error"
+      student_feedback_level: "info" # possible values: "debug", "info", "warn", "error"
 
     # Name of the subdirectory below 'graders_home', where jars 
     # of the grader backendplugin are installed.
