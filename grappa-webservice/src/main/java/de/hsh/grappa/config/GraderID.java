@@ -36,7 +36,7 @@ public class GraderID {
 	public String toConfigString() {
 		return "GraderID{" +
 				"name='" + name + '\'' +
-				", version'=" + version + '\'' +
+				", version='" + version + '\'' +
 				"}";
 	}
 
