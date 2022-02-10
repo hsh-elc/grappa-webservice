@@ -17,7 +17,7 @@ public class GraderConfig {
 //  private String file_extension;
 //  private String class_name;
 //  private String config_path;
-  
+
     private String subdir;
     private String backend_plugin_classname;
     private String relative_classpathes="";

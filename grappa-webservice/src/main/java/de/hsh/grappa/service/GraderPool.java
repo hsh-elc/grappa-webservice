@@ -156,6 +156,7 @@ public class GraderPool {
     	BackendPlugin bp=null;
     	Properties props=graderConfig.getGrader_plugin_defaults();
         if (props == null) props = new Properties(); // empty map instead of null
+
         String logLevel=graderConfig.getLogging_level();
         GraderID graderId=graderConfig.getId();
         
@@ -183,7 +184,7 @@ public class GraderPool {
         	//init and call 3 additional DockerBP methods
             log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing DockerProxyBackendPlugin...",graderId,submId);
     		dockerBp.init(props,boundary,logLevel);
-    		
+
     		dockerBp.setContext(graderId.toString(),submId);
     		
     		//docker prefs
