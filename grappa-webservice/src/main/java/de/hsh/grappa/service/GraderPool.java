@@ -159,6 +159,7 @@ public class GraderPool {
         String logLevel=graderConfig.getLogging_level();
         String graderId=graderConfig.getId();
         
+        //TODO: cleanup old docker
         String bpClassName=graderConfig.getBackend_plugin_classname();
 		String bpRelativeClassPaths=graderConfig.getRelative_classpathes();
 		String bpFileExtensions=graderConfig.getFileextensions();
@@ -193,11 +194,14 @@ public class GraderPool {
     		String imageName=dockerBPConfig.getImage_name();
     		String username=dockerBPConfig.getUsername();
     		String passwordPat=dockerBPConfig.getPassword_pat();
+    		//TODO: add copy pathes for submission etc.
     		dockerBp.setDockerPrefs(dockerHost,imageName, username, passwordPat);
             
+    		//TODO: remove
     		//backend-starter prefs
-    		dockerBp.setBackendStarterPrefs(bpClassName,bpRelativeClassPaths,bpFileExtensions);
-            
+    		//dockerBp.setBackendStarterPrefs(bpClassName,bpRelativeClassPaths,bpFileExtensions);
+    		
+           
             bp = dockerBp;
 
     	}else if(operatingMode.equals(OP_MODE_LOCAL_VM)) {

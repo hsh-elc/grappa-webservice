@@ -71,7 +71,7 @@ public class GraderBackendStarter {
         TMP_INPUT_PATH.concat("/grader_exception_stacktrace");
     private static final String RESULT_RESPONSE_FILE_PATH_WITHOUT_EXTENSION = "/var/grb_starter/tmp/response";
 
-    private static final String WORKING_DIR_PATH = "/opt/grader/starter";
+    private static final String WORKING_DIR_PATH = "/opt/grader-backend-starter";
 
     public static void main(String[] args) {
         try {
