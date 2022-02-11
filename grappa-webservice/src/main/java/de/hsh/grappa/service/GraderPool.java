@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
-import de.hsh.grappa.util.DebugUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +38,7 @@ import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.AuthenticationException;
 import de.hsh.grappa.util.ClassPathClassLoader;
 import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
+import de.hsh.grappa.util.DebugUtils;
 import proforma.util.ProformaResponseHelper.Audience;
 import proforma.util.ProformaVersion;
 import proforma.util.SubmissionLive;
