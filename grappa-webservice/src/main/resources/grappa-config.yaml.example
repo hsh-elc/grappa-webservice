@@ -101,6 +101,10 @@ graders:
       teacher_feedback_level: "debug" # possible values: "debug", "info", "warn", "error"
       student_feedback_level: "info" # possible values: "debug", "info", "warn", "error"
 
+    # optional, specifies whether the stacktrace of an internal error should be included in the response or not
+    # default value is false
+    show_stacktrace: false
+
     # Name of the subdirectory below 'graders_home', where jars 
     # of the grader backendplugin are installed.
     # Mandatory.

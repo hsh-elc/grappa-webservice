@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
+import de.hsh.grappa.util.DebugUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -265,7 +266,6 @@ public class GraderPool {
             }
             
             BackendPlugin bp=loadAndInitBackendPlugin(subm.getGradeProcId());
-            
             FutureTask<ResponseResource> futureTask = null;
             int timeoutSeconds = graderConfig.getTimeout_seconds();
             try {
@@ -294,7 +294,7 @@ public class GraderPool {
                         "with error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
                 log.error(errorMessage);
                 log.error(ExceptionUtils.getStackTrace(e));
-                return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY);
+                return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY, e);
             } catch (TimeoutException e) {
                 totalGradingProcessesTimedOut.incrementAndGet();
                 String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process timed " +
@@ -308,7 +308,7 @@ public class GraderPool {
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after timing out.",
                     graderConfig.getId(), subm.getGradeProcId());
                 // How do we know this timeout was due to the grader and not a forever loop in the student submission?
-                return createInternalErrorResponse(errorMessage, subm, Audience.BOTH);
+                return createInternalErrorResponse(errorMessage, subm, Audience.BOTH, e);
             } catch (CancellationException e) {
                 totalGradingProcessesCancelled.incrementAndGet();
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process cancelled.",
@@ -322,14 +322,14 @@ public class GraderPool {
                 totalGradingProcessesCancelled.incrementAndGet();
                 log.debug("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after parent " +
                         "thread interruption.", graderConfig.getId(), subm.getGradeProcId());
-                return createInternalErrorResponse("Grading process was interrupted.", subm, Audience.TEACHER_ONLY);
+                return createInternalErrorResponse("Grading process was interrupted.", subm, Audience.TEACHER_ONLY, e);
             } catch (Throwable e) { // catch any other error
                 totalGradingProcessesFailed.incrementAndGet();
                 String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process " +
                     "failed with error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
                 log.error(errorMessage);
                 log.error(ExceptionUtils.getStackTrace(e));
-                return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY);
+                return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY, e);
             }
         } catch (Throwable e) {
             String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process encountered " +
@@ -337,7 +337,7 @@ public class GraderPool {
             log.error(errorMessage);
             log.error(ExceptionUtils.getStackTrace(e));
             try {
-				return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY);
+				return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY, e);
 			} catch (Exception e1) {
 				throw new Error(e1);
 			}
@@ -369,7 +369,10 @@ public class GraderPool {
         }
     }
 
-    private ResponseResource createInternalErrorResponse(String errorMessage, QueuedSubmission subm, Audience audience)  throws Exception {
+    private ResponseResource createInternalErrorResponse(String errorMessage, QueuedSubmission subm, Audience audience, final Throwable throwable)  throws Exception {
+        if (audience == Audience.TEACHER_ONLY && this.graderConfig.getShow_stacktrace()) {
+            errorMessage += "<br><strong>Stacktrace</strong><br><small>" + DebugUtils.getStackTrace(throwable) + "</small>";
+        }
         LmsConfig lmsConfig = getLmsConfig(subm.getLmsId());
         boolean ietm = lmsConfig.getEietamtf();
         ProformaVersion pv = detectProformaVersion(subm);

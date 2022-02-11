@@ -11,6 +11,7 @@ public class GraderConfig {
     private int timeout_seconds = 120;
     private int concurrent_grading_processes = 5;
     private String logging_level;
+    private boolean show_stacktrace = false;
     private ResultSpecConfig result_spec;
   
 //  private String class_path;
@@ -79,6 +80,14 @@ public class GraderConfig {
 
     public void setLogging_level(String logging_level) {
         this.logging_level = logging_level;
+    }
+
+    public boolean getShow_stacktrace() {
+        return show_stacktrace;
+    }
+
+    public void setShow_stacktrace(boolean show_stacktrace) {
+        this.show_stacktrace = show_stacktrace;
     }
 
     public ResultSpecConfig getResult_spec() {
@@ -163,6 +172,7 @@ public class GraderConfig {
                 +", timeout_seconds="+timeout_seconds
                 +", concurrent_grading_processes="+concurrent_grading_processes
                 +", logging_level="+logging_level
+                +", show_stacktrace="+show_stacktrace
                 +", result:spec="+result_spec
                 +", subdir="+subdir
                 +", backend_plugin_classname="+backend_plugin_classname
