@@ -6,9 +6,11 @@ on:
   push:
     branches:
       - 'dev/kilian_21'
-  pull_request:
-    branches:
-      - 'dev/kilian_21'
+    paths:
+      - 'grappa-backendstarter/**'
+  #pull_request:
+  #  branches:
+  #    - 'dev/kilian_21'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
