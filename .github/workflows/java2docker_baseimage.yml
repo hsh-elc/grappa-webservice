@@ -46,6 +46,7 @@ jobs:
 
       - name: Set Release version env variable
         run: |
+          cd ${SUBDIR}
           echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: Build with Maven
@@ -55,7 +56,7 @@ jobs:
 
       - name: Collect jar-Files
         env:
-          JAR_WITH_DEPS: ${SUBDIR}-${{env.RELEASE_VERSION}}-jar-with-dependencies.jar
+          JAR_WITH_DEPS: ${{ env.SUBDIR }}-${{ env.RELEASE_VERSION }}-jar-with-dependencies.jar
         run: |
           #cp target/*.jar docker/starter/
           #cp target/$JAR_WITH_DEPS docker/starter/grappa-backendstarter.jar
