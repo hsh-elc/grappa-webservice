@@ -25,7 +25,7 @@ RUN mkdir -p "/opt/grader-backend-starter" \
 ENV GRAPPA_PLUGIN_GRADER_CLASSNAME="de.hsh.grappa.backendplugin.BackendPlugin" \
     GRAPPA_PLUGIN_GRADER_CLASSPATHES="/opt/grader" \
     GRAPPA_PLUGIN_GRADER_FILEEXTENSION=".jar" \
-    GRAPPA_PLUGIN_GRADER_CONFIG="graderBP.properties"
+    GRAPPA_PLUGIN_GRADER_CONFIG="/opt/grader/graderBP.properties"
 
 
 ### Install software

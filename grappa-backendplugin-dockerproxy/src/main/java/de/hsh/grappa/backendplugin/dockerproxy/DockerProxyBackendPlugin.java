@@ -88,7 +88,9 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
 	//TODO: remvove
     // Filenames inside the directory GRADER_HOME_IN_CONTAINER:
 //	private static final String GRADER_BP_JAR_FILENAME = "graderBP.jar";
-	private static final String GRADER_BP_PROPERTIES_FILENAME = "/opt/grader/graderBP.properties";
+	
+	//This corresponds to the ENV GRAPPA_PLUGIN_GRADER_CONFIG="/opt/grader/graderBP.properties" in Dockerfile of baseimage
+	private static final String GRADER_BP_PROPERTIES_FILENAME = "graderBP.properties";
 	
 	private static final String COPY_SUBMISSION_TO_DIRECTORY_PATH="/var/grb_starter/tmp";
 	private static final String RESPONSE_RESULT_DIRECTORY_PATH="/var/grb_starter/tmp";
