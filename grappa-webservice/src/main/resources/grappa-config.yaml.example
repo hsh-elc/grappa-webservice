@@ -92,7 +92,7 @@ graders:
     # optional, if different from service setting above
     #logging_level: "WARN"
 
-    # optional, provides the LMS the information which
+    # optional, provides the LMS with information which
     # result specifications should be used as default values
     # when requesting the result specifications from the grader
     result_spec:
@@ -101,7 +101,8 @@ graders:
       teacher_feedback_level: "debug" # possible values: "debug", "info", "warn", "error"
       student_feedback_level: "info" # possible values: "debug", "info", "warn", "error"
 
-    # optional, specifies whether the stacktrace of an internal error should be included in the response or not
+    # optional, specifies whether the stacktrace of an internal error should be included
+    # in the response or not (stacktrace will be visible to teachers only)
     # default value is false
     show_stacktrace: false
 
