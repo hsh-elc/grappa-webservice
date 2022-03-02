@@ -165,6 +165,13 @@ public class GraderBackendStarter {
             // status indicates that the grading starter finished abnormally
             System.exit(-1);
         }
+
+        // We've reached the end of the execution.
+        // Forcibly shutdown this process in case backend plugins
+        // cause it to run forever due to threads running endless
+        // loops or any other resaons and thus preventing this java
+        // process from being exited.
+        System.exit(0);
     }
 
     
