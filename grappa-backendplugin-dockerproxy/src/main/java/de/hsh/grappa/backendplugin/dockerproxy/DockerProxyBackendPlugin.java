@@ -6,10 +6,10 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
-
 import de.hsh.grappa.backendplugin.BackendPlugin;
 import de.hsh.grappa.util.DebugUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import proforma.util.ProformaSubmissionSubmissionHandle;
 import proforma.util.ProformaSubmissionTaskHandle;
 import proforma.util.SubmissionLive;
@@ -20,9 +20,6 @@ import proforma.util.div.XmlUtils.MarshalOption;
 import proforma.util.resource.MimeType;
 import proforma.util.resource.ResponseResource;
 import proforma.util.resource.SubmissionResource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -200,7 +197,7 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
                         graderId, gradeProcId, containerId);
                 } catch (Exception e2) {
                     log.warn("[GraderId: '{}', GradeProcId: '{}']: Failed to stop container '{}' because of error: " +
-                        "'{}'", graderId, gradeProcId, containerId, ExceptionUtils.getMessage(e));
+                        "'{}'", graderId, gradeProcId, containerId, DebugUtils.getStackTrace(e));
                 }
             }
 
