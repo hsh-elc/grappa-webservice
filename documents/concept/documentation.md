@@ -70,7 +70,7 @@ Install the software listed in the [System Requirements](21-system-requirements)
   - if Grappa and Docker are intended to run on different servers, you may need to expose the Docker API over TCP so a connection can be established remotely
     - edit file `/lib/systemd/system/docker.service`
     - comment out line `ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock`
-    - add line `ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2376 --containerd=/run/containerd/containerd.sock`
+    - add line `ExecStart=/usr/bin/dockerd -H tcp://127.0.0.1:2375 --containerd=/run/containerd/containerd.sock`
     - reload the Docker service
       - `sudo systemctl daemon-reload`
       - `sudo systemctl restart docker`
@@ -185,7 +185,7 @@ Get the web service's status information, such as runtime infos.
     }
     ```
     **Content Type**: `application/json` <br/>
-    **Description**: Returns the status of a grader. This data is subject to change. It is not intended to be processed by a machine, but rather serves an overview for debugging or statistical purposes.
+    **Description**: Returns the status of the web service, including the status of all graders. This data is subject to change. It is not intended to be processed by a machine, and only serves as an overview for debugging or statistical purposes.
        
   * **Code:** `401 Unauthorized` <br/>
     **Content**: `{ error : "message" }` <br/>
@@ -196,6 +196,11 @@ Get the web service's status information, such as runtime infos.
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.
+
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
 
 ### Grade a Proforma submission
 
@@ -259,6 +264,11 @@ Submit a Proforma submission for grading.
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
+
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
   
 ### Poll for a Proforma response
 
@@ -320,6 +330,11 @@ Poll for the status of a Proforma submission (queued for grading, being graded, 
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
+
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
    
 ### Cancel a Proforma submission 
 
@@ -361,6 +376,11 @@ Cancel and delete a Proforma submission that is queued for grading or is current
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
+
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
 
 ### Get list of all online graders 
 
@@ -430,6 +450,11 @@ Get the list of graders that are enabled and ready to take on submissions.
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
 
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
+
 ### Get grader status 
 
 Get the status, e.g. grader statistics, of a specific grader.
@@ -484,6 +509,11 @@ Get the status, e.g. grader statistics, of a specific grader.
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.
 
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
+
 ### Check if a Proforma task is cached 
 
 Check if a particular task is cached by the middleware to avoid including the task in Proforma
@@ -521,6 +551,11 @@ Check if a particular task is cached by the middleware to avoid including the ta
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.
+
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
 
 ## 4 Backend Plugin
 
