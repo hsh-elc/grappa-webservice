@@ -10,15 +10,9 @@ public class GraderConfig {
   private int concurrent_grading_processes = 5;
   private String logging_level;
   
-//  private String class_path;
-//  private String file_extension;
-//  private String class_name;
-//  private String config_path;
-  
-  private String subdir;
-  private String backend_plugin_classname;
-  private String relative_classpathes="";
-  private String fileextensions=".jar";
+  private String file_encoding;// UTF-8 
+  private String user_language;// de
+  private String user_country;// DE 
   
   private Properties grader_plugin_defaults;
   
@@ -70,39 +64,31 @@ public class GraderConfig {
 	this.logging_level = logging_level;
   }
   
-  public String getSubdir(){
-    return subdir;
-  }
-  
-  public void setSubdir(String subdir){
-    this.subdir=subdir;
-  }
-  
-  public String getBackend_plugin_classname(){
-    return backend_plugin_classname;
-  }
-  
-  public void setBackend_plugin_classname(String backend_plugin_classname){
-    this.backend_plugin_classname=backend_plugin_classname;
-  }
-  
-  public String getRelative_classpathes(){
-    return relative_classpathes;
-  }
-  
-  public void setRelative_classpathes(String relative_classpathes){
-    this.relative_classpathes=relative_classpathes;
-  }
-  
-  public String getFileextensions(){
-    return fileextensions;
-  }
-  
-  public void setFileextensions(String fileextensions){
-    this.fileextensions=fileextensions;
-  }
-  
-  public Properties getGrader_plugin_defaults(){
+  public String getFile_encoding(){
+	return file_encoding;
+}
+
+public void setFile_encoding(String file_encoding){
+	this.file_encoding=file_encoding;
+}
+
+public String getUser_language(){
+	return user_language;
+}
+
+public void setUser_language(String user_language){
+	this.user_language=user_language;
+}
+
+public String getUser_country(){
+	return user_country;
+}
+
+public void setUser_country(String user_country){
+	this.user_country=user_country;
+}
+
+public Properties getGrader_plugin_defaults(){
     return grader_plugin_defaults;
   }
   
@@ -133,23 +119,24 @@ public class GraderConfig {
   public void setHost_jvm_bp(GraderHostJvmBpConfig host_jvm_bp){
     this.host_jvm_bp=host_jvm_bp;
   }
-  
+
   @Override
   public String toString(){
-    return "GraderConfig{"
-        +"id="+id
-        +", name="+name
-        +", enabled="+enabled
-        +", timeout_seconds="+timeout_seconds
-        +", concurrent_grading_processes="+concurrent_grading_processes
-        +", logging_level="+logging_level
-        +", subdir="+subdir
-        +", backend_plugin_classname="+backend_plugin_classname
-        +", relative_classpathes="+relative_classpathes
-        +", fileextensions="+fileextensions
-        +", grader_plugin_defaults="+grader_plugin_defaults
-        +", operating_mode="+operating_mode
-        +", docker_jvm_bp="+docker_jvm_bp
-        +", host_jvm_bp="+host_jvm_bp+"}";
-    }
+	return "GraderConfig{"
+			+"id="+id
+			+", name="+name
+			+", enabled="+enabled
+			+", timeout_seconds="+timeout_seconds
+			+", concurrent_grading_processes="+concurrent_grading_processes
+			+", logging_level="+logging_level
+			+", file_encoding="+file_encoding
+			+", user_language="+user_language
+			+", user_country="+user_country
+			+", grader_plugin_defaults="+grader_plugin_defaults
+			+", operating_mode="+operating_mode
+			+", docker_jvm_bp="+docker_jvm_bp
+			+", host_jvm_bp="+host_jvm_bp
+			+"}";
+  }
+
 }
