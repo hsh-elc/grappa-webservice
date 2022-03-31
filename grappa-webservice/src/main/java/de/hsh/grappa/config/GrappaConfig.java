@@ -8,7 +8,6 @@ public class GrappaConfig {
   private ServiceConfig service;
   private List<LmsConfig> lms;
   
-  private String graders_home;
   private List<GraderConfig> graders;
   private DockerProxyConfig docker_proxy;
   
@@ -45,14 +44,6 @@ public class GrappaConfig {
   public void setCache(CacheConfig cache) {
     this.cache = cache;
   }
-
-  public String getGraders_home(){
-    return graders_home;
-  }
-  
-  public void setGraders_home(String graders_home){
-    this.graders_home=graders_home;
-  }
   
   public DockerProxyConfig getDocker_proxy(){
     return docker_proxy;
@@ -69,7 +60,6 @@ public class GrappaConfig {
       return "GrappaConfig{"
         +"service="+service
         +", lms="+lms
-        +", graders_home="+graders_home
         +", graders="+graders
         +", docker_proxy="+docker_proxy
         +", cache="+cache+"}";

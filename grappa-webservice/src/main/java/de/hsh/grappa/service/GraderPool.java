@@ -158,44 +158,60 @@ public class GraderPool {
 
         String logLevel=graderConfig.getLogging_level();
         String graderId=graderConfig.getId();
-        
-        //TODO: cleanup old docker
-        String bpClassName=graderConfig.getBackend_plugin_classname();
-		String bpRelativeClassPaths=graderConfig.getRelative_classpathes();
-		String bpFileExtensions=graderConfig.getFileextensions();
+        //Encodings 
+        String fileEncoding=graderConfig.getFile_encoding();
+        String userLanguage=graderConfig.getUser_language();
+        String userCountry=graderConfig.getUser_country();
 
         //Determines whether dockerProxy is used
     	String operatingMode=graderConfig.getOperating_mode();
     	if(operatingMode.equals(OP_MODE_DOCKER_VM)) {
     		//DOCKER BP
     		
-        	DockerProxyConfig dockerConfig=GrappaServlet.CONFIG.getDocker_proxy();
-        	if(dockerConfig==null)throw new IllegalArgumentException(String.format("Missing definition of 'docker_proxy' for operating_mode: %s.",OP_MODE_DOCKER_VM));
-        	String dockerBpClassPath=dockerConfig.getClass_path();
-    		String dockerBpClassName=dockerConfig.getClass_name();
         	
         	//TODO: this is always *.jar since we build this plugin, right?
-        	String dockerBpFileExtension="*.jar";
+        	//String dockerBpFileExtension="*.jar";
+    		//not used anymore since Dockerproxy is included into grappa webservice
+        	
+    		//TODO remove
+            //log.info("Loading grader plugin '{}' with classpathes '{}'...", graderId, dockerBpClassPath);
+            //backendPluginLoader.configure(Classpath.of(dockerBpClassPath, dockerBpFileExtension));
+    		//DockerProxyBackendPlugin dockerBp=(DockerProxyBackendPlugin)backendPluginLoader.instantiateClass(dockerBpClassName);
     		
-            log.info("Loading grader plugin '{}' with classpathes '{}'...", graderId, dockerBpClassPath);
-            backendPluginLoader.configure(Classpath.of(dockerBpClassPath, dockerBpFileExtension));
-    		DockerProxyBackendPlugin dockerBp=(DockerProxyBackendPlugin)backendPluginLoader.instantiateClass(dockerBpClassName);
+            log.info("Loading grader plugin '{}' with '{}'...", graderId, DockerProxyBackendPlugin.class.getSimpleName());
+    		DockerProxyBackendPlugin dockerBp=new DockerProxyBackendPlugin();
     		
         	//init and call 3 additional DockerBP methods
             log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing DockerProxyBackendPlugin...",graderId,submId);
-    		dockerBp.init(props,boundary,logLevel);
+    		dockerBp.init(props,boundary,logLevel, fileEncoding, userLanguage, userCountry);
     		
     		dockerBp.setContext(graderId,submId);
     		
-    		//docker prefs
+    		
+    		//TODO: Add pathes for submission etc.
+    		
+    		
+    		//Docker 
+    		//Host prefs
+        	DockerProxyConfig dockerConfig=GrappaServlet.CONFIG.getDocker_proxy();
+        	if(dockerConfig==null)throw new IllegalArgumentException(String.format("Missing definition of 'docker_proxy' for operating_mode: %s.",OP_MODE_DOCKER_VM));
     		String dockerHost=dockerConfig.getHost();
+    		if(dockerHost==null || dockerHost.equals(""))throw new IllegalArgumentException(String.format("Missing definition of 'docker_proxy.host' for operating_mode: %s.",OP_MODE_DOCKER_VM));
+    		
+    		//Docker prefs
     		GraderDockerJvmBpConfig dockerBPConfig=graderConfig.getDocker_jvm_bp();
     		if(dockerBPConfig==null)throw new IllegalArgumentException(String.format("Missing '%s' for operating_mode.",OP_MODE_DOCKER_VM));
+    		//Image info
     		String imageName=dockerBPConfig.getImage_name();
+    		if(imageName==null || imageName.equals(""))throw new IllegalArgumentException(String.format("Missing definition of 'image_name' for operating_mode '%s'.",OP_MODE_DOCKER_VM));
     		String username=dockerBPConfig.getUsername();
     		String passwordPat=dockerBPConfig.getPassword_pat();
-    		//TODO: add copy pathes for submission etc.
-    		dockerBp.setDockerPrefs(dockerHost,imageName, username, passwordPat);
+    		//Pathes
+    		String copySubmissionToDirPath=dockerBPConfig.getCopy_submission_to_dir_path();
+    		String loadResponseFromDirPath=dockerBPConfig.getLoad_response_from_dir_path();
+    		String copyGraderPluginDefaultsPropertiesToFile=dockerBPConfig.getCopy_grader_plugin_defaults_properties_to_file();
+    		//set prefs
+    		dockerBp.setDockerPrefs(dockerHost,imageName, username, passwordPat, copySubmissionToDirPath, loadResponseFromDirPath, copyGraderPluginDefaultsPropertiesToFile);
             
     		//TODO: remove
     		//backend-starter prefs
@@ -207,44 +223,65 @@ public class GraderPool {
     	}else if(operatingMode.equals(OP_MODE_LOCAL_VM)) {
     		//"NORMAL" BP
     		
-        	String gradersHomeDir=GrappaServlet.CONFIG.getGraders_home();
-        	if(gradersHomeDir==null)throw new IllegalArgumentException(String.format("Missing 'graders_home' definition."));
-        	String graderSubDir=graderConfig.getSubdir();
-        	if(graderSubDir==null)throw new IllegalArgumentException(String.format("Missing 'subdir' definition."));
-        	String absoluteGraderDir=gradersHomeDir+"/"+graderSubDir;
+    		GraderHostJvmBpConfig bpConfig=graderConfig.getHost_jvm_bp();
+    		if(bpConfig==null)throw new IllegalArgumentException(String.format("Missing '%s' for operating_mode.",OP_MODE_LOCAL_VM));
+    		
+    		String bpDirectory=bpConfig.getDir();
+    		String bpAdditionalAbsoluteClasspathes=bpConfig.getAdditional_absolute_classpathes();
+            String bpClassName=bpConfig.getBackend_plugin_classname();
+    		String bpFileExtensions=bpConfig.getFileextensions();
+
+    		if(bpDirectory==null || bpDirectory.equals(""))throw new IllegalArgumentException(String.format("Missing '%s.dir' definition.", OP_MODE_LOCAL_VM));
+    		if(bpClassName==null || bpClassName.equals(""))throw new IllegalArgumentException(String.format("Missing '%s.backend_plugin_classname' definition.", OP_MODE_LOCAL_VM));
+    		//choose ".jar" by default
+    		if(bpFileExtensions==null)bpFileExtensions=".jar";
+    		
+    		//build classpath 
+    		//add absolute pathes
+    		
+    		
+        	//String gradersHomeDir=GrappaServlet.CONFIG.getGraders_home();
+        	//if(gradersHomeDir==null)throw new IllegalArgumentException(String.format("Missing 'graders_home' definition."));
+        	//String graderSubDir=graderConfig.getSubdir();
+        	//if(graderSubDir==null)throw new IllegalArgumentException(String.format("Missing 'subdir' definition."));
         	
-        	String absoluteClassPathes="";        	
-    		if(bpRelativeClassPaths!=null && !bpRelativeClassPaths.equals("")) {
-    			String[] relativeCPsArray=bpRelativeClassPaths.split(";");
-    			for(String relCP:relativeCPsArray){
-    				absoluteClassPathes+=absoluteGraderDir+"/"+relCP+";";				
-    			}
+    		//String absoluteGraderDir=gradersHomeDir+"/"+graderSubDir;
+        	
+    		//collect everything in bpDirectory
+        	String absoluteClassPathes=bpDirectory;        	
+    		if(bpAdditionalAbsoluteClasspathes!=null && !bpAdditionalAbsoluteClasspathes.equals("")){
+    			//add absolute pathes to classpath
+    			absoluteClassPathes+=";"+bpAdditionalAbsoluteClasspathes;
+//    			String[] relativeCPsArray=bpRelativeClassPaths.split(";");
+//    			for(String relCP:relativeCPsArray){
+//    				absoluteClassPathes+=absoluteGraderDir+"/"+relCP+";";				
+//    			}
     			//remove trailing ";"
-    			absoluteClassPathes=absoluteClassPathes.substring(0, absoluteClassPathes.length() - 1);
+//    			absoluteClassPathes=absoluteClassPathes.substring(0, absoluteClassPathes.length() - 1);
     		}
     		
-    		GraderHostJvmBpConfig bpConfig=graderConfig.getHost_jvm_bp();
-    		if(bpConfig!=null){
-    			String additionalAbsolutePathes=bpConfig.getHostonly_classpathes();
-    			if(additionalAbsolutePathes!=null && !additionalAbsolutePathes.equals("")){
-    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+additionalAbsolutePathes;
-    			}
-    			String pluginJarName=bpConfig.getPlugin_jar_name();
-    			if(pluginJarName!=null && !pluginJarName.equals("")){
-    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+pluginJarName;
-    			}else{
-    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+GRADER_BP_JAR_FILENAME;
-    			}
-    		}else{
-				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+GRADER_BP_JAR_FILENAME;
-    		}
+//    		GraderHostJvmBpConfig bpConfig=graderConfig.getHost_jvm_bp();
+//    		if(bpConfig!=null){
+//    			String additionalAbsolutePathes=bpConfig.getHostonly_classpathes();
+//    			if(additionalAbsolutePathes!=null && !additionalAbsolutePathes.equals("")){
+//    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+additionalAbsolutePathes;
+//    			}
+//    			String pluginJarName=bpConfig.getPlugin_jar_name();
+//    			if(pluginJarName!=null && !pluginJarName.equals("")){
+//    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+pluginJarName;
+//    			}else{
+//    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+GRADER_BP_JAR_FILENAME;
+//    			}
+//    		}else{
+//				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+GRADER_BP_JAR_FILENAME;
+//    		}
         	
             log.info("Loading grader plugin '{}' with classpathes '{}'...", graderId, absoluteClassPathes);
             backendPluginLoader.configure(Classpath.of(absoluteClassPathes, bpFileExtensions));
             bp = backendPluginLoader.instantiateClass(bpClassName);
             
             log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing BackendPlugin...",graderId,submId);
-            bp.init(props, boundary, logLevel);
+            bp.init(props, boundary, logLevel, fileEncoding, userLanguage, userCountry);
 
     	}else {
     		//neither host_jvm_bp nor docker_jvm_bp 
