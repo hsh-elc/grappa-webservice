@@ -2,7 +2,7 @@
 # A base image for all specific grader images.
 # See Dummygrader image as example/template for specific grader image.
 
-# Base is latest ubuntu image
+# Base is LTS ubuntu
 FROM ubuntu:20.04
 
 
