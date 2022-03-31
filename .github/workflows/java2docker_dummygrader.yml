@@ -14,6 +14,12 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+  # Triggers when a new base image was pushed (when the action building base image has completed)
+  workflow_run:
+    workflows: ["Java2Docker Baseimage"]
+    types:
+      - completed
+
 env:
   # image name for this workflow
   IMAGE_NAME: grappa-backend-dummygrader
