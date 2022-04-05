@@ -187,10 +187,6 @@ public class GraderPool {
     		
     		dockerBp.setContext(graderId,submId);
     		
-    		
-    		//TODO: Add pathes for submission etc.
-    		
-    		
     		//Docker 
     		//Host prefs
         	DockerProxyConfig dockerConfig=GrappaServlet.CONFIG.getDocker_proxy();
@@ -206,7 +202,7 @@ public class GraderPool {
     		if(imageName==null || imageName.equals(""))throw new IllegalArgumentException(String.format("Missing definition of 'image_name' for operating_mode '%s'.",OP_MODE_DOCKER_VM));
     		String username=dockerBPConfig.getUsername();
     		String passwordPat=dockerBPConfig.getPassword_pat();
-    		//Pathes
+    		//Pathes (default values in case of null will be set in DockerProxyBackendPlugin)
     		String copySubmissionToDirPath=dockerBPConfig.getCopy_submission_to_dir_path();
     		String loadResponseFromDirPath=dockerBPConfig.getLoad_response_from_dir_path();
     		String copyGraderPluginDefaultsPropertiesToFile=dockerBPConfig.getCopy_grader_plugin_defaults_properties_to_file();

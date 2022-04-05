@@ -5,7 +5,7 @@
     <groupId>de.hsh.grappa</groupId>
     <artifactId>grappa-webservice-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.1.0</version>
+    <version>2.2.0</version>
 
     <name>grappa-webservice</name>
     <description>A web service for connecting multiple Learn Management Systems (e.g. moodle, LON-CAPA) to multiple
