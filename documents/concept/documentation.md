@@ -70,7 +70,7 @@ Install the software listed in the [System Requirements](21-system-requirements)
   - if Grappa and Docker are intended to run on different servers, you may need to expose the Docker API over TCP so a connection can be established remotely
     - edit file `/lib/systemd/system/docker.service`
     - comment out line `ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock`
-    - add line `ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2376 --containerd=/run/containerd/containerd.sock`
+    - add line `ExecStart=/usr/bin/dockerd -H tcp://127.0.0.1:2375 --containerd=/run/containerd/containerd.sock`
     - reload the Docker service
       - `sudo systemctl daemon-reload`
       - `sudo systemctl restart docker`
@@ -155,8 +155,9 @@ Get the web service's status information, such as runtime infos.
         "totalAllExceptExecuted": 0,
         "graderRuntimeInfo": [
           {
-            "id": "javaGrader-v1.0",
-            "name": "Java Grader",
+            "name": "javaGrader",
+            "version" : "1.0",
+            "displayName": "Java Grader",
             "poolSize": 10,
             "busyInstances": 0,
             "queuedSubmissions": 0,
@@ -167,8 +168,9 @@ Get the web service's status information, such as runtime infos.
             "gradingProcessesTimedOut": 0
           },
           {
-            "id": "sqlGrader-v1.42",
-            "name": "SQL Grader",
+            "name": "sqlGrader",
+            "version": "1.42",
+            "displayName": "SQL Grader",
             "poolSize": 10,
             "busyInstances": 0,
             "queuedSubmissions": 0,
@@ -183,7 +185,7 @@ Get the web service's status information, such as runtime infos.
     }
     ```
     **Content Type**: `application/json` <br/>
-    **Description**: Returns the status of a grader. This data is subject to change. It is not intended to be processed by a machine, but rather serves an overview for debugging or statistical purposes.
+    **Description**: Returns the status of the web service, including the status of all graders. This data is subject to change. It is not intended to be processed by a machine, and only serves as an overview for debugging or statistical purposes.
        
   * **Code:** `401 Unauthorized` <br/>
     **Content**: `{ error : "message" }` <br/>
@@ -195,13 +197,18 @@ Get the web service's status information, such as runtime infos.
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.
 
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
+
 ### Grade a Proforma submission
 
 Submit a Proforma submission for grading.
 
 * **URL**
 
-  `/:lmsid/gradeprocesses?graderId=:graderId&async=:async`
+  `/:lmsid/gradeprocesses?graderName=:graderName&graderVersion=:graderVersion&async=:async`
 
 * **Method**
   
@@ -211,7 +218,9 @@ Submit a Proforma submission for grading.
 
   * `lmsid=[string]`: The LMS-ID, which represents the client ID.
    
-  * `graderId=[string]`: The grader instance to be used for grading a submission.
+  * `graderName=[string]`: The name of the grader instance to be used for grading a submission.
+  
+  * `graderVersion=[string]`: The version of a grader instance to be used for grading a submission.
    
   **Optional URL Params**
    
@@ -249,12 +258,17 @@ Submit a Proforma submission for grading.
   * **Code:** `404 Not Found` <br/>
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
-    **Description**: Parameter `:lmsid` or `:graderId` does not exist.
+    **Description**: Parameter `:lmsid`, `:graderName` or `:graderVersion` does not exist.
 
   * **Code:** `500 Internal Server Error` <br/>
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
+
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
   
 ### Poll for a Proforma response
 
@@ -316,6 +330,11 @@ Poll for the status of a Proforma submission (queued for grading, being graded, 
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
+
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
    
 ### Cancel a Proforma submission 
 
@@ -358,6 +377,11 @@ Cancel and delete a Proforma submission that is queued for grading or is current
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
 
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
+
 ### Get list of all online graders 
 
 Get the list of graders that are enabled and ready to take on submissions.
@@ -380,10 +404,37 @@ Get the list of graders that are enabled and ready to take on submissions.
     **Content**: Example graders:
     ```
     {
-        "graders": {
-            "graderId1": "human-friendly grader name 1"
-            "graderId2": "human-friendly grader name 2"
-        }
+        "graders": [
+            {
+                "name": "CGrader",
+                "version": "1.0",
+                "display_name": "CGrader (Version 1.0)",
+                "proglangs": [
+                    "c",
+                    "c++"
+                ],
+                "result_spec": {
+                    "format": "xml",
+                    "structure": "separate-test-feedback",
+                    "teacher_feed_level": "debug",
+                    "student_feedback_level": "info"
+                }
+            },
+            {
+                "name": "JavaGrader",
+                "version": "2.3",
+                "display_name": "Grader for Java programs",
+                "proglangs": [
+                    "java"
+                ], 
+                "result_spec": {
+                    "format": "zip",
+                    "structure": "merged-test-feedback",
+                    "teacher_feedback_level": "debug",
+                    "student_feedback_level": "info"
+                }
+            }
+        ]
     }
     ```
     **Content Type**: `application/json` <br/>
@@ -399,13 +450,18 @@ Get the list of graders that are enabled and ready to take on submissions.
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.  
 
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
+
 ### Get grader status 
 
 Get the status, e.g. grader statistics, of a specific grader.
     
 * **URL**
 
-  `/graders/:graderId`
+  `/graders/:graderName/:graderVersion`
 
 * **Method**
   
@@ -413,7 +469,8 @@ Get the status, e.g. grader statistics, of a specific grader.
   
 * **Required URL Params**
  
-  `graderId=[string]`
+  `graderName=[string]`
+  `graderVersion=[string]`
 
 * **HTTP Responses**
   
@@ -421,8 +478,9 @@ Get the status, e.g. grader statistics, of a specific grader.
     **Content**:
     ```
     {
-      "id": "sqlGrader",
-      "name": "SQL Grader",
+      "name": "sqlGrader",
+      "version": "1.0",
+      "displayName": "SQL Grader",
       "poolSize": 10,
       "busyInstances": 0,
       "queuedSubmissions": 0,
@@ -450,6 +508,11 @@ Get the status, e.g. grader statistics, of a specific grader.
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.
+
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
 
 ### Check if a Proforma task is cached 
 
@@ -488,6 +551,11 @@ Check if a particular task is cached by the middleware to avoid including the ta
     **Content**: `{ error : "message" }` <br/>
     **Content Type**: `application/json` <br/>
     **Description**: Unexpected server error.
+
+  * **Code:** `503 Service Unavailable` <br/>
+    **Content**: `{ error : "message" }` <br/>
+    **Content Type**: `application/json` <br/>
+    **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
 
 ## 4 Backend Plugin
 

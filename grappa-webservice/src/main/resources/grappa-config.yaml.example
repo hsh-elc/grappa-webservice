@@ -53,11 +53,22 @@ lms:
 # with a specified number of grader instances in that pool.    
 graders:
 
-  # Submission requests must supply the target grader pool's ID.
-  - id: "DummyGrader"
+  # Submission requests must supply the target grader pool's ID
+  # An ID consists of: gradername and graderversion
+  # The gradername and graderversion must not contain a '$' character
+  # A grader version is structured as follows: major separated from minor with a dot: {major}.{minor}
+  - id:
+      name: "DummyGrader"
+      version: "1.0"
 
     # A user-friendly name for this grader pool
-    name: "DummyGrader" # user friendly name
+    display_name: "DummyGrader" # user friendly name
+
+    # optional, a list of programming languages
+    # that are supported by the particular grader
+    # for possible values see: Appendix B of the ProFormA Format Whitepaper
+    # (https://github.com/ProFormA/proformaxml/blob/master/Whitepaper.md#appendix-b-list-of-programming-languages)
+    proglangs: ["java", "python"]
 
     # A grader pool may be enabled or disabled. Disabled grader pools
     # are ignored and not utilized by Grappa. Neither do they show up
@@ -77,6 +88,20 @@ graders:
     # optional, if different from service setting above
     #logging_level: "WARN"
 
+    # optional, provides the LMS with information which
+    # result specifications should be used as default values
+    # when requesting the result specifications from the grader
+    result_spec:
+      format: "xml" # possible values: "zip", "xml"
+      structure: "separate-test-feedback" # possible values: "separate-test-feedback", "merged-test-feedback"
+      teacher_feedback_level: "debug" # possible values: "debug", "info", "warn", "error"
+      student_feedback_level: "info" # possible values: "debug", "info", "warn", "error"
+
+    # optional, specifies whether the stacktrace of an internal error should be included
+    # in the response or not (stacktrace will be visible to teachers only)
+    # default value is false
+    show_stacktrace: false
+
     # Grader-specific properties
     # Properties (key/value pairs only) set here, will be forwarded to backend plugin 
     # before each grading process.
@@ -86,17 +111,11 @@ graders:
       my.property.1: "value 1"
       another.property: 42
     
-    
-    
-    
-    
     #actually not supported for host_jvm
     #optional: defautl host-settings (host-mashine)
     file_encoding: UTF-8
     user_language: de   # en
     user_country: DE  # US
-
-
   
     # Decides whether the grader will be run in host's JVM or within a docker-container.
     # Mandatory. Possible values: host_jvm_bp | docker_jvm_bp 
@@ -156,12 +175,12 @@ graders:
         # Directory within the container to retrieve the response from (`response.zip` 
         # resp. `submission.xml`).
         # Optional. Default: "/var/grb_starter/tmp"
-		#load_response_from_dir_path: /where/is/response/expected
-		
-		# Absolute file-path within the container to place the properties-file containing
-		# properties defined in `grader_plugin_defaults` above.
+        #load_response_from_dir_path: /where/is/response/expected
+        
+        # Absolute file-path within the container to place the properties-file containing
+        # properties defined in `grader_plugin_defaults` above.
         # Optional. Default: "/opt/grader/graderBP.properties"
-		#copy_grader_plugin_defaults_properties_to_file: /where/to/place/graderBP.properties
+        #copy_grader_plugin_defaults_properties_to_file: /where/to/place/graderBP.properties
 
 
 # Defines Docker preferences for the host machine affecting the Docker proxy backend plugin,

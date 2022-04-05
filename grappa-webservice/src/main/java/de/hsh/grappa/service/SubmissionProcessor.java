@@ -3,6 +3,7 @@ package de.hsh.grappa.service;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.boundary.BoundaryImpl;
 import de.hsh.grappa.cache.RedisController;
+import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.BadRequestException;
 import de.hsh.grappa.exceptions.GrappaException;
@@ -28,11 +29,11 @@ public class SubmissionProcessor {
     private static final Logger log = LoggerFactory.getLogger(SubmissionProcessor.class);
     private SubmissionLive subm;
     private TaskLive task;
-    private String graderId;
+    private GraderID graderId;
     private LmsConfig lmsConfig;
     private Boundary boundary;
 
-    public SubmissionProcessor(/*GrappaConfig config,*/ SubmissionResource subm, String graderId, LmsConfig lmsConfig) throws Exception {
+    public SubmissionProcessor(/*GrappaConfig config,*/ SubmissionResource subm, GraderID graderId, LmsConfig lmsConfig) throws Exception {
         //this.config = config;
     	this.subm = new SubmissionLive(subm);
         //this.subm = createProformaSubmission(subm);

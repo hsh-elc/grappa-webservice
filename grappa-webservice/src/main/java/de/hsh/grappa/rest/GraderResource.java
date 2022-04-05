@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
+import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.service.GraderPoolManager;
 import proforma.util.exception.NotFoundException;
 
@@ -21,7 +22,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("/graders/{graderId}")
+@Path("/graders/{graderName}/{graderVersion}")
 public class GraderResource {
 
     Logger log = LoggerFactory.getLogger(GraderResource.class);
@@ -37,22 +38,24 @@ public class GraderResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")
-    public Response getStatus(@PathParam("graderId") String graderId) throws Exception {
+    public Response getStatus(@PathParam("graderName") String graderName, @PathParam("graderVersion") String graderVersion) throws Exception {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return Response.ok().entity(gson.toJson(getGraderStatus(graderId))).build();
+        return Response.ok().entity(gson.toJson(getGraderStatus(GraderPoolManager.getInstance().getGraderId(graderName, graderVersion)))).build();
     }
 
-    public static JsonObject getGraderStatus(String graderId) throws NotFoundException {
+    public static JsonObject getGraderStatus(GraderID graderId) throws NotFoundException {
         var gcOpt = GrappaServlet.CONFIG.getGraders().stream()
             .filter(g -> g.getEnabled() && g.getId().equals(graderId)).findFirst();
         if(!gcOpt.isPresent())
-            throw new NotFoundException(String.format("GraderId '%s' does not exist or is disabled.", graderId));
+            throw new NotFoundException(String.format("GraderId '%s' does not exist or is disabled.", graderId.toString()));
         var gc = gcOpt.get();
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
         JsonObject graderStatus = new JsonObject();
-        graderStatus.addProperty("id", graderId);
-        graderStatus.addProperty("name", gc.getName());
+        graderStatus.addProperty("name", graderId.getName());
+        graderStatus.addProperty("version", graderId.getVersion());
+        graderStatus.addProperty("displayName", gc.getDisplay_name());
         graderStatus.addProperty("poolSize", GraderPoolManager.getInstance().getPoolSize(graderId));
         graderStatus.addProperty("busyInstances", GraderPoolManager.getInstance().getBusyCount(graderId));
         graderStatus.addProperty("queuedSubmissions",

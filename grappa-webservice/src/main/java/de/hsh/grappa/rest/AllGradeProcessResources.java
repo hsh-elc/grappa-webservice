@@ -1,12 +1,14 @@
 package de.hsh.grappa.rest;
 
 import de.hsh.grappa.cache.RedisController;
+import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.service.GradePoller;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.SubmissionProcessor;
 import de.hsh.grappa.util.Json;
 import proforma.util.div.IOUtils;
+import proforma.util.exception.NotFoundException;
 import proforma.util.resource.MimeType;
 import proforma.util.resource.ResponseResource;
 import proforma.util.resource.SubmissionResource;
@@ -42,11 +44,13 @@ public class AllGradeProcessResources {
     @POST
     @Consumes({MediaType.APPLICATION_XML, MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM})
     @Produces(MediaType.APPLICATION_JSON + "; charset=utf-8")
-    public Response grade(InputStream submission, @QueryParam("graderId") String graderId,
+    public Response grade(InputStream submission, @QueryParam("graderName") String graderName,
+                          @QueryParam("graderVersion") String graderVersion,
                           @DefaultValue("true") @QueryParam("async") String async,
                           @DefaultValue("false") @QueryParam("prioritize") boolean prioritize,
                           @Context HttpHeaders headers) throws Exception {
-        log.debug("[GraderId: '{}']: grade() with async={} called.", graderId, async);
+        GraderID graderId = GraderPoolManager.getInstance().getGraderId(graderName, graderVersion);
+        log.debug("[GraderId: '{}']: grade() with async={} called.", graderId.toString(), async);
         MediaType contentType = headers.getMediaType();
         if (null != contentType) {
             MimeType mimeType = null;
@@ -62,7 +66,7 @@ public class AllGradeProcessResources {
 
             SubmissionResource proformaSubm = new SubmissionResource
                 (IOUtils.toByteArray(submission), mimeType);
-            log.info("[GraderId: {}] Processing submission: {}", graderId, proformaSubm);
+            log.info("[GraderId: {}] Processing submission: {}", graderId.toString(), proformaSubm);
             LmsConfig lmsConfig = null;
             try {
                 lmsConfig = (LmsConfig) sr.getProperty("logged_user");

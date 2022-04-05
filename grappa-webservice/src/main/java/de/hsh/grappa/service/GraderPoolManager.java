@@ -3,6 +3,7 @@ package de.hsh.grappa.service;
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GraderConfig;
+import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.exceptions.GrappaException;
 import proforma.util.exception.NotFoundException;
 
@@ -25,7 +26,7 @@ public class GraderPoolManager implements Runnable {
         new AtomicBoolean(false);
 
     //private ConcurrentHashMap<String, GraderPool> pools;
-    private HashMap<String, GraderPool> pools;
+    private HashMap<GraderID, GraderPool> pools;
 
     public static GraderPoolManager getInstance() {
         if (null == gwm)
@@ -50,7 +51,7 @@ public class GraderPoolManager implements Runnable {
     }
 
     public boolean isGradeProcIdBeingGradedRightNow(String gradeProcId) {
-        for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
+        for (Map.Entry<GraderID, GraderPool> e : pools.entrySet()) {
             if (e.getValue().isGradeProcIdBeingGradedRightNow(gradeProcId))
                 return true;
         }
@@ -60,7 +61,7 @@ public class GraderPoolManager implements Runnable {
     public void shutdown() {
         stopStartingNewGradingProcesses.set(true);
 
-        for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
+        for (Map.Entry<GraderID, GraderPool> e : pools.entrySet()) {
             try {
                 e.getValue().shutdown();
             } catch(Throwable ex) {
@@ -75,7 +76,7 @@ public class GraderPoolManager implements Runnable {
     }
 
     public boolean cancelGradingProcess(String gradeProcId) throws Exception {
-        String graderId = RedisController.getInstance().getAssociatedGraderId(gradeProcId);
+        GraderID graderId = RedisController.getInstance().getAssociatedGraderId(gradeProcId);
         GraderPool gp = pools.get(graderId);
         if (null != gp)
             return gp.cancelGradeProcess(gradeProcId);
@@ -87,7 +88,7 @@ public class GraderPoolManager implements Runnable {
     @Override
     public synchronized void run() {
         while (!Thread.currentThread().isInterrupted()) {
-            for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
+            for (Map.Entry<GraderID, GraderPool> e : pools.entrySet()) {
                 // Iterate through all graders (grader pools), check if any of them
                 // have queued submissions
                 while (0 < RedisController.getInstance().getSubmissionQueueCount(e.getKey())
@@ -114,15 +115,32 @@ public class GraderPoolManager implements Runnable {
     /**
      * @return A list of grader ids. All of these graders are guaranteed to be active (enabled).
      */
-    public Collection<String> getGraderIds() {
+    public Collection<GraderID> getGraderIds() {
         return Collections.unmodifiableCollection(pools.keySet());
     }
 
-    public int getPoolSize(String graderId) throws NotFoundException {
+    /**
+     * Get the graderID from the pool by graderName and graderVersion
+     * @param graderName
+     * @param graderVersion
+     * @return The GraderID Object that is used in the GraderPool
+     * @throws NotFoundException when the graderID does not exist in the pool
+     */
+    public GraderID getGraderId(String graderName, String graderVersion) throws NotFoundException {
+        GraderID searchID = new GraderID(graderName, graderVersion);
+        for (GraderID id : this.pools.keySet()) {
+            if (id.equals(searchID)) {
+                return id;
+            }
+        }
+        throw new NotFoundException(String.format("GraderId '%s' does not exist or is disabled.", searchID.toString()));
+    }
+
+    public int getPoolSize(GraderID graderId) throws NotFoundException {
         var pool = pools.get(graderId);
         if(null != pool)
             return pool.getPoolSize();
-        throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId));
+        throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId.toString()));
     }
 
     /**
@@ -132,11 +150,11 @@ public class GraderPoolManager implements Runnable {
      * @return
      * @throws NotFoundException
      */
-    public int getBusyCount(String graderId) throws NotFoundException {
+    public int getBusyCount(GraderID graderId) throws NotFoundException {
         var pool = pools.get(graderId);
         if(null != pool)
             return pool.getBusyCount();
-        throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId));
+        throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId.toString()));
     }
 
 //    public long getEstimatedSecondsUntilQueueIsGraded(String graderId) throws NotFoundException {
@@ -169,7 +187,7 @@ public class GraderPoolManager implements Runnable {
      * @throws NotFoundException
      */
     public long getEstimatedSecondsUntilGradeProcIdIsFinished(String gradeProcId) throws NotFoundException {
-        String graderId = RedisController.getInstance().getAssociatedGraderId(gradeProcId);
+        GraderID graderId = RedisController.getInstance().getAssociatedGraderId(gradeProcId);
         var pool = pools.get(graderId);
         if (null != pool) {
             int poolSize = pool.getPoolSize();
@@ -203,9 +221,9 @@ public class GraderPoolManager implements Runnable {
         throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId));
     }
 
-    public Map<String, GraderStatistics> getGraderStatistics() {
-        HashMap<String, GraderStatistics> m = new HashMap<>();
-        for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
+    public Map<GraderID, GraderStatistics> getGraderStatistics() {
+        HashMap<GraderID, GraderStatistics> m = new HashMap<>();
+        for (Map.Entry<GraderID, GraderPool> e : pools.entrySet()) {
             m.put(e.getKey(), e.getValue().getGraderStatistics());
         }
         return m;
@@ -213,7 +231,7 @@ public class GraderPoolManager implements Runnable {
 
     public long getTotalGradingProcessesExecuted() {
         long total = 0;
-        for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
+        for (Map.Entry<GraderID, GraderPool> e : pools.entrySet()) {
             total += e.getValue().getTotalGradingProcessesExecuted();
         }
         return total;
@@ -221,7 +239,7 @@ public class GraderPoolManager implements Runnable {
 
     public long getTotalGradingProcessesSucceeded() {
         long total = 0;
-        for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
+        for (Map.Entry<GraderID, GraderPool> e : pools.entrySet()) {
             total += e.getValue().getTotalGradingProcessesSucceeded();
         }
         return total;
@@ -229,7 +247,7 @@ public class GraderPoolManager implements Runnable {
 
     public long getTotalGradingProcessesFailed() {
         long total = 0;
-        for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
+        for (Map.Entry<GraderID, GraderPool> e : pools.entrySet()) {
             total += e.getValue().getTotalGradingProcessesFailed();
         }
         return total;
@@ -237,7 +255,7 @@ public class GraderPoolManager implements Runnable {
 
     public long getTotalGradingProcessesCancelled() {
         long total = 0;
-        for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
+        for (Map.Entry<GraderID, GraderPool> e : pools.entrySet()) {
             total += e.getValue().getTotalGradingProcessesCancelled();
         }
         return total;
@@ -245,7 +263,7 @@ public class GraderPoolManager implements Runnable {
 
     public long getTotalGradingProcessesTimedOut() {
         long total = 0;
-        for (Map.Entry<String, GraderPool> e : pools.entrySet()) {
+        for (Map.Entry<GraderID, GraderPool> e : pools.entrySet()) {
             total += e.getValue().getTotalGradingProcessesTimedOut();
         }
         return total;
