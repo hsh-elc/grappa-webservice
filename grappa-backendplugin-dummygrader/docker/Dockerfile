@@ -3,7 +3,8 @@
 # This Dockerfile can be used as template for other java backend-plugins.
 
 # Base is latest grappa-remote-backend-base image
-FROM grappa-backend-base:latest
+#FROM grappa-backend-base:latest
+FROM ghcr.io/hsh-elc/grappa-backend-base:latest
 
 
 ### Install additional software
