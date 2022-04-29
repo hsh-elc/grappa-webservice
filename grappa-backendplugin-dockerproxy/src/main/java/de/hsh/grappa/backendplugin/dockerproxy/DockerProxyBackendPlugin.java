@@ -214,9 +214,18 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
                         GRADER_EXCEPTION_STACKTRACE_FILE_PATH)) {
                         graderStackTrace = IOUtils.toString(is, "utf8");
                     } catch (Exception e) {
-                        log.error("[GraderId: '{}', GradeProcId: '{}']: Could not load grader stack trace file '{}'.",
-                            graderId, gradeProcId, GRADER_EXCEPTION_STACKTRACE_FILE_PATH);
-                        log.error(DebugUtils.getStackTrace(e));
+                        if(e instanceof com.github.dockerjava.api.exception.NotFoundException) {
+                            // do not spam the log file with FileNotFound stack traces, they're not interesting
+                            log.warn("[GraderId: '{}', GradeProcId: '{}']: Could not load grader stack trace file " +
+                                    "'{}'. File does not exist in container '{}'.", graderId, gradeProcId,
+                                GRADER_EXCEPTION_STACKTRACE_FILE_PATH, containerId);
+                        } else {
+                            // for any other error, log the stack trace
+                            log.warn("[GraderId: '{}', GradeProcId: '{}']: Could not load grader stack trace file '{}' " +
+                                    "from container '{}'.", graderId, gradeProcId, GRADER_EXCEPTION_STACKTRACE_FILE_PATH,
+                                containerId);
+                            log.error(DebugUtils.getStackTrace(e));
+                        }
                     }
                 } else {
                     // Thread interruption: Do not expect (nor care about) any result or container log
