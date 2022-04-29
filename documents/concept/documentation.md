@@ -19,8 +19,8 @@
 &nbsp;&nbsp;&nbsp;&nbsp;[Check if a Proforma task is cached](#check-if-a-proforma-task-is-cached)<br>
 4 [Backend Plugin](#4-backend-plugin)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;4.1 [proformaxml module](#41-proformaxml-module)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;4.2 [grappa-backend-plugin-api module](#42-grappa-backend-plugin-api-module)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;4.3 [grappa-backend-plugin-docker-proxy module](#43-grappa-backend-plugin-docker-proxy-module)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.2 [grappa-backendplugin-api module](#42-grappa-common-module)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.3 [grappa-backendplugin-docker-proxy module](#43-grappa-backendplugin-dockerproxy-module)<br>
 5 [Modules](#5-modules)<br>
 6 [Understanding the Submission Process](#6-understanding-the-submission-process)<br>
 <!--- 5 [Docker](#2-internationalization)<br> -->
@@ -87,9 +87,15 @@ The following building and deployment instructions are for Ubuntu Linux.
 
     git clone https://github.com/hsh-elc/grappa-webservice.git
     
-2. Build Docker Images by changing to directory `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker` and then executing the `build-images.sh` script
+2. Pull desired Docker images from ghcr.io:
+	```bash
+	docker pull ghcr.io/hsh-elc/grappa-backend-dummygrader:latest
+	```
+
+<!--Build Docker Images by changing to directory `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker` and then executing the `build-images.sh` script
 
 Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker/` directory, specifically its docker, shell and JAR files will require re-executing the `build-images.sh` script to take effect. This includes changes to the `grappa-grader-backend-starter` module, as well as adding and changing grader Backend Plugins.
+-->
 
 3. Navigate to Grappa's root directory `grappa-webservice/` and build the web application resource using maven.
 
@@ -573,7 +579,7 @@ There are two different ways to pass a submission to a grader system from within
 TODO: uml class diagram of proformaxml, plugin-api and an example grader.
 -->
 
-Grappa (as well as the [docker-proxy module](#43-grappa-backend-plugin-docker-proxy-module)) passes a Proforma submission as a byte array resource to a backend plugin. This is because a submission resource needs to be in a suitable storage format so it can be transmitted between different parts of the service system (e.g. different parts of the service running on different systems, such as physical servers, Vagrant and Docker environments).
+Grappa (as well as the [dockerproxy module](#43-grappa-backendplugin-dockerproxy-module)) passes a Proforma submission as a byte array resource to a backend plugin. This is because a submission resource needs to be in a suitable storage format so it can be transmitted between different parts of the service system (e.g. different parts of the service running on different systems, such as physical servers, Vagrant and Docker environments).
 
 #### Passing a Proforma submission as a blob resource
 
@@ -610,7 +616,7 @@ public class PythonGrader extends BackendPlugin {
 }
 ```
 
-### 4.3 grappa-backend-plugin-docker-proxy module
+### 4.3 grappa-backendplugin-dockerproxy module
 
 A grader pool may use a docker proxy backend plugin acting as a layer in between Grappa and the 'real' grader backend plugin that resides within a Docker container. 
 Every submission request is delegated from the proxy plugin to the real grader plugin.
