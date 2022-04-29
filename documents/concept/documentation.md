@@ -628,10 +628,6 @@ That configuration file would look something like follows:-->
 
 ```
 docker_proxy:
-    # The class path and name to the grappa-backendplugin-dockerproxy
-    class_path: "/usr/local/graders/docker-proxy/grappa-backendplugin-dockerproxy.jar"
-    # dot-style java-class fully qualified name of the grappa-backendplugin-dockerproxy
-    class_name: "de.hsh.grappa.backendplugin.dockerproxy.DockerProxyBackendPlugin"
     # docker host uri (including port)
     host: "tcp://127.0.0.1:2376"
 ```

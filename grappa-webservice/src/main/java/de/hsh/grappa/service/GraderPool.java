@@ -203,14 +203,12 @@ public class GraderPool {
     		//Image info
     		String imageName=dockerBPConfig.getImage_name();
     		if(imageName==null || imageName.equals(""))throw new IllegalArgumentException(String.format("Missing definition of 'image_name' for operating_mode '%s'.",OP_MODE_DOCKER_VM));
-    		String username=dockerBPConfig.getUsername();
-    		String passwordPat=dockerBPConfig.getPassword_pat();
     		//Pathes (default values in case of null will be set in DockerProxyBackendPlugin)
     		String copySubmissionToDirPath=dockerBPConfig.getCopy_submission_to_dir_path();
     		String loadResponseFromDirPath=dockerBPConfig.getLoad_response_from_dir_path();
     		String copyGraderPluginDefaultsPropertiesToFile=dockerBPConfig.getCopy_grader_plugin_defaults_properties_to_file();
     		//set prefs
-    		dockerBp.setDockerPrefs(dockerHost,imageName, username, passwordPat, copySubmissionToDirPath, loadResponseFromDirPath, copyGraderPluginDefaultsPropertiesToFile);
+    		dockerBp.setDockerPrefs(dockerHost,imageName, copySubmissionToDirPath, loadResponseFromDirPath, copyGraderPluginDefaultsPropertiesToFile);
             
     		//TODO: remove
     		//backend-starter prefs

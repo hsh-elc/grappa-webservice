@@ -58,9 +58,6 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
     
     private String dockerHost;
     private String dockerContainerImage;
-    private boolean isPrivateDockerImage;
-    private String dockerUsername;
-    private String dockerPasswordPat;
     
     private String copySubmissionToDirectoryPath;
     private String responseResultDirectoryPath;
@@ -110,16 +107,11 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
     	this.graderId=graderId;
     	this.gradeProcId=graderProcessId;
     }
-    public void setDockerPrefs(String host, String imageName, String username, String passwordPat, 
+    public void setDockerPrefs(String host, String imageName,  
     		String copySubmissionToDirPath,	String loadResponseFromDirPath, String copyGraderPluginDefaultsPropertiesToFile){    	
     	
         dockerHost=host;
         dockerContainerImage = imageName;
-
-        dockerUsername=username;
-        dockerPasswordPat=passwordPat;
-        
-    	isPrivateDockerImage=(username!=null);
     	
         //set these paths fix (if not specified), since the BackendStarter relies on them
     	if(copySubmissionToDirPath!=null && !copySubmissionToDirPath.equals("")) {
