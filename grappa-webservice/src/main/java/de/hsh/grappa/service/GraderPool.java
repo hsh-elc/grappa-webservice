@@ -71,7 +71,6 @@ public class GraderPool {
 
     private static final String OP_MODE_LOCAL_VM="host_jvm_bp";
     private static final String OP_MODE_DOCKER_VM="docker_jvm_bp";
-	private static final String GRADER_BP_JAR_FILENAME = "graderBP.jar";
 
     private ConcurrentHashMap<String /*gradeProcId*/, Future<ResponseResource>> gpMap =
         new ConcurrentHashMap<>();
@@ -169,17 +168,7 @@ public class GraderPool {
     	String operatingMode=graderConfig.getOperating_mode();
     	if(operatingMode.equals(OP_MODE_DOCKER_VM)) {
     		//DOCKER BP
-    		
-        	
-        	//TODO: this is always *.jar since we build this plugin, right?
-        	//String dockerBpFileExtension="*.jar";
-    		//not used anymore since Dockerproxy is included into grappa webservice
-        	
-    		//TODO remove
-            //log.info("Loading grader plugin '{}' with classpathes '{}'...", graderId, dockerBpClassPath);
-            //backendPluginLoader.configure(Classpath.of(dockerBpClassPath, dockerBpFileExtension));
-    		//DockerProxyBackendPlugin dockerBp=(DockerProxyBackendPlugin)backendPluginLoader.instantiateClass(dockerBpClassName);
-    		
+    		    		
             log.info("Loading grader plugin '{}' with '{}'...", graderId, DockerProxyBackendPlugin.class.getSimpleName());
     		DockerProxyBackendPlugin dockerBp=new DockerProxyBackendPlugin();
     		
@@ -209,12 +198,7 @@ public class GraderPool {
     		String copyGraderPluginDefaultsPropertiesToFile=dockerBPConfig.getCopy_grader_plugin_defaults_properties_to_file();
     		//set prefs
     		dockerBp.setDockerPrefs(dockerHost,imageName, copySubmissionToDirPath, loadResponseFromDirPath, copyGraderPluginDefaultsPropertiesToFile);
-            
-    		//TODO: remove
-    		//backend-starter prefs
-    		//dockerBp.setBackendStarterPrefs(bpClassName,bpRelativeClassPaths,bpFileExtensions);
-    		
-           
+                       
             bp = dockerBp;
 
     	}else if(operatingMode.equals(OP_MODE_LOCAL_VM)) {
@@ -233,45 +217,13 @@ public class GraderPool {
     		//choose ".jar" by default
     		if(bpFileExtensions==null)bpFileExtensions=".jar";
     		
-    		//build classpath 
-    		//add absolute pathes
-    		
-    		
-        	//String gradersHomeDir=GrappaServlet.CONFIG.getGraders_home();
-        	//if(gradersHomeDir==null)throw new IllegalArgumentException(String.format("Missing 'graders_home' definition."));
-        	//String graderSubDir=graderConfig.getSubdir();
-        	//if(graderSubDir==null)throw new IllegalArgumentException(String.format("Missing 'subdir' definition."));
-        	
-    		//String absoluteGraderDir=gradersHomeDir+"/"+graderSubDir;
-        	
+    		//build classpath
     		//collect everything in bpDirectory
-        	String absoluteClassPathes=bpDirectory;        	
+        	String absoluteClassPathes=bpDirectory;
+        	//optionally add absolute pathes
     		if(bpAdditionalAbsoluteClasspathes!=null && !bpAdditionalAbsoluteClasspathes.equals("")){
-    			//add absolute pathes to classpath
     			absoluteClassPathes+=";"+bpAdditionalAbsoluteClasspathes;
-//    			String[] relativeCPsArray=bpRelativeClassPaths.split(";");
-//    			for(String relCP:relativeCPsArray){
-//    				absoluteClassPathes+=absoluteGraderDir+"/"+relCP+";";				
-//    			}
-    			//remove trailing ";"
-//    			absoluteClassPathes=absoluteClassPathes.substring(0, absoluteClassPathes.length() - 1);
     		}
-    		
-//    		GraderHostJvmBpConfig bpConfig=graderConfig.getHost_jvm_bp();
-//    		if(bpConfig!=null){
-//    			String additionalAbsolutePathes=bpConfig.getHostonly_classpathes();
-//    			if(additionalAbsolutePathes!=null && !additionalAbsolutePathes.equals("")){
-//    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+additionalAbsolutePathes;
-//    			}
-//    			String pluginJarName=bpConfig.getPlugin_jar_name();
-//    			if(pluginJarName!=null && !pluginJarName.equals("")){
-//    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+pluginJarName;
-//    			}else{
-//    				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+GRADER_BP_JAR_FILENAME;
-//    			}
-//    		}else{
-//				absoluteClassPathes+=(absoluteClassPathes.length()<1?"":";")+absoluteGraderDir+"/"+GRADER_BP_JAR_FILENAME;
-//    		}
         	
             log.info("Loading grader plugin '{}' with classpathes '{}'...", graderId, absoluteClassPathes);
             backendPluginLoader.configure(Classpath.of(absoluteClassPathes, bpFileExtensions));
