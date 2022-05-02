@@ -44,8 +44,8 @@ class DockerController { // TODO: refactor to ctor(dockerClient, containerId)
         client.stopContainerCmd(containerId).exec();
     }
 
-    public static void removeContainer(DockerClient client, String containerId) throws Exception {
-        client.removeContainerCmd(containerId).exec();
+    public static void removeContainer(DockerClient client, String containerId, boolean forceRemove) throws Exception {
+        client.removeContainerCmd(containerId).withForce(forceRemove).exec();
     }
 
     public static InputStream fetchFile(DockerClient client, String containerId,

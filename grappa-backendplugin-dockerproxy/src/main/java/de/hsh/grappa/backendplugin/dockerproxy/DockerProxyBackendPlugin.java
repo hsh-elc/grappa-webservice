@@ -277,7 +277,7 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
             try {
                 log.debug("[GraderId: '{}', GradeProcId: '{}']: Removing container '{}'...",
                     graderId, gradeProcId, containerId);
-                DockerController.removeContainer(dockerClient, containerId);
+                DockerController.removeContainer(dockerClient, containerId, true);
                 log.debug("[GraderId: '{}', GradeProcId: '{}']: Container removed: '{}'",
                     graderId, gradeProcId, containerId);
             } catch (Exception e) {
