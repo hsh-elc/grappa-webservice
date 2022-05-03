@@ -3,7 +3,7 @@
 This documentation is meant for system admins that _operates_ the Grappa Webservice.
 
 **@Developers**: For implementing backend-plugins, building docker images from baseimage or 
-setting up a test environment, checkout the [developers documentation](documents/concept/developers.md).
+setting up a test environment, checkout the [developers documentation](developers.md).
 
 ## Table of Contents
 1 [Introduction](#1-introduction)<br>
