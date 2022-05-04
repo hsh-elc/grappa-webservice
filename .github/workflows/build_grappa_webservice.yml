@@ -45,7 +45,7 @@ jobs:
       - name: Build with Maven
         run: |
           #mvn --batch-mode --update-snapshots clean package
-          mvn --batch-mode --update-snapshots --projects ${SUBDIR} --also-make clean package
+          mvn --batch-mode --update-snapshots --projects ${SUBDIR} --also-make clean package -DskipTests
 
       - name: Upload war file as artifact
         uses: actions/upload-artifact@v3
