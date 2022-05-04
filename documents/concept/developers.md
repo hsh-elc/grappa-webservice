@@ -62,12 +62,14 @@ Example backend-plugins/actions:
 	* eg. grader version: `2.1` -> backend plugin version `2.1.0`
 	* eg. grader version: `0.1b` -> backend plugin version `0.1b.13`
 
+* Images of develop branches get the branch name as postfix.
+	* eg. `develop` branch of grader version: `2.1` -> backend plugin version `2.1.0-develop`
+
 * Additionally the image of the current `master` branch gets the tag `latest` also
 	```
 	docker tag <image-name-of-current-master> <image-name>:latest
 	docker push <image-name>:latest
 	```
-<!-- * ...for every other branch there will be added the postfix `dev` to the tag -->
 
 * Note: For production you should always choose one fix version tag within `grappa-config.yaml`
 

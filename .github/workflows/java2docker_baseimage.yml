@@ -77,10 +77,24 @@ jobs:
 
       - name: Push image
         env:
-          IMAGE_TAG: ${{ env.RELEASE_VERSION }}
+          IMAGE_VERSION: ${{ env.RELEASE_VERSION }}
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
-          docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
-          docker tag $IMAGE_NAME $IMAGE_ID:latest
-          docker push $IMAGE_ID:$IMAGE_TAG
-          docker push $IMAGE_ID:latest
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # Get branch name and repace special chars into "-"
+          BRANCH=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')
+          echo "-current branch: '${BRANCH}'"
+          if [[ "$BRANCH" == "master" ]]; then
+            IMAGE_TAG=$IMAGE_VERSION
+            # Use Docker `latest` tag convention
+            docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
+            docker tag $IMAGE_NAME $IMAGE_ID:latest
+            docker push $IMAGE_ID:$IMAGE_TAG
+            docker push $IMAGE_ID:latest
+          else
+            # develop branch
+            IMAGE_TAG="${IMAGE_VERSION}-${BRANCH}"
+            docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
+            docker push $IMAGE_ID:$IMAGE_TAG
+          fi
