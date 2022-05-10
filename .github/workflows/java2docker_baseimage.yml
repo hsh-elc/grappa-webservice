@@ -5,12 +5,16 @@ on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches:
-      - 'dev/kilian_21'
+      - 'develop'
+      #- 'master'
     paths:
       - 'grappa-backendstarter/**'
-  #pull_request:
-  #  branches:
-  #    - 'dev/kilian_21'
+  pull_request:
+    branches:
+      - 'develop'
+      #- 'master'
+    paths:
+      - 'grappa-backendstarter/**'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -18,12 +22,6 @@ env:
   # image name for this workflow
   IMAGE_NAME: grappa-backend-base
   SUBDIR: grappa-backendstarter
-
-#defaults:
-#  run:
-    # sub-directory for this workflow
-#    working-directory: grappa-backendstarter
-
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -53,15 +51,12 @@ jobs:
 
       - name: Build with Maven
         run: |
-          #mvn --batch-mode --update-snapshots clean package
           mvn --batch-mode --update-snapshots --projects ${SUBDIR} --also-make clean package
 
       - name: Collect jar-Files
         env:
           JAR_WITH_DEPS: ${{ env.SUBDIR }}-${{ env.RELEASE_VERSION }}-jar-with-dependencies.jar
         run: |
-          #cp target/*.jar docker/starter/
-          #cp target/$JAR_WITH_DEPS docker/starter/grappa-backendstarter.jar
           cp ${SUBDIR}/target/$JAR_WITH_DEPS ${SUBDIR}/docker/starter/grappa-backendstarter.jar
 
       #login before building, so private baseimage is available

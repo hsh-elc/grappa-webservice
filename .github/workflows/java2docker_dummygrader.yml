@@ -5,12 +5,16 @@ on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches:
-      - 'dev/kilian_21'
+      - 'develop'
+      #- 'master'
     paths:
       - 'grappa-backendplugin-dummygrader/**'
-  #pull_request:
-  #  branches:
-  #    - 'dev/kilian_21'
+  pull_request:
+    branches:
+      - 'develop'
+      #- 'master'
+    paths:
+      - 'grappa-backendplugin-dummygrader/**'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -25,13 +29,7 @@ env:
   IMAGE_NAME: grappa-backend-dummygrader
   # only this subdir will be built
   SUBDIR: grappa-backendplugin-dummygrader
-
-
-#defaults:
-#  run:
-    # sub-directory for this workflow
-#    working-directory: grappa-backendplugin-dummygrader
-
+  
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -61,14 +59,12 @@ jobs:
 
       - name: Build with Maven
         run: |
-          #mvn --batch-mode --update-snapshots clean package
           mvn --batch-mode --update-snapshots --projects ${SUBDIR} --also-make clean package
 
       - name: Collect jar-Files
         env:
           JAR_WITH_DEPS: ${{ env.SUBDIR }}-${{ env.RELEASE_VERSION }}-jar-with-dependencies.jar
         run: |
-          #cp target/*.jar docker/grader/
           cp ${SUBDIR}/target/$JAR_WITH_DEPS ${SUBDIR}/docker/grader/
 
       #login before building, so private baseimage is available

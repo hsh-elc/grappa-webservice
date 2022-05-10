@@ -1,14 +1,15 @@
-name: Build Grapp Webservice
+name: Build Grappa Webservice
+# Builds the grappa war-file as an artifact
 
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches:
-      - 'dev/kilian_21'
-  #pull_request:
-  #  branches:
-  #    - 'dev/kilian_21'
+      - 'develop'
+  pull_request:
+    branches:
+      - 'develop'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
