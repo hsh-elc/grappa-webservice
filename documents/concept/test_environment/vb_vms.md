@@ -6,6 +6,7 @@ as a group in VirtualBox connected with a Host-only-network (I'm sure if there's
 
 Note: Especially the chars "..." in this document imply TBD-sections...
 
+Overview:
 - ["HW" Setup](#-hw--setup)
   * [Moodle Machine](#moodle-machine)
   * [Grappa Machine](#grappa-machine)

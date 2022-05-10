@@ -19,7 +19,7 @@
         <de.hsh.grappa.grappa-util.version>0.1</de.hsh.grappa.grappa-util.version>
         <de.hsh.grappa.grappa-backendplugin.version>0.1</de.hsh.grappa.grappa-backendplugin.version>
         <de.hsh.grappa.grappa-backendplugin-dockerproxy.version>0.1</de.hsh.grappa.grappa-backendplugin-dockerproxy.version>
-        <de.hsh.grappa.grappa-webservice.version>2.0.1</de.hsh.grappa.grappa-webservice.version>
+        <de.hsh.grappa.grappa-webservice.version>2.2.0</de.hsh.grappa.grappa-webservice.version>
         <proforma.proformaxml.version>0.1</proforma.proformaxml.version>
         <proforma.proformautil.version>0.1</proforma.proformautil.version>
         <proforma.proformaxml-2-1.version>0.1</proforma.proformaxml-2-1.version>
