@@ -1,0 +1,103 @@
+name: Java2Docker Dummygrader
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches:
+      - 'develop'
+      #- 'master'
+    paths:
+      - 'grappa-backendplugin-dummygrader/**'
+  pull_request:
+    branches:
+      - 'develop'
+      #- 'master'
+    paths:
+      - 'grappa-backendplugin-dummygrader/**'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+  # Triggers when a new base image was pushed (when the action building base image has completed)
+  workflow_run:
+    workflows: ["Java2Docker Baseimage"]
+    types:
+      - completed
+
+env:
+  # image name for this workflow
+  IMAGE_NAME: grappa-backend-dummygrader
+  # only this subdir will be built
+  SUBDIR: grappa-backendplugin-dummygrader
+  
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    name: Build Maven Project, Docker Image and push it to Registry
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+          cache: maven
+
+      - name: Set Release version env variable
+        run: |
+          cd ${SUBDIR}
+          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      - name: Build with Maven
+        run: |
+          mvn --batch-mode --update-snapshots --projects ${SUBDIR} --also-make clean package
+
+      - name: Collect jar-Files
+        env:
+          JAR_WITH_DEPS: ${{ env.SUBDIR }}-${{ env.RELEASE_VERSION }}-jar-with-dependencies.jar
+        run: |
+          cp ${SUBDIR}/target/$JAR_WITH_DEPS ${SUBDIR}/docker/grader/
+
+      #login before building, so private baseimage is available
+      - name: Log in to registry
+        # This is where you will update the PAT to GITHUB_TOKEN
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build image
+        run: |
+          cd ${SUBDIR}/docker
+          docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+
+      - name: Push image
+        env:
+          IMAGE_VERSION: ${{ env.RELEASE_VERSION }}
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # Get branch name and repace special chars into "-"
+          BRANCH=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')
+          echo "-current branch: '${BRANCH}'"
+          if [[ "$BRANCH" == "master" ]]; then
+            IMAGE_TAG=$IMAGE_VERSION
+            # Use Docker `latest` tag convention
+            docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
+            docker tag $IMAGE_NAME $IMAGE_ID:latest
+            docker push $IMAGE_ID:$IMAGE_TAG
+            docker push $IMAGE_ID:latest
+          else
+            # develop branch
+            IMAGE_TAG="${IMAGE_VERSION}-${BRANCH}"
+            docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
+            docker push $IMAGE_ID:$IMAGE_TAG
+          fi

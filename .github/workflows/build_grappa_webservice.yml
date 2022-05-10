@@ -1,0 +1,55 @@
+name: Build Grappa Webservice
+# Builds the grappa war-file as an artifact
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches:
+      - 'develop'
+  pull_request:
+    branches:
+      - 'develop'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  # only this subdir will be built
+  SUBDIR: grappa-webservice
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    name: Build Maven Project
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+          cache: maven
+
+      - name: Set Release version env variable
+        run: |
+          cd ${SUBDIR}
+          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      - name: Build with Maven
+        run: |
+          #mvn --batch-mode --update-snapshots clean package
+          mvn --batch-mode --update-snapshots --projects ${SUBDIR} --also-make clean package -DskipTests
+
+      - name: Upload war file as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.SUBDIR }}
+          path: ${{ env.SUBDIR }}/target/grappa-webservice-*.war

@@ -1,4 +1,9 @@
-# Grappa Web service 
+# Grappa Webservice 
+
+This documentation is meant for system admins that _operates_ the Grappa Webservice.
+
+**@Developers**: For implementing backend-plugins, building docker images from baseimage or 
+setting up a test environment, checkout the [developers documentation](developers.md).
 
 ## Table of Contents
 1 [Introduction](#1-introduction)<br>
@@ -19,8 +24,8 @@
 &nbsp;&nbsp;&nbsp;&nbsp;[Check if a Proforma task is cached](#check-if-a-proforma-task-is-cached)<br>
 4 [Backend Plugin](#4-backend-plugin)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;4.1 [proformaxml module](#41-proformaxml-module)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;4.2 [grappa-backend-plugin-api module](#42-grappa-backend-plugin-api-module)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;4.3 [grappa-backend-plugin-docker-proxy module](#43-grappa-backend-plugin-docker-proxy-module)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.2 [grappa-backendplugin-api module](#42-grappa-common-module)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.3 [grappa-backendplugin-docker-proxy module](#43-grappa-backendplugin-dockerproxy-module)<br>
 5 [Modules](#5-modules)<br>
 6 [Understanding the Submission Process](#6-understanding-the-submission-process)<br>
 <!--- 5 [Docker](#2-internationalization)<br> -->
@@ -47,7 +52,7 @@ A web service for connecting multiple Learn Management Systems to multiple autom
 
 ### 2.2 Prerequisites
 
-Install the software listed in the [System Requirements](21-system-requirements).
+Install the software listed in the [System Requirements](#21-system-requirements).
 
 #### 2.2.1 Installing Redis
 
@@ -87,28 +92,74 @@ The following building and deployment instructions are for Ubuntu Linux.
 
     git clone https://github.com/hsh-elc/grappa-webservice.git
     
-2. Build Docker Images by changing to directory `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker` and then executing the `build-images.sh` script
+2. Pull desired Docker images from ghcr.io:
+	```bash
+	docker pull ghcr.io/hsh-elc/grappa-backend-dummygrader:latest
+	```
+
+	Alternatively you can build images locally.
+	- Baseimage:
+		- Build module `grappa-backendstarter`:
+			```
+			mvn --projects grappa-backendstarter --also-make clean package
+			```
+		- Place file generated jar file in `grappa-backendstarter/docker/starter/`, eg:
+			```
+			cp grappa-backendstarter/target/grappa-backendstarter-0.1-jar-with-dependencies.jar grappa-backendstarter/docker/starter/
+			```
+		- Build the baseimage:
+			```bash
+			docker build -t grappa-backend-base ./grappa-backendstarter/docker
+			```
+	- Dummygrader:
+		- Build module `grappa-backendplugin-dummygrader`:
+			```
+			mvn --projects grappa-backendplugin-dummygrader --also-make clean package
+			```
+		- Place file  generated jar file in `grappa-backendplugin-dummygrader/docker/grader/`.
+			```
+			cp grappa-backendplugin-dummygrader/target/grappa-backendplugin-dummygrader-0.1-jar-with-dependencies.jar` in `grappa-backendplugin-dummygrader/docker/grader/`.
+			```
+		- Edit first line of `grappa-backendplugin-dummygrader/docker/Dockerfile` from 
+			```
+			FROM ghcr.io/hsh-elc/grappa-backend-base:latest
+			```
+			into 
+			```
+			FROM grappa-backend-base:latest
+			```
+			to use the above built baseimage.
+		- Build Dummygrader image:
+			```bash
+			docker build -t grappa-backend-dummygrader ./grappa-backendplugin-dummygrader/docker
+			```	
+	- To use just created Dummygrader image set `image_name` to `grappa-backend-dummygrader` in `grappa-config.yaml`.
+	
+<!--Build Docker Images by changing to directory `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker` and then executing the `build-images.sh` script
 
 Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker/` directory, specifically its docker, shell and JAR files will require re-executing the `build-images.sh` script to take effect. This includes changes to the `grappa-grader-backend-starter` module, as well as adding and changing grader Backend Plugins.
+-->
 
 3. Navigate to Grappa's root directory `grappa-webservice/` and build the web application resource using maven.
-
+	```
     mvn install package -DskipTests
+    ```
     
 *Note: skipping tests is recommended at this point, since running the tests requires the web service to be already deployed and running in Tomcat. Not skipping the tests will not affect the build process in any way, but it will result in additional error messages on part of the maven-test-plugin.* 
 
-4. Copy the resulting WAR file `grappa-webservice/grappa-webservice/target/grappa-webservice-2.M.N.jar`  to Tomcat's webapps directory (`CATALINA_BASE/webapps/grappa-webservice-2.jar`)
+4. Copy the resulting WAR file `grappa-webservice/grappa-webservice/target/grappa-webservice-2.M.N.war`  to Tomcat's webapps directory (`CATALINA_BASE/webapps/grappa-webservice-2.war`)
 
 5. Configure Grappa
 
-  - copy file `grappa-webservice/grappa-webservice/src/main/resources/grappa-config.yaml.example` to `/etc/grappa/` (or `C:/etc/grappa/` on a Windows-based system) and remove the `.example` part
-  -  refer to section [Configuration](#24-configuration) for more details
+    - copy file `grappa-webservice/grappa-webservice/src/main/resources/grappa-config.yaml.example` to `/etc/grappa/` (or `C:/etc/grappa/` on a Windows-based system) and remove the `.example` part
+    -  refer to section [Configuration](#24-configuration) for more details
   
-5. Run Tomcat (e.g. `sudo systemctl start tomcat`)
+6. Run Tomcat (e.g. `sudo systemctl start tomcat`)
 
-  - you may want to test the web service locally by using a GET request to the [serivce's status endpoint](get-web-service-status) using  `curl` like so: `curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2/rest`, with `test:test` being the LMS ID and password hash, respectively
+    - you may want to test the web service locally by using a GET request to the [serivce's status endpoint](get-web-service-status) using  `curl` like so: `curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2/rest`, with `test:test` being the LMS ID and password hash, respectively
 
-6. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2/rest`
+7. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2/rest`.  
+	Note to set name here according to filename in step 4.
 
 ### 2.4 Configuration
 
@@ -117,6 +168,17 @@ Any changes to Grappa's configuration file will require a web service restart to
 Grappa's configuration file's location and file name must be `/etc/grappa/grappa-config.yaml`.
 
 An example file can be found in [`grappa-webservice/src/main/resources/grappa-config.yaml.example`](../../grappa-webservice/src/main/resources/grappa-config.yaml.example).
+
+#### 2.4.1 Grader-specific Properties
+
+You can give properties (key/value pairs only) to the backend plugin within the `grappa-config.yaml`.
+For each grading these properties will be forwarded to the backend plugin.
+```yaml
+grader_plugin_defaults:
+    my.property.1: "value 1"
+    another.property: 42
+```
+Note: The input syntax here is yaml (`": "` instead of `"="`).
 
 ## 3 REST API
 
@@ -573,7 +635,7 @@ There are two different ways to pass a submission to a grader system from within
 TODO: uml class diagram of proformaxml, plugin-api and an example grader.
 -->
 
-Grappa (as well as the [docker-proxy module](#43-grappa-backend-plugin-docker-proxy-module)) passes a Proforma submission as a byte array resource to a backend plugin. This is because a submission resource needs to be in a suitable storage format so it can be transmitted between different parts of the service system (e.g. different parts of the service running on different systems, such as physical servers, Vagrant and Docker environments).
+Grappa (as well as the [dockerproxy module](#43-grappa-backendplugin-dockerproxy-module)) passes a Proforma submission as a byte array resource to a backend plugin. This is because a submission resource needs to be in a suitable storage format so it can be transmitted between different parts of the service system (e.g. different parts of the service running on different systems, such as physical servers, Vagrant and Docker environments).
 
 #### Passing a Proforma submission as a blob resource
 
@@ -610,7 +672,9 @@ public class PythonGrader extends BackendPlugin {
 }
 ```
 
-### 4.3 grappa-backend-plugin-docker-proxy module
+Properties delivered in `init(Properties properties)` coming from `grader_plugin_defaults` within `grappa-config.yaml` (see [2.4.1 Grader-specific Properties](#241-grader-specific-properties))
+
+### 4.3 grappa-backendplugin-dockerproxy module
 
 A grader pool may use a docker proxy backend plugin acting as a layer in between Grappa and the 'real' grader backend plugin that resides within a Docker container. 
 Every submission request is delegated from the proxy plugin to the real grader plugin.
@@ -628,10 +692,6 @@ That configuration file would look something like follows:-->
 
 ```
 docker_proxy:
-    # The class path and name to the grappa-backendplugin-dockerproxy
-    class_path: "/usr/local/graders/docker-proxy/grappa-backendplugin-dockerproxy.jar"
-    # dot-style java-class fully qualified name of the grappa-backendplugin-dockerproxy
-    class_name: "de.hsh.grappa.backendplugin.dockerproxy.DockerProxyBackendPlugin"
     # docker host uri (including port)
     host: "tcp://127.0.0.1:2376"
 ```

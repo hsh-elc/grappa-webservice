@@ -48,10 +48,6 @@ lms:
     # (temporary switch, default: false)
     eietamtf: false
 
-# Parent directory of all graders running within host's JVM. 
-# Below this directory there is one subdirectory per backend-plugin.
-graders_home: "/usr/local/graders"
-
 # The graders part
 # Every grader definition here represents a grader pool
 # with a specified number of grader instances in that pool.    
@@ -106,28 +102,6 @@ graders:
     # default value is false
     show_stacktrace: false
 
-    # Name of the subdirectory below 'graders_home', where jars 
-    # of the grader backendplugin are installed.
-    # Mandatory.
-    subdir: "dummygrader" 
-    
-    # Dot-style java-class fully qualified name of the graderbackend plugin.
-    # This class is expected in classpath, in 'host_jvm_bp.plugin_jar_name', 
-    # or optionally in {graders_home}/{subdir}/graderBP.jar.
-    # Mandatory.
-    backend_plugin_classname: "de.hsh.grappa.backendplugin.dummygrader.DummyGrader"
-    
-    # Semicolon separated relative path(es) below {graders_home}/{subdir} 
-    # to files or directories that are to be loaded to the classpath.
-    # The file {graders_home}/{subdir}/graderBP.jar does not need to be mentioned here, 
-    # since it is loaded by default.
-    # Optional. Default: (empty string)
-    relative_classpathes: ""
-    
-    # Semicolon separated file extensions that grappa should load to the classpath.
-    # Optional. Default value: .jar
-    fileextensions: ".jar"
-    
     # Grader-specific properties
     # Properties (key/value pairs only) set here, will be forwarded to backend plugin 
     # before each grading process.
@@ -136,24 +110,44 @@ graders:
     grader_plugin_defaults:
       my.property.1: "value 1"
       another.property: 42
-      
+    
+    #actually not supported for host_jvm
+    #optional: defautl host-settings (host-mashine)
+    file_encoding: UTF-8
+    user_language: de   # en
+    user_country: DE  # US
+  
     # Decides whether the grader will be run in host's JVM or within a docker-container.
     # Mandatory. Possible values: host_jvm_bp | docker_jvm_bp 
     operating_mode: host_jvm_bp
     #operating_mode: docker_jvm_bp
 
-    # Additional preferences for running grader in host's JVM only
-    # Optional.
+    # Additional preferences for running grader in host's JVM.
+    # Mandatory if 'operating_mode' was set to 'host_jvm_bp'
     host_jvm_bp:
-        # Semicolon separated absolute path(es) to files or directories that are to be 
-        # loaded to the classpath when running on the host's JVM.
-        # Optional. Default: (empty string)
-        # hostonly_classpathes: "/usr/local/whatever/lib.jar"
+        # Directory where the grader backendplugin is installed.
+        # In this directory all given fileextensions will be added to classpath recursivly.
+        # Mandatory.
+        dir: "/usr/local/graders/dummygrader" 
         
-        # Name of jar-file of the backend plugin below {graders_home}/{subdir}.
-        # Optional. Default value: graderBP.jar
-        plugin_jar_name: "DummyGraderGrappaV2.jar"
+        # Semicolon separated absolute path(es) to files or directories that are to be 
+        # loaded to the classpath when running on the host's JVM that are not installed in
+        # directory `dir` above.
+        # Optional. Default: (empty string)
+        #additional_absolute_classpathes: "/lib/xy;/lib/z.jar"
+        
+        # Semicolon separated file extensions that grappa should load to the classpath 
+        # from `dir` resp. `additional_absolute_classpathes`.
+        # Optional. Default value: ".jar" (Possible values: ".jar;.class;.zip")
+        #fileextensions: ".jar;.class;.zip"
 
+        # Dot-style java-class fully qualified name of the graderbackend plugin (extending 
+        # the class `de.hsh.grappa.backendplugin.BackendPlugin`).
+        # This class is expected within classpath collected from `dir` above.
+        # Mandatory.
+        backend_plugin_classname: "de.hsh.grappa.backendplugin.dummygrader.DummyGrader"
+
+    # Additional preferences for running grader using the Docker proxy.
     # Mandatory if 'operating_mode' was set to 'docker_jvm_bp'
     docker_jvm_bp:        
         # The Name of the docker image to create a container from. 
@@ -161,15 +155,29 @@ graders:
         # For registries different from local or DockerHub the general design of this name
         # is: registry:port/repo/image:tag
         # Mandatory.
-        image_name: "grappa-backend-dummygrader"
-        
-        # Username with readonly-access and password or PAT to retrieve a private image.
-        # Optional.
-        # Currently not used.
-        #username:
-        #password_pat:
+        image_name: "ghcr.io/hsh-elc/grappa-backend-dummygrader:latest"
+                
+        # Following settings are only necessary, if you choose an independent grader not 
+        # extending Grappa's Backendplugin API. Leave commented if not sure ;)
+        # Make sure directories defined below exist already within your Docker image.
 
-# Defines classpath and classname for locally installed Docker proxy backend plugin,
+        # Directory within the container to place the submission (`submission.zip` resp. 
+        # `submission.xml`).
+        # Optional. Default: "/var/grb_starter/tmp"
+        #copy_submission_to_dir_path: /where/should/the/submission/be/placed
+        
+        # Directory within the container to retrieve the response from (`response.zip` 
+        # resp. `submission.xml`).
+        # Optional. Default: "/var/grb_starter/tmp"
+        #load_response_from_dir_path: /where/is/response/expected
+        
+        # Absolute file-path within the container to place the properties-file containing
+        # properties defined in `grader_plugin_defaults` above.
+        # Optional. Default: "/opt/grader/graderBP.properties"
+        #copy_grader_plugin_defaults_properties_to_file: /where/to/place/graderBP.properties
+
+
+# Defines Docker preferences for the host machine affecting the Docker proxy backend plugin,
 # acting as a layer in between Grappa and the 'real' grader backend plugin that resides 
 # within a Docker container. Every submission request is delegated to the real grader 
 # plugin. This only needs to be defined if at least one grader uses grappa-backend-plugin-
@@ -177,11 +185,8 @@ graders:
 # plugin if Docker is not intended to be used. In that case, choose 
 # 'operating_mode: host_jvm_bp' for all graders.
 docker_proxy:
-    # The class path and name to the grappa-backendplugin-dockerproxy
-    class_path: "/usr/local/graders/docker-proxy/grappa-backendplugin-dockerproxy.jar"
-    # dot-style java-class fully qualified name of the grappa-backendplugin-dockerproxy
-    class_name: "de.hsh.grappa.backendplugin.dockerproxy.DockerProxyBackendPlugin"
     # docker host uri (including port)
+    # Mandatory
     host: "tcp://127.0.0.1:2375"
 
 # Storage part
