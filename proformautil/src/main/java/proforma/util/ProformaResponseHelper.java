@@ -28,6 +28,7 @@ public abstract class ProformaResponseHelper extends ProformaHelper {
     @Deprecated
     public abstract ResponseResource createInternalErrorResponse(String errorMessage, SubmissionResource subm, TaskBoundary tb, Audience audience, @Deprecated boolean isExpectedInternalErrorTypeAlwaysMergedTestFeedback) throws Exception;
 
+    public abstract boolean hasInternalError(ResponseResource responseResource) throws Exception;
     
     public abstract AbstractResponseType createMergedTestFeedbackResponse(String feedbackString, BigDecimal score, String submissionId, String graderEngineName);
 

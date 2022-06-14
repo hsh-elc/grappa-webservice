@@ -17,24 +17,7 @@ import proforma.util.resource.ResponseResource;
 import proforma.util.resource.SubmissionResource;
 import proforma.xml.AbstractProformaType;
 import proforma.xml.AbstractResponseType;
-import proforma.xml21.FeedbackLevelType;
-import proforma.xml21.FeedbackListType;
-import proforma.xml21.FeedbackType;
-import proforma.xml21.GraderEngineType;
-import proforma.xml21.MergedTestFeedbackType;
-import proforma.xml21.OverallResultType;
-import proforma.xml21.ResponseFileType;
-import proforma.xml21.ResponseFilesType;
-import proforma.xml21.ResponseMetaDataType;
-import proforma.xml21.ResponseType;
-import proforma.xml21.ResultType;
-import proforma.xml21.SeparateTestFeedbackType;
-import proforma.xml21.SubmissionType;
-import proforma.xml21.TaskType;
-import proforma.xml21.TestResponseType;
-import proforma.xml21.TestResultType;
-import proforma.xml21.TestType;
-import proforma.xml21.TestsResponseType;
+import proforma.xml21.*;
 import proforma.xml21.FeedbackType.Content;
 
 /**
@@ -201,11 +184,38 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
         ResponseType resp = createUnknownGraderEngineResponse(merged, separate);
         
         return new ResponseLive(resp, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA)).getResource();
-//
-//        String responseXml = XmlUtils.marshalToXml(resp, ResponseType.class);
-//        return new ResponseResource(responseXml.getBytes(StandardCharsets.UTF_8), MimeType.XML);
     }
-    
+
+    @Override
+    public boolean hasInternalError(ResponseResource responseResource) throws Exception {
+        ResponseLive responseLive = new ResponseLive(responseResource);
+        ResponseType resp = responseLive.getResponse();
+
+        if (null != resp.getMergedTestFeedback()) {
+            return resp.getMergedTestFeedback().getOverallResult().isIsInternalError();
+        }
+
+        if (null != resp.getSeparateTestFeedback()) {
+            TestsResponseType testsResponse = resp.getSeparateTestFeedback().getTestsResponse();
+            if (null != testsResponse) {
+                for (TestResponseType test : testsResponse.getTestResponse()) {
+                    if (null != test.getTestResult()) {
+                        if (test.getTestResult().getResult().isIsInternalError())
+                            return true;
+                    } else {
+                        SubtestsResponseType subtestsResponse = test.getSubtestsResponse();
+                        for (SubtestResponseType subtest : subtestsResponse.getSubtestResponse()) {
+                            if (subtest.getTestResult().getResult().isIsInternalError())
+                                return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public ResponseType createMergedTestFeedbackResponse(String feedbackString, BigDecimal score, String submissionId, String graderEngineName) {
         MergedTestFeedbackType mtf = new MergedTestFeedbackType();
@@ -246,6 +256,5 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
 		}
 		return list;
 	}
-
 
 }
