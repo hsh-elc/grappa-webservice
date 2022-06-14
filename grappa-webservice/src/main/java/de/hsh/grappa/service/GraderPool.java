@@ -43,6 +43,7 @@ import proforma.util.ProformaResponseHelper.Audience;
 import proforma.util.ProformaVersion;
 import proforma.util.SubmissionLive;
 import proforma.util.boundary.Boundary;
+import proforma.util.div.Strings;
 import proforma.util.div.XmlUtils;
 import proforma.util.exception.NotFoundException;
 import proforma.util.resource.ResponseResource;
@@ -91,8 +92,10 @@ public class GraderPool {
             throw new IllegalArgumentException(String.format("concurrent_grading_processes must not be less than 1 " +
                 "for graderId '%s'.", graderConfig.getConcurrent_grading_processes()));
 
-        log.info("Using grader '{}' with {} concurrent instances.",
-            graderConfig.getId(), graderConfig.getConcurrent_grading_processes());
+        String opMode = Strings.isNullOrEmpty(graderConfig.getOperating_mode()) ? "UNKNOWN" :
+            graderConfig.getOperating_mode();
+        log.info("Using grader '{}' with {} concurrent instances in {} mode.",
+            graderConfig.getId(), graderConfig.getConcurrent_grading_processes(), graderConfig.getOperating_mode());
         this.semaphore = new Semaphore(graderConfig.getConcurrent_grading_processes());
         this.graderWorkersMgr = graderManager;
 
