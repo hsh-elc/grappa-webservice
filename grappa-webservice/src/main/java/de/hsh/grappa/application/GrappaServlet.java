@@ -52,6 +52,8 @@ public class GrappaServlet implements ServletContextListener {
             setupRedisConnection();
             //loadGradingEnvironmentSetups();
             GraderPoolManager.getInstance().init(CONFIG.getGraders());
+            // set logging level after the initial and interesting infos have been logged
+            setLoggingLevel(Level.toLevel(CONFIG.getService().getLogging_level()));
             graderPoolManagerThread = new Thread(GraderPoolManager.getInstance());
             graderPoolManagerThread.start();
         } catch (Exception e) {
@@ -76,6 +78,7 @@ public class GrappaServlet implements ServletContextListener {
     }
 
     public void setLoggingLevel(Level level) {
+        log.info("Setting logging level to {}", level);
         ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("de.hsh.grappa");
         root.setLevel(level);
         root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory
@@ -90,7 +93,6 @@ public class GrappaServlet implements ServletContextListener {
             var configFile = new File(CONFIG_FILENAME_PATH);
             CONFIG = mapper.readValue(configFile, GrappaConfig.class);
             CONFIG.propagateLoggingLevelToGraders();
-            setLoggingLevel(Level.toLevel(CONFIG.getService().getLogging_level()));
             log.info("Config file loaded: {}", CONFIG.toString());
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -98,17 +100,12 @@ public class GrappaServlet implements ServletContextListener {
     }
 
     private void setupRedisConnection() throws Exception {
-        //redis = new RedisController(CONFIG.getCache());
-        //redis.init();
         RedisController.getInstance().init(CONFIG.getCache());
         log.info("Testing redis connection...");
         if (RedisController.getInstance().ping()) {
             log.info("Redis connection established");
         } else {
-            log.error("Redis connection could not be established.");
-            // TODO: System.exit(-1) shut down service
-            // but then again, the connection could be established at
-            // a later time... like when someone does systemctl start redis
+            log.error("Redis connection could not be established. Is the service down?");
         }
     }
 
