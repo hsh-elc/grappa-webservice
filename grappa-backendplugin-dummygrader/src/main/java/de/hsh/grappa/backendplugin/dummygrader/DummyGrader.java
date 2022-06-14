@@ -1,14 +1,10 @@
 package de.hsh.grappa.backendplugin.dummygrader;
 
-import proforma.util.ProformaAttachedTxtFileHandle;
-import proforma.util.ProformaLiveObject;
-import proforma.util.ProformaSubmissionFileHandle;
-import proforma.util.ProformaSubmissionSubmissionHandle;
-import proforma.util.ProformaSubmissionTaskHandle;
-import proforma.util.ProformaSubmissionZipPathes;
-import proforma.util.ResponseLive;
-import proforma.util.SubmissionLive;
-import proforma.util.TaskLive;
+import ch.qos.logback.classic.Level;
+import de.hsh.grappa.backendplugin.BackendPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import proforma.util.*;
 import proforma.util.boundary.ResourceDownloader.Resource;
 import proforma.util.div.FilenameUtils;
 import proforma.util.div.StringEscapeUtils;
@@ -26,15 +22,12 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Properties;
 import java.util.Scanner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Level;
-import de.hsh.grappa.backendplugin.BackendPlugin;
 
 /**
  * The dummy grader process the submission and grades a score based on the content of the submitted
@@ -192,11 +185,17 @@ public class DummyGrader extends BackendPlugin {
         printZipContent(feedback, submissionLive);
     }
     
-    
     @Override
     public ResponseResource grade(SubmissionResource submissionResource) throws Exception {
         SubmissionLive submissionLive= new SubmissionLive(submissionResource);
-        
+
+        if (submissionContainsErrorFile(submissionLive)) {
+            final String errorMessage = "DummyGrader detected <code>error.txt</code> file in submission, returned " +
+                "response with <code>is-internal-error</code> set to <code>true</code>.";
+            return submissionLive.getProformaVersion().getResponseHelper().createInternalErrorResponse(errorMessage,
+                submissionResource, getBoundary(), ProformaResponseHelper.Audience.BOTH);
+        }
+
         StringBuilder feedback = new StringBuilder("<h4>This is dummy feedback from the dummy grader</h4>");
         feedback.append("Local time: ").append(LocalDateTime.now());
         
@@ -262,18 +261,31 @@ public class DummyGrader extends BackendPlugin {
         
         ResponseLive responseLive = new ResponseLive(response, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA));
         return responseLive.getResource();
-        
-        // old version
-        //return oldGrade(submissionResource);
     }
-    
-//    private ResponseResource oldGrade(SubmissionResource submissionResource) throws Exception {
-//        TimeUnit.SECONDS.sleep(ThreadLocalRandom.current().nextInt(2, 6));
-//        AbstractSubmissionType submPojo = ProformaConverter.convertToPojo(submissionResource);
-//        return new ResponseResource(IOUtils.toByteArray(createResponse()), MimeType.ZIP);
-//    }
-//    
-//    private InputStream createResponse() {
-//        return DummyGrader.class.getResourceAsStream("/oldresponse.zip");
-//    }
+
+    /**
+     * Check if the submission contains an attached or embedded text file named 'error.txt'
+     *
+     * @param submissionLive
+     * @return true if the submission contains error.txt file, otherwise false
+     * @throws Exception
+     */
+    private boolean submissionContainsErrorFile(SubmissionLive submissionLive) throws Exception {
+        final Path errorFile = Paths.get("error.txt");
+        ProformaSubmissionSubmissionHandle pssh = submissionLive.getSubmissionSubmissionHandle(getBoundary());
+        if (pssh.hasSubmissionFiles()) {
+            for (ProformaSubmissionFileHandle fi : pssh.submissionFilesHandle().getSubmissionFileHandles()) {
+                if (fi.embeddedTxtFileHandle().get() != null) {
+                    if (Paths.get(fi.embeddedTxtFileHandle().getFilename().toLowerCase()).compareTo(errorFile) == 0)
+                        return true;
+                } else if (fi.attachedTxtFileHandle().get() != null) {
+                    if (Paths.get(fi.attachedTxtFileHandle().getPath().toLowerCase()).compareTo(errorFile) == 0)
+                        return true;
+                }
+            }
+        } else if (pssh.hasExternalSubmission()) {
+            // TODO
+        }
+        return false;
+    }
 }
