@@ -14,7 +14,14 @@
 		</encoder>
 	</appender>
 
-	<property name="logDirectory" value="${catalina.base}/logs" />	
+	<if condition='isDefined("catalina.base")'>
+		<then>
+			<property name="logDirectory" value="${catalina.base}/logs" />
+		</then>
+		<else>
+			<property name="logDirectory" value="./target/logs" />
+		</else>
+	</if>
 	<appender name="SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
 	    <discriminator class="de.hsh.grappa.log.AppNameDiscriminator"/>
 	    <sift>
