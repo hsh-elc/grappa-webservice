@@ -348,8 +348,8 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
         byte[] bpPropsByteArray = generateBackendPluginPropertiesByteArray();
 
         Path p = Paths.get(graderBpPropertiesDirectoryPath);
-        String bpPropsFileName = p.getFileName().toString();
-        String bpPropsDirectory = p.getParent().toString();
+        String bpPropsFileName = FilenameUtils.separatorsToUnix(p.getFileName().toString());
+        String bpPropsDirectory = FilenameUtils.separatorsToUnix(p.getParent().toString());
 
         log.info("[GraderId: '{}', GradeProcId: '{}']: Copying grader properties file '{}' to docker container.", graderId, gradeProcId,
             FilenameUtils.separatorsToUnix(Paths.get(bpPropsDirectory, bpPropsFileName).toString()));
