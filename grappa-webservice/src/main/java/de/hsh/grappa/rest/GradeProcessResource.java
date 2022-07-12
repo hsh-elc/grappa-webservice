@@ -5,6 +5,7 @@ import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.util.Json;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import proforma.util.resource.MimeType;
 import proforma.util.resource.ResponseResource;
 
@@ -79,29 +80,26 @@ public class GradeProcessResource {
                     gradeProcessId);
                 return resp.type(MediaType.MULTIPART_FORM_DATA).build();
             }
-        } else if (-1 != (queuedSubmPos = RedisController.getInstance().getQueuedSubmissionIndex(gradeProcessId))) {
-            log.debug("[GradeProcId: '{}']: Submission is still queued at position {}.",
-                gradeProcessId, queuedSubmPos);
-            //String gradeProcIdResponse = Json.createJsonKeyValueAsString("gradeProcessId", gradeProcId);
-            long estimatedSecondsRemaining =
-                GraderPoolManager.getInstance()
+        } else {
+            long estimatedSecondsRemaining = 1; // is there a better default value if the real one is unavailable?
+            try {
+                estimatedSecondsRemaining = GraderPoolManager.getInstance()
                     .getEstimatedSecondsUntilGradeProcIdIsFinished(gradeProcessId);
+            } catch(Exception e) {
+                log.error("Could not estimate seconds remaining");
+                log.error(e.getMessage());
+                log.error(ExceptionUtils.getStackTrace(e));
+                throw new proforma.util.exception.NotFoundException(String.format("gradeProcessId '%s' was neither found in " +
+                    "the submission queue nor in an active grading process.", gradeProcessId));
+            }
             String jsonResp = Json.createJsonKeyValueAsString(new String[][] {
                 {"estimatedSecondsRemaining", String.valueOf(estimatedSecondsRemaining)}
             });
             return Response.status(Response.Status.ACCEPTED).entity(jsonResp)
                 .type(MediaType.APPLICATION_JSON + "; charset=utf-8").build();
         }
-        else if (GraderPoolManager.getInstance().isGradeProcIdBeingGradedRightNow(gradeProcessId)) {
-            log.debug("[GradeProcId: '{}']: Submission is being graded right now.", gradeProcessId);
-            String jsonResp = Json.createJsonKeyValueAsString(new String[][] {
-                {"estimatedGradingSeconds", String.valueOf(avgGradingSeconds)}
-            });
-            return Response.status(Response.Status.ACCEPTED).entity(jsonResp)
-                .type(MediaType.APPLICATION_JSON + "; charset=utf-8").build();
-        }
-        throw new proforma.util.exception.NotFoundException(String.format("gradeProcessId '%s' was neither found in " +
-            "the submission queue nor in an active grading process.", gradeProcessId));
+//        throw new proforma.util.exception.NotFoundException(String.format("gradeProcessId '%s' was neither found in " +
+//            "the submission queue nor in an active grading process.", gradeProcessId));
     }
 
     @DELETE

@@ -5,11 +5,10 @@ import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GraderConfig;
 import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.exceptions.GrappaException;
-import proforma.util.exception.NotFoundException;
-
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import proforma.util.exception.NotFoundException;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -157,25 +156,9 @@ public class GraderPoolManager implements Runnable {
         throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId.toString()));
     }
 
-//    public long getEstimatedSecondsUntilQueueIsGraded(String graderId) throws NotFoundException {
-//        var pool = pools.get(graderId);
-//        if (null != pool) {
-//            int busy = pool.getBusyCount();
-//            int poolSize = pool.getPoolSize();
-//            long avgGradingSeconds = RedisController.getInstance().getSubmissionAverageGradingDurationSeconds(gradeProcId,
-//                GrappaServlet.CONFIG.getService().getDefault_estimated_grading_seconds());
-//            long queueCount = RedisController.getInstance().getSubmissionQueueCount(graderId);
-//            long estimatedSeconds = (queueCount / poolSize) * avgGradingSeconds;
-//            if(busy > 0)
-//                estimatedSeconds += estimatedSeconds;
-//            return estimatedSeconds;
-//        }
-//        throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId));
-//    }
-
     /**
      * Get the estimated remaining seconds remaining until a particular
-     * grading process (which equals a particular submission) is finished.
+     * grading process (i.e. submission) is finished.
      *
      * This takes into account the number of the total pool size of a grader
      * that a submission has been submitted to, as well as the number of
@@ -190,36 +173,87 @@ public class GraderPoolManager implements Runnable {
         GraderID graderId = RedisController.getInstance().getAssociatedGraderId(gradeProcId);
         var pool = pools.get(graderId);
         if (null != pool) {
-            int poolSize = pool.getPoolSize();
-            int freeCount = poolSize - pool.getBusyCount();
             long avgGradingSeconds = RedisController.getInstance().getSubmissionAverageGradingDurationSeconds(gradeProcId,
                 GrappaServlet.CONFIG.getService().getDefault_estimated_grading_seconds());
             int submPos = RedisController.getInstance().getQueuedSubmissionIndex(gradeProcId);
 
-            // Calculating a submission's estimated grading seconds remaining
-            // relies heavily on the submission's position/index in a queue:
-            // if the subm. index is -1, it is being processed right now (in case it's not been graded already)
+            long estimated = 0;
+            // Calculating a submission's estimated grading seconds remaining relies on the submission's
+            // position/index in a queue:
+            // if the subm. index is -1, it is being processed right now (if it has not been graded already)
             // if the subm. index is 0 or above, it's probably next up for grading once a grader instance
             // becomes free. We also need to account for asynchronous grading, i.e. the grader pool size
-            if(-1 == submPos)
-                return avgGradingSeconds;
-            // A group of N graders can pick up N submissions from the submission queue.
-            // the groupIndex is the multiplicator for the average time it takes to garde
-            // a task.
-            long groupIndex = (submPos + poolSize) / poolSize;
-            // account for some or all graders being busy at this point
-            boolean noGraderAvailableToGradeMe = submPos + 1 > freeCount;
-            long addAvgSec = noGraderAvailableToGradeMe ? avgGradingSeconds : 0;
-            // if there's no free grader available to grade this queued submission,
-            // add 1 avgGradingSeconds on top to account for busy graders
-            long addedAvg = (noGraderAvailableToGradeMe ? avgGradingSeconds : 0);
-            long estimatedSeconds = groupIndex * avgGradingSeconds + addedAvg;
-            log.debug("[GradeProcId: {}]: submIndex: {}, groupIndex: {}, noGraderFreeToGradeMe: {}, estimatedSec: {}",
-                gradeProcId, submPos, groupIndex, noGraderAvailableToGradeMe, estimatedSeconds);
-            return estimatedSeconds;
+            if(-1 == submPos) {
+                long running = pool.getRunningTimeSeconds(gradeProcId);
+                estimated = avgGradingSeconds - running;
+//                log.debug("[GradeProcId: {}]: submPos: {}, avgGradingSec: {}, running: {}, estimatedSecs: {}",
+//                    gradeProcId, submPos, avgGradingSeconds, running, estimated);
+            } else {
+                // Consult the current running time of currently processed submissions
+                // to account for the remainder of processing time.
+                // Sort this list in ascending order, the next queued submisson that is up next will
+                // take the spot of the currently graded submission with the shortest
+                // remaining execution time; the one queued after that will take the 2nd
+                // shortest execution time spot, and so on
+                long[] runningSecondsList = pool.getRunningTimeSecondsList();
+                Arrays.sort(runningSecondsList);
+                int poolSize = pool.getPoolSize();
+                // A group of N graders can pick up N submissions from the submission queue.
+                // the group is the multiplier for the average time it takes to garde
+                // a task.
+                int group = (submPos + poolSize) / poolSize;
+                // Which position/index has the submission within a group? This index
+                // is used to retrieve the remaining execution time of a currently graded submission
+                // in 'runningSecondsList', because that will be the next freed up spot for our submission
+                int submGroupPos = submPos % poolSize;
+                // calc the remaining seconds for the submission with the shortest remaining execution
+                // time whose spot we will take shortly
+                long remainingSecondsForNextSpot = avgGradingSeconds - runningSecondsList[submGroupPos];
+                estimated = group * avgGradingSeconds + remainingSecondsForNextSpot;
+//                log.debug("[GradeProcId: {}]: submPos: {}, avgGradingSec: {}, group: {}, submGroupPos: {}, secondsList: " +
+//                        "{}, nextSpotRemaining: {}, estimatedSecs: {}", gradeProcId, submPos, avgGradingSeconds, group,
+//                    submGroupPos, Arrays.toString(runningSecondsList), remainingSecondsForNextSpot, estimated);
+            }
+            // cap to 0 seconds, we don't want to return negative numbers... or do we?
+            estimated = estimated >= 0 ? estimated : 0;
+            return estimated;
         }
         throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId));
     }
+//    public long getEstimatedSecondsUntilGradeProcIdIsFinished(String gradeProcId) throws NotFoundException {
+//        GraderID graderId = RedisController.getInstance().getAssociatedGraderId(gradeProcId);
+//        var pool = pools.get(graderId);
+//        if (null != pool) {
+//            int poolSize = pool.getPoolSize();
+//            int freeCount = poolSize - pool.getBusyCount();
+//            long avgGradingSeconds = RedisController.getInstance().getSubmissionAverageGradingDurationSeconds(gradeProcId,
+//                GrappaServlet.CONFIG.getService().getDefault_estimated_grading_seconds());
+//            int submPos = RedisController.getInstance().getQueuedSubmissionIndex(gradeProcId);
+//
+//            // Calculating a submission's estimated grading seconds remaining
+//            // relies heavily on the submission's position/index in a queue:
+//            // if the subm. index is -1, it is being processed right now (in case it's not been graded already)
+//            // if the subm. index is 0 or above, it's probably next up for grading once a grader instance
+//            // becomes free. We also need to account for asynchronous grading, i.e. the grader pool size
+//            if(-1 == submPos)
+//                return avgGradingSeconds;
+//            // A group of N graders can pick up N submissions from the submission queue.
+//            // the groupIndex is the multiplicator for the average time it takes to garde
+//            // a task.
+//            long groupIndex = (submPos + poolSize) / poolSize;
+//            // account for some or all graders being busy at this point
+//            boolean noGraderAvailableToGradeMe = submPos + 1 > freeCount;
+//            long addAvgSec = noGraderAvailableToGradeMe ? avgGradingSeconds : 0;
+//            // if there's no free grader available to grade this queued submission,
+//            // add 1 avgGradingSeconds on top to account for busy graders
+//            long addedAvg = (noGraderAvailableToGradeMe ? avgGradingSeconds : 0);
+//            long estimatedSeconds = groupIndex * avgGradingSeconds + addedAvg;
+//            log.debug("[GradeProcId: {}]: submIndex: {}, groupIndex: {}, noGraderFreeToGradeMe: {}, estimatedSec: {}",
+//                gradeProcId, submPos, groupIndex, noGraderAvailableToGradeMe, estimatedSeconds);
+//            return estimatedSeconds;
+//        }
+//        throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId));
+//    }
 
     public Map<GraderID, GraderStatistics> getGraderStatistics() {
         HashMap<GraderID, GraderStatistics> m = new HashMap<>();
