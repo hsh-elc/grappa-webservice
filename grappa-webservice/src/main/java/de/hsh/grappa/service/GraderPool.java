@@ -371,23 +371,23 @@ public class GraderPool {
             synchronized (gradingDurationMap) {
                 queue = gradingDurationMap.get(taskUuid);
                 if (null == queue) {
-//                    queue = new CircularFifoQueue<Long>(GrappaServlet.CONFIG.getService()
-//                        .getPrev_grading_seconds_max_list_size());
-                    queue = new CircularFifoQueue<Long>(this.graderConfig.getConcurrent_grading_processes());
+                    queue = new CircularFifoQueue<Long>(GrappaServlet.CONFIG.getService()
+                        .getPrev_grading_seconds_max_list_size());
+//                    queue = new CircularFifoQueue<Long>(this.graderConfig.getConcurrent_grading_processes());
                     gradingDurationMap.put(taskUuid, queue);
                 }
                 queue.add(newestDuration);
 
-                // Set the average
-                avgDuration = queue.stream().reduce(Long::sum).get() / queue.size();
+//                // Set the average
+//                avgDuration = queue.stream().reduce(Long::sum).get() / queue.size();
 
-//                // Set the median
-//                Long[] arr = queue.toArray(Long[]::new);
-//                Arrays.sort(arr);
-//                if (arr.length % 2 == 0)
-//                    avgDuration = ((arr[arr.length / 2] + arr[arr.length / 2 - 1]) / 2);
-//                else
-//                    avgDuration = arr[arr.length / 2];
+                // Set the median
+                Long[] arr = queue.toArray(Long[]::new);
+                Arrays.sort(arr);
+                if (arr.length % 2 == 0)
+                    avgDuration = ((arr[arr.length / 2] + arr[arr.length / 2 - 1]) / 2);
+                else
+                    avgDuration = arr[arr.length / 2];
 //                log.debug("[GraderId: '{}', GradeProcessId: '{}', Task-UUID: '{}']: Avg grading time: {} with last " +
 //                    "execution times: {}", graderConfig.getId(), gradeProcId, taskUuid, avgDuration,
 //                    Arrays.toString(arr));
