@@ -1,44 +1,20 @@
 package de.hsh.grappa.service;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.MinMaxPriorityQueue;
-
 import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.backendplugin.BackendPlugin;
 import de.hsh.grappa.backendplugin.dockerproxy.DockerProxyBackendPlugin;
 import de.hsh.grappa.boundary.BoundaryImpl;
 import de.hsh.grappa.cache.QueuedSubmission;
 import de.hsh.grappa.cache.RedisController;
-import de.hsh.grappa.config.DockerProxyConfig;
-import de.hsh.grappa.config.GraderConfig;
-import de.hsh.grappa.config.GraderID;
-import de.hsh.grappa.config.GraderDockerJvmBpConfig;
-import de.hsh.grappa.config.GraderHostJvmBpConfig;
-import de.hsh.grappa.config.LmsConfig;
+import de.hsh.grappa.config.*;
 import de.hsh.grappa.exceptions.AuthenticationException;
 import de.hsh.grappa.util.ClassPathClassLoader;
 import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
 import de.hsh.grappa.util.DebugUtils;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import proforma.util.ProformaResponseHelper.Audience;
 import proforma.util.ProformaVersion;
 import proforma.util.SubmissionLive;
@@ -47,6 +23,14 @@ import proforma.util.div.Strings;
 import proforma.util.div.XmlUtils;
 import proforma.util.exception.NotFoundException;
 import proforma.util.resource.ResponseResource;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Manages worker threads for a specific graderId.
@@ -73,10 +57,10 @@ public class GraderPool {
     private static final String OP_MODE_LOCAL_VM="host_jvm_bp";
     private static final String OP_MODE_DOCKER_VM="docker_jvm_bp";
 
-    private ConcurrentHashMap<String /*gradeProcId*/, Future<ResponseResource>> gpMap =
+    private final ConcurrentHashMap<String /*gradeProcId*/, GradeProcess> gpMap =
         new ConcurrentHashMap<>();
 
-    private HashMap<String /*taskUuid*/, MinMaxPriorityQueue<Duration> /*seconds*/>
+    private final HashMap<String /*taskUuid*/, CircularFifoQueue<Long> /*seconds*/>
         gradingDurationMap = new HashMap<>();
 
     private ExecutorService jaxbExecutor;
@@ -249,7 +233,8 @@ public class GraderPool {
             public NoResultGraderExecption(String s) { super(s); }
         }
         try {
-            LocalDateTime beginTime = LocalDateTime.now();
+            GradeProcess gradeProc = new GradeProcess(subm.getGradeProcId(), LocalDateTime.now(), null);
+
             // Create a fresh backend plugin instance for every grading request
             if (backendPluginLoader == null) {
                 log.error("Class loader of BackendPlugin '{}' not found", graderConfig.getId());
@@ -257,25 +242,24 @@ public class GraderPool {
             }
             
             BackendPlugin bp=loadAndInitBackendPlugin(subm.getGradeProcId());
-            FutureTask<ResponseResource> futureTask = null;
             int timeoutSeconds = graderConfig.getTimeout_seconds();
             try {
-                futureTask = new FutureTask<ResponseResource>(() -> {
+                gradeProc.response = new FutureTask<ResponseResource>(() -> {
                     return bp.grade(subm.getSubmission());
                 });
-                gpMap.put(subm.getGradeProcId(), futureTask);
-                new Thread(futureTask).start();
-                ResponseResource resp = futureTask.get(timeoutSeconds, TimeUnit.SECONDS);
+                gpMap.put(subm.getGradeProcId(), gradeProc);
+                new Thread(gradeProc.response).start();
+                ResponseResource resp = gradeProc.response.get(timeoutSeconds, TimeUnit.SECONDS);
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process exited.",
                     graderConfig.getId(), subm.getGradeProcId());
                 if (null != resp) {
                     totalGradingProcessesSucceeded.incrementAndGet();
-                    log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process finished successfully.",
-                        graderConfig.getId(), subm.getGradeProcId());
+                    long durationSeconds = Duration.between(gradeProc.startTime, LocalDateTime.now()).getSeconds();
+                    log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process finished successfully after {} " +
+                            "seconds.", graderConfig.getId(), subm.getGradeProcId(), durationSeconds);
                     // set the average grading duration only for grading processes that actually produced
                     // a valid proforma response. Anything else (such as errors) will skew the average duration.
-                    setAverageGradingDuration(Duration.between(beginTime, LocalDateTime.now()),
-                        subm.getGradeProcId());
+                    setAverageGradingDuration(durationSeconds, subm.getGradeProcId());
                     return resp;
                 }
                 throw new NoResultGraderExecption("Grader did not supply a proforma response.");
@@ -293,7 +277,7 @@ public class GraderPool {
                 log.warn(errorMessage);
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Trying to stop timed out grading process...",
                     graderConfig.getId(), subm.getGradeProcId());
-                futureTask.cancel(true);
+                gradeProc.response.cancel(true);
                 // Don't increment totalGradingProcessesCancelled, since the cancellation was due to a timeout,
                 // not due to a client's delete request
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after timing out.",
@@ -308,7 +292,7 @@ public class GraderPool {
                 Thread.currentThread().interrupt();
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Parent thread of grade process interrupted. Trying to " +
                     "cancel grading process...", graderConfig.getId(), subm.getGradeProcId());
-                futureTask.cancel(true);
+                gradeProc.response.cancel(true);
                 // Treat this as cancellation, a direct result of the interrupt
                 totalGradingProcessesCancelled.incrementAndGet();
                 log.debug("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after parent " +
@@ -374,25 +358,39 @@ public class GraderPool {
         //return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), audience);
     }
 
-    private void setAverageGradingDuration(Duration d, String gradeProcId) {
+    private void setAverageGradingDuration(long newestDuration, String gradeProcId) {
         try {
             String taskUuid = RedisController.getInstance().getAssociatedTaskUuid(gradeProcId);
             if(null == taskUuid)
                 throw new NotFoundException(String
-                    .format("There is no associated taskUuid for gradeProcId '{}'.",
+                    .format("There is no associated taskUuid for gradeProcId '%s'.",
                     gradeProcId));
 
             long avgDuration;
+            CircularFifoQueue<Long> queue = null;
             synchronized (gradingDurationMap) {
-                var queue = gradingDurationMap.get(taskUuid);
+                queue = gradingDurationMap.get(taskUuid);
                 if (null == queue) {
-                    queue = MinMaxPriorityQueue.maximumSize
-                        (GrappaServlet.CONFIG.getService()
-                            .getPrev_grading_seconds_max_list_size()).create();
+                    queue = new CircularFifoQueue<Long>(GrappaServlet.CONFIG.getService()
+                        .getPrev_grading_seconds_max_list_size());
+//                    queue = new CircularFifoQueue<Long>(this.graderConfig.getConcurrent_grading_processes());
                     gradingDurationMap.put(taskUuid, queue);
                 }
-                queue.add(d);
-                avgDuration = queue.stream().reduce((a, b) -> a.plus(b)).get().toSeconds() / queue.size();
+                queue.add(newestDuration);
+
+//                // Set the average
+//                avgDuration = queue.stream().reduce(Long::sum).get() / queue.size();
+
+                // Set the median
+                Long[] arr = queue.toArray(Long[]::new);
+                Arrays.sort(arr);
+                if (arr.length % 2 == 0)
+                    avgDuration = ((arr[arr.length / 2] + arr[arr.length / 2 - 1]) / 2);
+                else
+                    avgDuration = arr[arr.length / 2];
+//                log.debug("[GraderId: '{}', GradeProcessId: '{}', Task-UUID: '{}']: Avg grading time: {} with last " +
+//                    "execution times: {}", graderConfig.getId(), gradeProcId, taskUuid, avgDuration,
+//                    Arrays.toString(arr));
             }
 
             log.debug("[GraderId: '{}', GradeProcessId: '{}', Task-UUID: '{}']: Average grading duration: {} seconds",
@@ -421,9 +419,9 @@ public class GraderPool {
         if (null != process) {
             log.debug("GraderPool.cancel(): Trying to cancel grading process with gradeProcId '{}'...",
                 gradeProcId);
-            process.cancel(true);
+            process.response.cancel(true);
             log.debug("GraderPool.cancel(): Grading process with gradeProcId '{}' cancelled: {}",
-                gradeProcId, process.isDone());
+                gradeProcId, process.response.isDone());
             return true;
         }
         log.debug("GraderPool.cancel(): No grading process active with gradeProcId '{}'", gradeProcId);
@@ -452,6 +450,34 @@ public class GraderPool {
         return gpMap.containsKey(gradeProcId);
     }
 
+    /**
+     *
+     * @return an unsorted array of running time seconds of all currently graded submissions.
+     */
+    public long[] getRunningTimeSecondsList() {
+        long[] secondsList = new long[this.graderConfig.getConcurrent_grading_processes()];
+        GradeProcess[] gpList = gpMap.values().toArray(new GradeProcess[0]);
+        if (secondsList.length < gpList.length)
+            throw new IllegalStateException("gradeProcess list size must not be greater than seconds list size");
+        for(int i = 0; i < gpList.length; ++i)
+            secondsList[i] = getRunningTimeSeconds(gpList[i]);
+        return secondsList;
+}
+
+    /**
+     * Get the current running time for a submission.
+     *
+     * @return the current running time in seconds the submission is taking being graded, or 0 if the
+     * submission is not being graded.
+     */
+    public long getRunningTimeSeconds(String gradeProcId) {
+        return getRunningTimeSeconds(gpMap.get(gradeProcId));
+    }
+
+    private long getRunningTimeSeconds(GradeProcess gp) {
+        return null != gp ? Duration.between(gp.startTime, LocalDateTime.now()).toSeconds() : 0;
+    }
+
     public long getTotalGradingProcessesExecuted() {
         return totalGradingProcessesExecuted.get();
     }
@@ -470,6 +496,18 @@ public class GraderPool {
 
     public long getTotalGradingProcessesTimedOut() {
         return totalGradingProcessesTimedOut.get();
+    }
+
+    private static class GradeProcess {
+        public GradeProcess(String gradeProcId, LocalDateTime startTime, FutureTask<ResponseResource> response) {
+            this.gradeProcId = gradeProcId;
+            this.startTime = startTime;
+            this.response = response;
+        }
+
+        public String gradeProcId;
+        public FutureTask<ResponseResource> response;
+        public LocalDateTime startTime;
     }
 
 //    private static ForkJoinPool getJaxbExecutor() {

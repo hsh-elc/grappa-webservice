@@ -15,7 +15,7 @@ import org.junit.Test;
 import java.io.File;
 
 public class DockerProxyTest {
-    private final String submissionFilePath = "C:/Users/nudroid/Desktop/Grappa/tmp/subm.zip";
+    private final String submissionFilePath = "path/to/submission";
 
     @Test
     public void testCopySubmToContainer() throws Exception {
