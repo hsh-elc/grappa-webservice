@@ -2,6 +2,9 @@ name: Java2Docker grappa webservice
 
 # Controls when the workflow will run
 on:
+  # run every 15 minutes -- test
+  schedule:
+    - cron: "*/15 * * * *"
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches:
@@ -75,7 +78,8 @@ jobs:
       - name: Build image
         run: |
           cd ${SUBDIR}/docker
-          docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+          # use docker build --pull so we don't re-use stale base images from cache
+          docker build . --pull --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
 
       - name: Push image
         env:
