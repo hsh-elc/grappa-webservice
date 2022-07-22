@@ -27,10 +27,12 @@
                     <pattern>%date %-5level %logger{5} - %msg%n</pattern>
                 </encoder>
                 <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                    <!-- rollover daily -->
-                    <fileNamePattern>${logDirectory}/${appName}-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
+					<!-- rollover daily -->
+					<fileNamePattern>${logDirectory}/${appName}-%d{yyyy-MM-dd}.%i.txt.gz</fileNamePattern>
+					<!-- keep 30 days' worth of history -->
+					<maxHistory>30</maxHistory>
                     <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                        <!-- or whenever the file size reaches 100MB -->
+                        <!-- rollover whenever the file size reaches 100MB -->
                         <maxFileSize>100MB</maxFileSize>
                     </timeBasedFileNamingAndTriggeringPolicy>
                 </rollingPolicy>
