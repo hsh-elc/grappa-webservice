@@ -8,16 +8,17 @@ import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.GradingEnvironmentSetup;
 import de.hsh.grappa.util.ClassLoaderHelper;
-import proforma.util.ProformaVersion;
-
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import proforma.util.ProformaVersion;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 import java.io.File;
+import java.util.Properties;
+import java.util.jar.Manifest;
 
 @WebListener
 public class GrappaServlet implements ServletContextListener {
@@ -28,25 +29,10 @@ public class GrappaServlet implements ServletContextListener {
 
     private Thread graderPoolManagerThread;
 
-    private static String grappaInstanceName = "grappa-webservice";
-
     @Override
     public void contextInitialized(ServletContextEvent ctxEvent) {
         try {
-            try {
-                // This will supposedly throw a NullPointerException when the
-                // container is configured to expand the war file in memory
-                // instead of in disk.
-                // If that happens, grappa won't be able to distinguish between
-                // multiple running grappa instances that are configured to run
-                // with different grader jars.
-                grappaInstanceName = new File(ctxEvent.getServletContext()
-                    .getContextPath()).getName();
-            } catch (Exception e) {
-                log.error(e.getMessage());
-                log.error(ExceptionUtils.getStackTrace(e));
-            }
-            log.info("Running grappa web service instance: '{}'.", grappaInstanceName);
+            log.info("Running {} version {}.", getGrappaInstanceName(), getImplVersion(ctxEvent));
             readConfigFile();
             ProformaVersion.getDefaultVersionNumber(); // fail fast, if the required grappa-proforma-N-M.jar is missing
             setupRedisConnection();
@@ -129,11 +115,29 @@ public class GrappaServlet implements ServletContextListener {
 //        }
     }
 
-    /**
-     * @return the name of the grappa instance depending on what grader this
-     * instance is running with.
-     */
     public static String getGrappaInstanceName() {
-        return grappaInstanceName;
+        return "grappa-webservice-2";
+    }
+
+    public static String getImplVersion(ServletContextEvent e) {
+        String version  = GrappaServlet.class.getPackage().getImplementationVersion();
+        if (null == version) {
+            Properties prop = new Properties();
+            try {
+                // note that if the webapp is deployed as an exploded war (eg during development in IDE),
+                // the manifest.mf file is not generated, hence the implementation version will be missing
+                // this generally not a problem though
+                Manifest m = new Manifest(e.getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
+                var attr = m.getAttributes("de.hsh.grappa");
+                version = attr.getValue("Implementation-Version");
+            } catch (Exception ex) {
+                log.warn("Could not read Implementation-Version from MANIFEST.MF file, service is probably running " +
+                    "as exploded war");
+                if(!(ex instanceof NullPointerException))
+                    log.warn(ex.getMessage());
+                version = "N/A";
+            }
+        }
+        return version;
     }
 }

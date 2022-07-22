@@ -127,6 +127,11 @@
                     <attachClasses>true</attachClasses>
                     <classesClassifier>classes</classesClassifier>
                     <failOnMissingWebXml>true</failOnMissingWebXml>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
             <plugin>
