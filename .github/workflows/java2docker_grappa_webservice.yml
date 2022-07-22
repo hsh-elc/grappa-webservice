@@ -2,24 +2,26 @@ name: Java2Docker grappa webservice
 
 # Controls when the workflow will run
 on:
-  # run every 15 minutes -- test
   schedule:
-    - cron: '50 * * * *'
+    # Refresh build once a week on Sunday at 3am. Fresh build will include an up-to-date base
+    # image and software. Note that schedule works on the default (=master) branch only, see
+    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
+    - cron: '0 3 * * SUN'
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches:
-      - 'dev/pr_142'
-      #- 'develop'
+      - 'develop'
       #- 'master'
     paths:
       - 'grappa-webservice/**'
-  #pull_request:
-  #  branches:
-  #    - 'dev/pr_142'
-  #    - 'develop'
-      #- 'master'
- #  paths:
- #     - 'grappa-webservice/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches:
+      - 'develop'
+  #    - 'master'
+   paths:
+      - 'grappa-webservice/**'
+      - '.github/workflows/**'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -102,7 +104,7 @@ jobs:
             # some other branch
             IMAGE_TAG="${IMAGE_VERSION}-${BRANCH}"
             docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
-            docker tag $IMAGE_NAME $IMAGE_ID:latest_test
+            docker tag $IMAGE_NAME $IMAGE_ID:latest_develop
             docker push $IMAGE_ID:$IMAGE_TAG
-            docker push $IMAGE_ID:latest_test
+            docker push $IMAGE_ID:latest_develop
           fi
