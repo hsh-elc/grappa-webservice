@@ -6,7 +6,7 @@ on:
     # Refresh build once a week on Sunday at 3am. Fresh build will include an up-to-date base
     # image and software. Note that schedule works on the default (=master) branch only, see
     # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
-    - cron: '0 3 * * SUN'
+    - cron: '0 3 * * 0'
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches:
@@ -18,8 +18,8 @@ on:
   pull_request:
     branches:
       - 'develop'
-  #    - 'master'
-   paths:
+      #- 'master'
+    paths:
       - 'grappa-webservice/**'
       - '.github/workflows/**'
   # Allows you to run this workflow manually from the Actions tab
