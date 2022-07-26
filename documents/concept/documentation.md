@@ -50,7 +50,162 @@ A web service for connecting multiple Learn Management Systems to multiple autom
 - [Redis](https://redis.io/) for storing ProFormA submissions and results
 - [Docker](https://www.docker.com/) for providing an additional security layer to the web service
 
-### 2.2 Prerequisites
+## 2.x Insalling and Running Grappa as a Docker Container
+
+You can use a pre-packaged Docker container running Grappa out-of-the-box. The only external dependency required is Redis, which can also be installed as a [Docker container](), or [as a regular service](#2.2.1-installing-redis) on the host if preferred.
+
+This installation guide assumes a Linux environment (Ubuntu 20.04 in this example) that has Docker already installed, and illustrates installing Grappa and Redis as Docker containers.
+
+Running Grappa in a container will require the hosting system to mount some files and directories, which enables us to persist data produced by Grappa and Redis on the file system of the host system, even after the containers have been shut down. The host system will need to store the data somewhere. We will create a dedicated directory for that: 
+
+`mkdir ~/grappa`
+
+The following files are created or generated as a result of running Grappa and Redis.
+
+**1. Configuration file**
+
+Grappa uses a configuration file residing in `/etc/grappa/grappa-config.yaml`. We will need to mount that configuration file into the file system of Grappa's Docker container. Copy and adapt the configuration file template as described [here](#5-configure-grappa). Once the config file has been mounted into the container, Grappa will be able to read the file. Note that changes to the config file on the host system will affect the file in the container.
+
+**2. Log files**
+
+We will mount the container's Tomcat log directory `/var/log/tomcat9` in a similar fashion. This will require another directory on the host system for log files produced by the Grappa web service.
+
+Note that you should avoid mounting the container's Tomcat log directory path to the host's Tomcat directory path (`/var/log/tomcat9`), since that might cause future problems with conflicting log files.
+
+For log files, we will use the following directory:
+
+`$ mkdir ~/grappa/log`
+
+### Redis Cache
+
+Redis will create regular snapshots of its database, which we also want to persist on the host system so we can re-use the data when the Redis container restarts. We will use one of the official [redis containers](https://hub.docker.com/r/redis/redis-stack-server) from Docker Hub and create create a dedicated directory for this:
+
+`mkdir ~/grappa/cache`
+
+### Running Grappa
+
+Grappa needs to access external services (such as Redis and the Docker socket) outside its container. We can run Grappa using two different networking methods. Each method differs slightly in how these services are addressed in Grappa's configuration file (`/etc/grappa/grappa-config.yaml`).
+
+We can run the Grappa container either on the host system's network (using Docker's option `--network="host"`), or introduce the host IP as host name `host.docker.internal` to the container, which is automatically mapped to `127.0.0.1` in file `/etc/hosts`.
+
+The command to run Grappa with the `network="host"` enabled is listed below.
+
+Either way, we will need to edit Docker's configuration file to allow TCP requests to the **host's** Docker socket:
+
+1. on the host, edit file `/lib/systemd/system/docker.service`
+2. comment out line `ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock`
+3. Add line `ExecStart=/usr/bin/dockerd -H tcp://127.0.0.1:2375 --containerd=/run/containerd/containerd.sock`
+4. reload docker daemon `sudo systemctl daemon-reload`
+5. restart docker `sudo systemctl restart docker`
+
+TODO: verify that this is still correct and necessary.
+
+#### Using Grappa with the Host's Network
+
+Using this option, any request to `127.0.0.1` will point to the host (no matter the port).
+
+If redis is running locally on your host system (either as a container or natively) and is accessable by `127.0.0.1:6379`, Grappa will need to be configured to point to this address in the Redis section in config file `/etc/grappa/grappa-config.yaml`:
+
+```yaml
+redis:
+  host: "127.0.0.1"
+  port: 6379
+```
+
+Similarly, Grappa is configured to use the Docker socket at URI `tcp://127.0.0.1:2375`.
+
+```yaml
+docker_proxy:
+  host: "tcp://127.0.0.1:2375"
+```
+
+#### Using Grappa with host name mapped to host IP
+
+Mapping the host's IP to host name `host.docker.internal` in the Grappa container, the host name can be used to address external services.
+
+The command to run Grappa with the `network="host"` enabled is listed below.
+
+Configuring redis in Grappa's configuration file `/etc/grappa/grappa-config.yaml`:
+
+```yaml
+redis:
+  host: "host.docker.internal"
+  port: 6379
+```
+
+Configuring the docker socket:
+
+```yaml
+docker_proxy:
+  host: "host.docker.internal:2375"
+```
+
+### Starting Redis Container
+
+The Grappa web service depends on Redis, so we start the Redis container before Grappa.
+
+Pull the image first:
+
+```bash
+$ docker pull redis/redis-stack-server
+```
+
+We will run the container with the automatic restart option enabled so the container will automatically restart on system boot, mount the cache directory and create a port forwarding for Redis port 6379.
+
+Run the container:
+
+```bash
+$ docker run -d \
+    --name redis-stack-server \
+    --restart=always \
+    -v ~/grappa/cache/:/data \
+    -p 6379:6379 \
+    redis/redis-stack-server:latest
+```
+
+### Starting Grappa Container
+
+Pull the Grappa Docker image first:
+
+```bash
+docker pull ghcr.io/hsh-elc/grappa-webservice:latest_develop
+```
+
+Like Redis, we want the Grappa container to restart automatically using the run option `--restart=always`.
+
+#### Run command with `--network=host`
+
+```bash
+docker run -d \
+    --name grappa-webservice \
+    --restart=always \
+    --network="host" \
+    -v /etc/grappa/grappa-config.yaml:/etc/grappa/grappa-config.yaml \
+    -v ~/grappa/log:/var/log/tomcat9/ \
+    grappa-webservice:latest
+```
+
+#### Run command with host name `host.docker.internal`
+
+Additionally to introducing the `host.docker.internal` host name, Tomcat's port `8080` also needs to be forwarded so the Grappa web service running within the container can be addressed via `localhost:8080` on the host system.
+
+```bash
+docker run -d \
+    --name grappa-webservice \
+    --restart=always \
+    --add-host host.docker.internal:host-gateway \
+    -p 8080:8080 \
+    -v /etc/grappa/grappa-config.yaml:/etc/grappa/grappa-config.yaml \
+    -v ~/grappa/log:/var/log/tomcat9/ \
+    grappa-webservice:latest
+```
+
+
+### 2.x Installing Docker Images for Grading Processes
+
+TODO
+
+### 2.2 Installing Grappa - Prerequisites
 
 Install the software listed in the [System Requirements](#21-system-requirements).
 
@@ -65,9 +220,9 @@ Install the software listed in the [System Requirements](#21-system-requirements
     - restart redis using `sudo systemctl restart redis`
     - test if everything is properly running by logging into redis' command line interface:
     
-        pi@rpi: redis-cli
+        `pi@rpi: redis-cli`
     
-        pi@rpi: auth foobared
+        `pi@rpi: auth foobared`
 
 #### 2.2.2 Installing Docker
 
