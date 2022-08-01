@@ -42,8 +42,9 @@ public class GrappaResource {
         JsonArray graderStatusArray = AllGraderResources.getGraderStatusArray();
 
         JsonObject service = new JsonObject();
-        service.addProperty("webappName", "grappa-webapp-name_retrieve-from-context");
-        service.addProperty("staticConfigPath", GrappaServlet.CONFIG_FILENAME_PATH);
+        service.addProperty("appName", GrappaServlet.getAppName());
+        service.addProperty("appVersion", GrappaServlet.getAppVersion());
+        service.addProperty("config", GrappaServlet.CONFIG_FILENAME_PATH);
 
         GraderStatistics total = new GraderStatistics();
         for (Map.Entry<GraderID, GraderStatistics> e : graderStat.entrySet())

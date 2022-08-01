@@ -3,6 +3,7 @@ package de.hsh.grappa.application;
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.base.Strings;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.service.GraderPoolManager;
@@ -27,12 +28,17 @@ public class GrappaServlet implements ServletContextListener {
     private static final Logger log = LoggerFactory.getLogger(GrappaServlet.class);
     public static final String CONFIG_FILENAME_PATH = "/etc/grappa/grappa-config.yaml";
 
+    private static ServletContextEvent servletContextEvent = null;
+    private static final String appName = "grappa-webservice-2";
+    private static String appVersion = null;
+
     private Thread graderPoolManagerThread;
 
     @Override
     public void contextInitialized(ServletContextEvent ctxEvent) {
+        servletContextEvent = ctxEvent;
         try {
-            log.info("Running {} version {}.", getGrappaInstanceName(), getImplVersion(ctxEvent));
+            log.info("Running {} version {}.", getAppName(), getAppVersion());
             readConfigFile();
             ProformaVersion.getDefaultVersionNumber(); // fail fast, if the required grappa-proforma-N-M.jar is missing
             setupRedisConnection();
@@ -115,29 +121,31 @@ public class GrappaServlet implements ServletContextListener {
 //        }
     }
 
-    public static String getGrappaInstanceName() {
-        return "grappa-webservice-2";
+    public static String getAppName() {
+        return appName;
     }
 
-    public static String getImplVersion(ServletContextEvent e) {
-        String version  = GrappaServlet.class.getPackage().getImplementationVersion();
-        if (null == version) {
+    public static String getAppVersion() {
+        if(!Strings.isNullOrEmpty(appVersion))
+            return appVersion;
+        appVersion  = GrappaServlet.class.getPackage().getImplementationVersion();
+        if (null == appVersion) {
             Properties prop = new Properties();
             try {
                 // note that if the webapp is deployed as an exploded war (eg during development in IDE),
                 // the manifest.mf file is not generated, hence the implementation version will be missing
                 // this generally not a problem though
-                Manifest m = new Manifest(e.getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
+                Manifest m = new Manifest(servletContextEvent.getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
                 var attr = m.getAttributes("de.hsh.grappa");
-                version = attr.getValue("Implementation-Version");
+                appVersion = attr.getValue("Implementation-Version");
             } catch (Exception ex) {
                 log.warn("Could not read Implementation-Version from MANIFEST.MF file, service is probably running " +
                     "as exploded war");
                 if(!(ex instanceof NullPointerException))
                     log.warn(ex.getMessage());
-                version = "N/A";
+                appVersion = "N/A";
             }
         }
-        return version;
+        return appVersion;
     }
 }
