@@ -10,7 +10,7 @@ public class AppNameDiscriminator implements Discriminator<ILoggingEvent> {
 
     @Override
     public String getDiscriminatingValue(ILoggingEvent iLoggingEvent) {
-        return GrappaServlet.getGrappaInstanceName();
+        return GrappaServlet.getAppName();
     }
 
     @Override
