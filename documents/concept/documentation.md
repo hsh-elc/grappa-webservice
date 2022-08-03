@@ -86,7 +86,7 @@ Redis will create regular snapshots of its database, which we also want to persi
 
 Grappa needs to access external services (such as Redis and the Docker socket) outside its container. We can run Grappa using two different networking methods. Each method differs slightly in how these services are addressed in Grappa's configuration file (`/etc/grappa/grappa-config.yaml`).
 
-We can run the Grappa container either on the host system's network (using Docker's option `--network="host"`), or introduce the host IP as host name `host.docker.internal` to the container, which is automatically mapped to `127.0.0.1` in file `/etc/hosts`.
+We can run the Grappa container either on the host system's network (using Docker's option `--network="host"`), or introduce the host IP as host name `host.docker.internal` to the container, which is automatically mapped to the host's IP in file `/etc/hosts`.
 
 The command to run Grappa with the `network="host"` enabled is listed below.
 
@@ -123,7 +123,7 @@ docker_proxy:
 
 Mapping the host's IP to host name `host.docker.internal` in the Grappa container, the host name can be used to address external services.
 
-The command to run Grappa with the `network="host"` enabled is listed below.
+The command to run Grappa with host name `host.docker.internal` is listed below.
 
 Configuring redis in Grappa's configuration file `/etc/grappa/grappa-config.yaml`:
 
@@ -200,6 +200,15 @@ docker run -d \
     grappa-webservice:latest
 ```
 
+#### Test
+
+Make sure Grappa is running properly inside the container by executing the following curl request on your host. Note that your user and password might vary depending on your configuration in file `/etc/grappa/grappa-config.yaml`, section LMS authentification.
+
+```bash
+curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2/rest
+```
+
+You should see status output [such as this](#get-web-service-status).
 
 ### 2.x Installing Docker Images for Grading Processes
 
@@ -362,8 +371,9 @@ Get the web service's status information, such as runtime infos.
     ```
     {
       "service": {
-        "webappName": "grappa-webservice-2.0.0",
-        "staticConfigPath": "/etc/grappa/grappa-config.yaml",
+        "appName": "grappa-webservice-2",
+        "appVersion": "2.2.0",
+        "config": "/etc/grappa/grappa-config.yaml",
         "totalGradingProcessesExecuted": 0,
         "totalGradingProcessesSucceeded": 0,
         "totalGradingProcessesFailed": 0,
