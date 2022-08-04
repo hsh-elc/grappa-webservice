@@ -155,7 +155,7 @@ We will run the container with the automatic restart option enabled so the conta
 Run the container:
 
 ```bash
-$ docker run -d \
+docker run -d \
     --name redis-stack-server \
     --restart=always \
     -v ~/grappa/cache/:/data \
@@ -182,7 +182,7 @@ docker run -d \
     --network="host" \
     -v /etc/grappa/grappa-config.yaml:/etc/grappa/grappa-config.yaml \
     -v ~/grappa/log:/var/log/tomcat9/ \
-    grappa-webservice:latest
+    ghcr.io/hsh-elc/grappa-webservice:latest
 ```
 
 #### Run command with host name `host.docker.internal`
@@ -197,7 +197,7 @@ docker run -d \
     -p 8080:8080 \
     -v /etc/grappa/grappa-config.yaml:/etc/grappa/grappa-config.yaml \
     -v ~/grappa/log:/var/log/tomcat9/ \
-    grappa-webservice:latest
+    ghcr.io/hsh-elc/grappa-webservice:latest
 ```
 
 #### Test
@@ -209,10 +209,6 @@ curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2/rest
 ```
 
 You should see status output [such as this](#get-web-service-status).
-
-### 2.x Installing Docker Images for Grading Processes
-
-TODO
 
 ### 2.2 Installing Grappa - Prerequisites
 
@@ -229,9 +225,9 @@ Install the software listed in the [System Requirements](#21-system-requirements
     - restart redis using `sudo systemctl restart redis`
     - test if everything is properly running by logging into redis' command line interface:
     
-        `pi@rpi: redis-cli`
+        `$ redis-cli`
     
-        `pi@rpi: auth foobared`
+        `$ auth foobared`
 
 #### 2.2.2 Installing Docker
 
@@ -343,6 +339,26 @@ grader_plugin_defaults:
     another.property: 42
 ```
 Note: The input syntax here is yaml (`": "` instead of `"="`).
+
+### 3.x Installing Graders
+
+Grappa starts grading processes inside grader containers, regardless of whether Grappa runs in a container itself or not.
+
+The latest grader images, including their `docker pull` command, can be found in their respective repositories:
+
+- [Dummy Grader for Testing](https://github.com/hsh-elc/grappa-webservice/pkgs/container/grappa-backend-dummygrader)
+  - This grader is not a real grader but a tool to test the the environment.
+- [Java Grader Graja](https://github.com/hsh-elc/grappa-backendplugin-graja/pkgs/container/grappa-backendplugin-graja)
+- [SQL Grader aSQLg](https://github.com/orgs/hsh-elc/packages/container/package/grappa-backendplugin-graja)
+- [GraFlap](https://github.com/orgs/hsh-elc/packages/container/package/grappa-backendplugin-graflap)
+
+For example, install the Dummy Grader by simply pulling the Docker image:
+
+```bash
+docker pull ghcr.io/hsh-elc/grappa-backend-dummygrader:latest
+```
+
+Finally, configure Grappa to use the grader in Grappa's [configuration file](#configuration).
 
 ## 3 REST API
 
