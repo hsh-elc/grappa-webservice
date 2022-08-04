@@ -6,9 +6,9 @@ import javax.xml.bind.annotation.*;
 
 /**
  * <p>Java class for test-response-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="test-response-type">
  *   &lt;complexContent>
@@ -22,8 +22,6 @@ import javax.xml.bind.annotation.*;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "test-response-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -41,11 +39,9 @@ public class TestResponseType {
 
     /**
      * Gets the value of the testResult property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link TestResultType }
-     *     
+     *
+     * @return possible object is
+     * {@link TestResultType }
      */
     public TestResultType getTestResult() {
         return testResult;
@@ -53,11 +49,9 @@ public class TestResponseType {
 
     /**
      * Sets the value of the testResult property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link TestResultType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link TestResultType }
      */
     public void setTestResult(TestResultType value) {
         this.testResult = value;
@@ -65,11 +59,9 @@ public class TestResponseType {
 
     /**
      * Gets the value of the subtestsResponse property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link SubtestsResponseType }
-     *     
+     *
+     * @return possible object is
+     * {@link SubtestsResponseType }
      */
     public SubtestsResponseType getSubtestsResponse() {
         return subtestsResponse;
@@ -77,11 +69,9 @@ public class TestResponseType {
 
     /**
      * Sets the value of the subtestsResponse property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link SubtestsResponseType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link SubtestsResponseType }
      */
     public void setSubtestsResponse(SubtestsResponseType value) {
         this.subtestsResponse = value;
@@ -89,11 +79,9 @@ public class TestResponseType {
 
     /**
      * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getId() {
         return id;
@@ -101,11 +89,9 @@ public class TestResponseType {
 
     /**
      * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setId(String value) {
         this.id = value;

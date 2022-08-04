@@ -11,9 +11,9 @@ import java.util.List;
 
 /**
  * <p>Java class for feedback-list-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="feedback-list-type">
  *   &lt;complexContent>
@@ -26,8 +26,6 @@ import java.util.List;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "feedback-list-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -60,8 +58,6 @@ public class FeedbackListType {
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link FeedbackType }
-     *
-     *
      */
     public List<FeedbackType> getStudentFeedback() {
         if (studentFeedback == null) {
@@ -89,8 +85,6 @@ public class FeedbackListType {
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link FeedbackType }
-     *
-     *
      */
     public List<FeedbackType> getTeacherFeedback() {
         if (teacherFeedback == null) {

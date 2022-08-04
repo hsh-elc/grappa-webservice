@@ -8,15 +8,14 @@ import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.exceptions.BadRequestException;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.util.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import proforma.util.SubmissionLive;
 import proforma.util.TaskLive;
 import proforma.util.boundary.Boundary;
 import proforma.util.exception.NotFoundException;
 import proforma.util.resource.SubmissionResource;
 import proforma.util.resource.TaskResource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class takes on a submitted student solution
@@ -35,7 +34,7 @@ public class SubmissionProcessor {
 
     public SubmissionProcessor(/*GrappaConfig config,*/ SubmissionResource subm, GraderID graderId, LmsConfig lmsConfig) throws Exception {
         //this.config = config;
-    	this.subm = new SubmissionLive(subm);
+        this.subm = new SubmissionLive(subm);
         //this.subm = createProformaSubmission(subm);
         this.graderId = graderId;
         this.lmsConfig = lmsConfig;
@@ -43,24 +42,25 @@ public class SubmissionProcessor {
     }
 
     private String getTaskUuid() throws Exception {
-    	return getTask().getTaskUuid();
+        return getTask().getTaskUuid();
     }
-    
+
     private TaskLive getTask() throws Exception {
-    	if (task == null) {
-    		task = subm.getTask(boundary);
-    	}
-    	return task;
+        if (task == null) {
+            task = subm.getTask(boundary);
+        }
+        return task;
     }
-    
+
     private TaskResource getTaskResource() throws Exception {
-    	return getTask().getResource();
+        return getTask().getResource();
     }
-    
-    
+
+
     /**
      * Makes sure the submission is not missing any required data as specified by
      * the Proforma format.
+     *
      * @throws BadRequestException when an ill-formatted submission is received
      * @throws GrappaException     when an internal service error occurs
      */
@@ -102,10 +102,11 @@ public class SubmissionProcessor {
      * Cache any incoming task of a submission.
      * If a task has already been cached at some point, its TTL
      * is simply re-newed.
+     *
      * @throws Exception
      */
     private void cacheTask() throws Exception {
-    	String taskuuid = getTaskUuid();
+        String taskuuid = getTaskUuid();
         if (!RedisController.getInstance().isTaskCached(taskuuid)) {
             RedisController.getInstance().cacheTask(taskuuid, getTaskResource());
         } else {

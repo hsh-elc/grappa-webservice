@@ -10,7 +10,7 @@ import java.net.URLClassLoader;
 
 public class ClassLoaderHelper<C> {
     private static final Logger log = LoggerFactory.getLogger(ClassLoaderHelper.class);
-    
+
     public C LoadClass(String classPath, String className, Class<C> parentClass) throws Exception {
         File jar = new File(classPath);
         try {

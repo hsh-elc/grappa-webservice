@@ -1,10 +1,6 @@
 package proforma.util21;
 
-import proforma.util.ProformaSubmissionHelper;
-import proforma.util.ProformaSubmissionSubmissionHandle;
-import proforma.util.ProformaSubmissionTaskHandle;
-import proforma.util.ProformaVersion;
-import proforma.util.SubmissionLive;
+import proforma.util.*;
 import proforma.util.boundary.SubmissionBoundary;
 import proforma.util.boundary.TaskBoundary;
 import proforma.xml.AbstractProformaType;
@@ -16,43 +12,42 @@ import proforma.xml21.SubmissionType;
 
 public class Proforma21SubmissionHelper extends ProformaSubmissionHelper {
 
-	public Proforma21SubmissionHelper(ProformaVersion pv) {
-		super(pv);
-	}
+    public Proforma21SubmissionHelper(ProformaVersion pv) {
+        super(pv);
+    }
 
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends AbstractProformaType> Class<T> getPojoType() {
-		return (Class<T>) SubmissionType.class;
-	}
-	
-
-	@Override
-	public ProformaSubmissionTaskHandle getSubmissionTaskHandle(SubmissionLive submission, TaskBoundary tb) {
-		return new Proforma21SubmissionTaskHandle(submission, tb);
-	}
-
-	@Override
-	public ProformaSubmissionSubmissionHandle getSubmissionSubmissionHandle(SubmissionLive submission,
-			SubmissionBoundary sb) {
-		return new Proforma21SubmissionSubmissionHandle(submission, sb);
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends AbstractProformaType> Class<T> getPojoType() {
+        return (Class<T>) SubmissionType.class;
+    }
 
 
-	@Override
-	public String getSubmissionId(AbstractSubmissionType submission) {
-    	SubmissionType s = (SubmissionType) submission;
-		return s.getId();
-	}
+    @Override
+    public ProformaSubmissionTaskHandle getSubmissionTaskHandle(SubmissionLive submission, TaskBoundary tb) {
+        return new Proforma21SubmissionTaskHandle(submission, tb);
+    }
 
-	
+    @Override
+    public ProformaSubmissionSubmissionHandle getSubmissionSubmissionHandle(SubmissionLive submission,
+                                                                            SubmissionBoundary sb) {
+        return new Proforma21SubmissionSubmissionHandle(submission, sb);
+    }
 
-	@Override
-	public void setResultSpecDetailsIfEmpty(AbstractSubmissionType submission, String structure, String format,
-			String studentFeedbackLevel, String teacherFeedbackLevel) {
-		SubmissionType s = (SubmissionType) submission;
-		ResultSpecType rs= s.getResultSpec();
+
+    @Override
+    public String getSubmissionId(AbstractSubmissionType submission) {
+        SubmissionType s = (SubmissionType) submission;
+        return s.getId();
+    }
+
+
+    @Override
+    public void setResultSpecDetailsIfEmpty(AbstractSubmissionType submission, String structure, String format,
+                                            String studentFeedbackLevel, String teacherFeedbackLevel) {
+        SubmissionType s = (SubmissionType) submission;
+        ResultSpecType rs = s.getResultSpec();
         if (rs.getStructure() == null || rs.getStructure().isEmpty()) {
             rs.setStructure(structure);
         }
@@ -65,28 +60,28 @@ public class Proforma21SubmissionHelper extends ProformaSubmissionHelper {
         if (rs.getFormat() == null || rs.getFormat().isEmpty()) {
             rs.setFormat(format);
         }
-	}
+    }
 
-	
-	public void addObjectsToLmsAnyNamespace(AbstractSubmissionType submission, Object ... objects) {
-		SubmissionType s = (SubmissionType) submission;
-		LmsType lms= s.getLms();
+
+    public void addObjectsToLmsAnyNamespace(AbstractSubmissionType submission, Object... objects) {
+        SubmissionType s = (SubmissionType) submission;
+        LmsType lms = s.getLms();
         if (lms == null) {
-            lms= new LmsType();
+            lms = new LmsType();
             s.setLms(lms);
         }
         for (Object o : objects) {
-        	s.getLms().getAny().add(o);
+            s.getLms().getAny().add(o);
         }
-	}
-	
-	public String[] getAllFeedbackLevels() {
-		String[] result = new String[FeedbackLevelType.values().length];
-		for (int i=0; i<result.length; i++) {
-			result[i] = FeedbackLevelType.values()[i].value();
-		}
-		return result;
-	}
+    }
 
-	
+    public String[] getAllFeedbackLevels() {
+        String[] result = new String[FeedbackLevelType.values().length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = FeedbackLevelType.values()[i].value();
+        }
+        return result;
+    }
+
+
 }

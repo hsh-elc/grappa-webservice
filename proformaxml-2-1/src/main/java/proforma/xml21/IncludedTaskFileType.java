@@ -6,9 +6,9 @@ import javax.xml.bind.annotation.*;
 
 /**
  * <p>Java class for included-task-file-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="included-task-file-type">
  *   &lt;complexContent>
@@ -24,8 +24,6 @@ import javax.xml.bind.annotation.*;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "included-task-file-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -49,11 +47,9 @@ public class IncludedTaskFileType {
 
     /**
      * Gets the value of the embeddedZipFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EmbeddedBinFileType }
-     *     
+     *
+     * @return possible object is
+     * {@link EmbeddedBinFileType }
      */
     public EmbeddedBinFileType getEmbeddedZipFile() {
         return embeddedZipFile;
@@ -61,11 +57,9 @@ public class IncludedTaskFileType {
 
     /**
      * Sets the value of the embeddedZipFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EmbeddedBinFileType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link EmbeddedBinFileType }
      */
     public void setEmbeddedZipFile(EmbeddedBinFileType value) {
         this.embeddedZipFile = value;
@@ -73,11 +67,9 @@ public class IncludedTaskFileType {
 
     /**
      * Gets the value of the embeddedXmlFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EmbeddedBinFileType }
-     *     
+     *
+     * @return possible object is
+     * {@link EmbeddedBinFileType }
      */
     public EmbeddedBinFileType getEmbeddedXmlFile() {
         return embeddedXmlFile;
@@ -85,11 +77,9 @@ public class IncludedTaskFileType {
 
     /**
      * Sets the value of the embeddedXmlFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EmbeddedBinFileType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link EmbeddedBinFileType }
      */
     public void setEmbeddedXmlFile(EmbeddedBinFileType value) {
         this.embeddedXmlFile = value;
@@ -97,11 +87,9 @@ public class IncludedTaskFileType {
 
     /**
      * Gets the value of the attachedZipFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getAttachedZipFile() {
         return attachedZipFile;
@@ -109,11 +97,9 @@ public class IncludedTaskFileType {
 
     /**
      * Sets the value of the attachedZipFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setAttachedZipFile(String value) {
         this.attachedZipFile = value;
@@ -121,11 +107,9 @@ public class IncludedTaskFileType {
 
     /**
      * Gets the value of the attachedXmlFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link AttachedTxtFileType }
-     *     
+     *
+     * @return possible object is
+     * {@link AttachedTxtFileType }
      */
     public AttachedTxtFileType getAttachedXmlFile() {
         return attachedXmlFile;
@@ -133,11 +117,9 @@ public class IncludedTaskFileType {
 
     /**
      * Sets the value of the attachedXmlFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link AttachedTxtFileType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link AttachedTxtFileType }
      */
     public void setAttachedXmlFile(AttachedTxtFileType value) {
         this.attachedXmlFile = value;
@@ -145,11 +127,9 @@ public class IncludedTaskFileType {
 
     /**
      * Gets the value of the uuid property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getUuid() {
         return uuid;
@@ -157,11 +137,9 @@ public class IncludedTaskFileType {
 
     /**
      * Sets the value of the uuid property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setUuid(String value) {
         this.uuid = value;

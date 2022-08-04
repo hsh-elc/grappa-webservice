@@ -6,11 +6,11 @@ import javax.xml.bind.annotation.*;
 
 /**
  * Specifies an operand of a composite nullify condition.
- * 
+ *
  * <p>Java class for grades-nullify-base-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="grades-nullify-base-type">
  *   &lt;complexContent>
@@ -24,8 +24,6 @@ import javax.xml.bind.annotation.*;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "grades-nullify-base-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -48,11 +46,9 @@ public class GradesNullifyBaseType {
 
     /**
      * Gets the value of the title property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTitle() {
         return title;
@@ -60,11 +56,9 @@ public class GradesNullifyBaseType {
 
     /**
      * Sets the value of the title property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setTitle(String value) {
         this.title = value;
@@ -72,11 +66,9 @@ public class GradesNullifyBaseType {
 
     /**
      * Gets the value of the description property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getDescription() {
         return description;
@@ -84,11 +76,9 @@ public class GradesNullifyBaseType {
 
     /**
      * Sets the value of the description property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setDescription(String value) {
         this.description = value;
@@ -96,11 +86,9 @@ public class GradesNullifyBaseType {
 
     /**
      * Gets the value of the internalDescription property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getInternalDescription() {
         return internalDescription;
@@ -108,11 +96,9 @@ public class GradesNullifyBaseType {
 
     /**
      * Sets the value of the internalDescription property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setInternalDescription(String value) {
         this.internalDescription = value;

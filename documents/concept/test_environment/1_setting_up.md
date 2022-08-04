@@ -8,7 +8,8 @@ See [`1-1_overall_picture.md`](1-1_overall_picture.md)
 
 ## Individual data
 
-There are many placeholders in this document, where you should put your own usernames, paths or passwords. Here's a list of all of the placeholders:
+There are many placeholders in this document, where you should put your own usernames, paths or passwords. Here's a list
+of all of the placeholders:
 
 * mysql.moodleuser, e. g. moodleuser
 * mysql.moodlepassword
@@ -33,7 +34,6 @@ See [`1-2_xampp_moolde.md`](1-2_xampp_moolde.md)
 ## MooPT
 
 See [`1-3_moopt.md`](1-3_moopt.md)
-
 
 ## Windows subsystem for linux (WSL), Redis, Docker
 

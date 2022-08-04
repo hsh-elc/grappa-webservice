@@ -11,40 +11,42 @@ import proforma.util.div.PropertyHandle;
  */
 public abstract class ProformaIncludedTaskFileHandle {
 
-	private PropertyHandle propertyHandle;
-	
-	public ProformaIncludedTaskFileHandle(Object submission, String propertyName, Class<?> clazz) {
-		propertyHandle = new PropertyHandle(submission, propertyName, clazz);
-		if (submission == null) throw new AssertionError(this.getClass() + ": submission shouldn't be null");
-	}
-	
-	protected void assertNotNull(String whatToDo) throws NullPointerException {
-		propertyHandle.assertNotNull(whatToDo, this);
-	}
-	
+    private PropertyHandle propertyHandle;
 
-	
-	public Object get() {
-		return propertyHandle.get();
-	}
+    public ProformaIncludedTaskFileHandle(Object submission, String propertyName, Class<?> clazz) {
+        propertyHandle = new PropertyHandle(submission, propertyName, clazz);
+        if (submission == null) throw new AssertionError(this.getClass() + ": submission shouldn't be null");
+    }
 
-	public void set(Object value) {
-		propertyHandle.set(value);
-	}
-	
-	public ProformaIncludedTaskFileHandle createAndSet() {
-		propertyHandle.createAndSet();
-		return this;
-	}
+    protected void assertNotNull(String whatToDo) throws NullPointerException {
+        propertyHandle.assertNotNull(whatToDo, this);
+    }
 
-	public void remove() {
-		propertyHandle.set(null);
-	}
-	
-	
-	public abstract ProformaAttachedBinFileHandle attachedZipFileHandle();
-	public abstract ProformaAttachedTxtFileHandle attachedXmlFileHandle();
-	public abstract ProformaEmbeddedBinFileHandle embeddedZipFileHandle();
-	public abstract ProformaEmbeddedBinFileHandle embeddedXmlFileHandle();
-	
+
+    public Object get() {
+        return propertyHandle.get();
+    }
+
+    public void set(Object value) {
+        propertyHandle.set(value);
+    }
+
+    public ProformaIncludedTaskFileHandle createAndSet() {
+        propertyHandle.createAndSet();
+        return this;
+    }
+
+    public void remove() {
+        propertyHandle.set(null);
+    }
+
+
+    public abstract ProformaAttachedBinFileHandle attachedZipFileHandle();
+
+    public abstract ProformaAttachedTxtFileHandle attachedXmlFileHandle();
+
+    public abstract ProformaEmbeddedBinFileHandle embeddedZipFileHandle();
+
+    public abstract ProformaEmbeddedBinFileHandle embeddedXmlFileHandle();
+
 }

@@ -8,7 +8,7 @@ import java.io.IOException;
  */
 public class FileUtils {
 
-	public static byte[] readFileToByteArray(final File file) throws IOException {
-		return org.apache.commons.io.FileUtils.readFileToByteArray(file);
-	}
+    public static byte[] readFileToByteArray(final File file) throws IOException {
+        return org.apache.commons.io.FileUtils.readFileToByteArray(file);
+    }
 }

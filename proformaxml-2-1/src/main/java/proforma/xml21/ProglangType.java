@@ -5,15 +5,14 @@ import javax.xml.bind.annotation.*;
 
 
 /**
- * 
- *             A list of existing programming languages is
- *             available in the white paper appendix.
- *           
- * 
+ * A list of existing programming languages is
+ * available in the white paper appendix.
+ *
+ *
  * <p>Java class for proglang-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="proglang-type">
  *   &lt;simpleContent>
@@ -23,8 +22,6 @@ import javax.xml.bind.annotation.*;
  *   &lt;/simpleContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "proglang-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -39,11 +36,9 @@ public class ProglangType {
 
     /**
      * Gets the value of the value property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getValue() {
         return value;
@@ -51,11 +46,9 @@ public class ProglangType {
 
     /**
      * Sets the value of the value property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setValue(String value) {
         this.value = value;
@@ -63,11 +56,9 @@ public class ProglangType {
 
     /**
      * Gets the value of the version property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getVersion() {
         return version;
@@ -75,11 +66,9 @@ public class ProglangType {
 
     /**
      * Sets the value of the version property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setVersion(String value) {
         this.version = value;

@@ -1,93 +1,92 @@
 package de.hsh.grappa.backendplugin;
 
-import java.nio.charset.Charset;
-import java.util.Locale;
-import java.util.Properties;
-
 import proforma.util.boundary.Boundary;
 import proforma.util.resource.ResponseResource;
 import proforma.util.resource.SubmissionResource;
 
-public abstract class BackendPlugin{
+import java.nio.charset.Charset;
+import java.util.Locale;
+import java.util.Properties;
 
-	private Boundary boundary;
+public abstract class BackendPlugin {
 
-	protected String logLevel;
+    private Boundary boundary;
 
-	private String fileEncoding;
-	private String userLanguage;
-	private String userCountry;
+    protected String logLevel;
 
-	/**
-	 * A backend plugin might run as part of the JVM running the webapp or as
-	 * part of a separate JVM in a docker container. In both cases a backend
-	 * plugin needs access to external resources. The return value provides this
-	 * access. In the latter case of a docker container not all external
-	 * resources are available.
-	 */
-	public Boundary getBoundary(){
-		return boundary;
-	}
+    private String fileEncoding;
+    private String userLanguage;
+    private String userCountry;
 
-	/**
-	 * This initialization method is called before every call to grade().
-	 * 
-	 * @param props
-	 * @param Boundary
-	 *            boundary
-	 * @throws Exception
-	 */
-	public void init(Properties props,Boundary boundary,String logLevel) throws Exception{
-		this.boundary=boundary;
-		this.logLevel=logLevel;
-		init(props);
-	}
+    /**
+     * A backend plugin might run as part of the JVM running the webapp or as
+     * part of a separate JVM in a docker container. In both cases a backend
+     * plugin needs access to external resources. The return value provides this
+     * access. In the latter case of a docker container not all external
+     * resources are available.
+     */
+    public Boundary getBoundary() {
+        return boundary;
+    }
 
-	/**
-	 * This initialization method is called before every call to grade().
-	 * 
-	 * @throws Exception
-	 */
-	public void init(Properties props,Boundary boundary,String logLevel,
-			String fileEncoding,String userLanguage,String userCountry) throws Exception{
-		this.fileEncoding=fileEncoding;
-		this.userLanguage=userLanguage;
-		this.userCountry=userCountry;
-		this.init(props, boundary, logLevel);
-	}
+    /**
+     * This initialization method is called before every call to grade().
+     *
+     * @param props
+     * @param Boundary boundary
+     * @throws Exception
+     */
+    public void init(Properties props, Boundary boundary, String logLevel) throws Exception {
+        this.boundary = boundary;
+        this.logLevel = logLevel;
+        init(props);
+    }
 
-	/**
-	 * This initialization method is called before every call to grade().
-	 * 
-	 * @param props
-	 * @throws Exception
-	 */
-	public abstract void init(Properties props) throws Exception;
+    /**
+     * This initialization method is called before every call to grade().
+     *
+     * @throws Exception
+     */
+    public void init(Properties props, Boundary boundary, String logLevel,
+                     String fileEncoding, String userLanguage, String userCountry) throws Exception {
+        this.fileEncoding = fileEncoding;
+        this.userLanguage = userLanguage;
+        this.userCountry = userCountry;
+        this.init(props, boundary, logLevel);
+    }
 
-	/**
-	 * grades a proforma submission and returns a proforma response
-	 * 
-	 * @param submission
-	 *            the submission to be graded
-	 * @return a valid proforma response if the grading process finished
-	 *         successfully, or null if the grading process was interrupted and
-	 *         shut down gracefully without any result
-	 * @throws Exception
-	 *             on any grading execution error
-	 */
-	public abstract ResponseResource grade(SubmissionResource submission) throws Exception;
-	
-	//Getter ensuring receiving valid values
-	protected String getFileEncoding(){
-		if(fileEncoding==null || fileEncoding.equals("")) return Charset.defaultCharset().name();
-		return fileEncoding;
-	}
-	protected String getUserLanguage(){
-		if(userLanguage==null || userLanguage.equals("")) return Locale.getDefault().getLanguage();
-		return userLanguage;
-	}
-	protected String getUserCountry(){
-		if(userCountry==null || userCountry.equals("")) return Locale.getDefault().getCountry();
-		return userCountry;
-	}
+    /**
+     * This initialization method is called before every call to grade().
+     *
+     * @param props
+     * @throws Exception
+     */
+    public abstract void init(Properties props) throws Exception;
+
+    /**
+     * grades a proforma submission and returns a proforma response
+     *
+     * @param submission the submission to be graded
+     * @return a valid proforma response if the grading process finished
+     * successfully, or null if the grading process was interrupted and
+     * shut down gracefully without any result
+     * @throws Exception on any grading execution error
+     */
+    public abstract ResponseResource grade(SubmissionResource submission) throws Exception;
+
+    //Getter ensuring receiving valid values
+    protected String getFileEncoding() {
+        if (fileEncoding == null || fileEncoding.equals("")) return Charset.defaultCharset().name();
+        return fileEncoding;
+    }
+
+    protected String getUserLanguage() {
+        if (userLanguage == null || userLanguage.equals("")) return Locale.getDefault().getLanguage();
+        return userLanguage;
+    }
+
+    protected String getUserCountry() {
+        if (userCountry == null || userCountry.equals("")) return Locale.getDefault().getCountry();
+        return userCountry;
+    }
 }

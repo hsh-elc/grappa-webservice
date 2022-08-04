@@ -2,7 +2,7 @@ package de.hsh.grappa.service;
 
 /**
  * Immutable read only class.
- *
+ * <p>
  * This class provides data about how many
  * of the grading processes (i.e. student submissions)
  * have been submitted in total, and how many have
@@ -34,7 +34,7 @@ public class GraderStatistics {
             this.failed + other.failed,
             this.timedOut + other.timedOut,
             this.cancelled + other.cancelled
-            );
+        );
     }
 
     public long getExecuted() {

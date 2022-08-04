@@ -1,6 +1,7 @@
 # Setting up Tomcat and Grappa for a development environment
 
-This document describes a setup of Tomcat and Grappa in a development environment setup as described [here](1_setting_up.md).
+This document describes a setup of Tomcat and Grappa in a development environment setup as
+described [here](1_setting_up.md).
 
 Currently, there is a description for a setup on a Windows computer, which runs xampp.
 
@@ -21,13 +22,13 @@ Edit the configuration file `tomcat-users.xml` via the xampp control panel:
 <user username="admin" password="{tomcat.adminpassword}" roles="admin,manager,manager-gui"/>
 ```
 
-Then edit the file `C:\xampp\tomcat\webapps\manager\META-INF\context.xml` and comment the following line out using `<!-- ... -->`:
+Then edit the file `C:\xampp\tomcat\webapps\manager\META-INF\context.xml` and comment the following line out
+using `<!-- ... -->`:
 
 ```
   <!--<Valve className="org.apache.catalina.valves.RemoteAddrValve"
          allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" />-->
 ```
-
 
 ### Use it
 
@@ -44,6 +45,7 @@ Start Eclipse and choose a workspace.
 Install the Eclipse WTP Plugin from `https://marketplace.eclipse.org/content/eclipse-java-ee-developer-tools-0`.
 
 Select Window > Preferences > Server > Runtime Environments > Add
+
 * Apache Tomcat 8.5
 * Tomcat installation directory: {xampp.home}\tomcat
 * JRE: choose a jdk 10
@@ -51,20 +53,20 @@ Select Window > Preferences > Server > Runtime Environments > Add
 Select File > New > Others > Server
 
 Then
+
 * Select Apache > Tomcat 8.5
 * Server's hostname: {localip}
 
 Go to Window > Show View > Other > Server > Servers
+
 * Double click on the new server
 * Choose Server Locations: Use Tomcat installation (takes control of Tomcat installation)
 * Deploy path: {xampp.home}\tomcat\webapps
-* Timeouts: 
-  - Start: 120
-  - Stop: 30
-
+* Timeouts:
+    - Start: 120
+    - Stop: 30
 
 In the Servers view you can start and stop the server from eclipse. The console log will show the Tomcat log.
-
 
 ## Grappa
 
@@ -73,6 +75,7 @@ In the Servers view you can start and stop the server from eclipse. The console 
 Clone the Grappa github repository. Currently we use the develop branch.
 
 On a Windows cmd prompt type:
+
 ```
 git clone https://github.com/hsh-elc/grappa-webservice.git {workspace.path}/github_hsh-elc_grappa-webservice
 ```
@@ -81,20 +84,25 @@ Then check, if you are on the right git branch / checkout the desired branch.
 
 ### Optional but useful: M2Eclipse Plugin
 
-Install the M2Eclipse Plugin via market place `https://marketplace.eclipse.org/content/eclipse-m2e-maven-support-eclipse-ide`.
+Install the M2Eclipse Plugin via market
+place `https://marketplace.eclipse.org/content/eclipse-m2e-maven-support-eclipse-ide`.
 
-Import the Grappa project by selecting menu File > Import > Existing Maven Projects. Then navigate to folger {workspace.path}\github_hsh-elc_grappa-webservice.
+Import the Grappa project by selecting menu File > Import > Existing Maven Projects. Then navigate to folger
+{workspace.path}\github_hsh-elc_grappa-webservice.
 
-First only import the `pom.xml` of the parent project (see also `https://stackoverflow.com/a/60205161`). Then for each subfolder do a right click > Import > Existing Maven Project.
-
+First only import the `pom.xml` of the parent project (see also `https://stackoverflow.com/a/60205161`). Then for each
+subfolder do a right click > Import > Existing Maven Project.
 
 ### Build
 
 We build Grappa on the command line using Maven.
 
-In a WSL-Terminal we build Grappa following `https://github.com/hsh-elc/grappa-webservice/blob/develop/documents/concept/documentation.md#23-building-and-deployment`.
+In a WSL-Terminal we build Grappa
+following `https://github.com/hsh-elc/grappa-webservice/blob/develop/documents/concept/documentation.md#23-building-and-deployment`
+.
 
-Change to the mounted directory corresponding to {workspace.path} (note the backticks!): 
+Change to the mounted directory corresponding to {workspace.path} (note the backticks!):
+
 ```
 cd `wslpath "{workspace.path}"`
 ```
@@ -120,7 +128,8 @@ cd `wslpath "{workspace.path}"`/github_hsh-elc_grappa-webservice
 cp grappa-webservice/target/grappa-webservice-2.0.0.war `wslpath "{xampp.home}"`/tomcat/webapps/grappa-webservice-2.war
 ```
 
-Check in Tomcat Manager if the Grappa webapp has been reconized by Tomcat: `http://{localip}:{tomcat.port}/manager/html`.
+Check in Tomcat Manager if the Grappa webapp has been reconized by Tomcat: `http://{localip}:{tomcat.port}/manager/html`
+.
 
 ### Configure
 
@@ -133,6 +142,7 @@ cp grappa-webservice/src/main/resources/grappa-config.yaml.example  /mnt/c/etc/g
 ```
 
 Now edit the file `C:\etc\grappa\grappa-config.yaml` below the `cache:` section:
+
 ```
 cache:
   submission_ttl_seconds: 86400 # 1 day
@@ -145,12 +155,13 @@ cache:
 ```
 
 Restart Tomcat. In the log output you should see a successful connection to the redis server like this:
+
 ```
 INFO  d.h.g.a.GrappaServlet - Redis connection established
 ```
 
-In addition, as expected, there is an error that the DummyGrader could not be loaded because we have not yet configured the grader properly. We'll do that later.
-
+In addition, as expected, there is an error that the DummyGrader could not be loaded because we have not yet configured
+the grader properly. We'll do that later.
 
 ### Test
 

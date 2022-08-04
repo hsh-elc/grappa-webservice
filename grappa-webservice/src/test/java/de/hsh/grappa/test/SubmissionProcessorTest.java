@@ -4,13 +4,12 @@ import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.config.LmsConfig;
 import de.hsh.grappa.service.SubmissionProcessor;
-import proforma.util.div.IOUtils;
-import proforma.util.resource.MimeType;
-import proforma.util.resource.SubmissionResource;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import proforma.util.div.IOUtils;
+import proforma.util.resource.MimeType;
+import proforma.util.resource.SubmissionResource;
 
 import java.io.FileInputStream;
 

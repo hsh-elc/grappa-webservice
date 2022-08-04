@@ -7,10 +7,9 @@ import de.hsh.grappa.application.GrappaServlet;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.service.GraderPoolManager;
-import proforma.util.exception.NotFoundException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import proforma.util.exception.NotFoundException;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
@@ -46,7 +45,7 @@ public class GraderResource {
     public static JsonObject getGraderStatus(GraderID graderId) throws NotFoundException {
         var gcOpt = GrappaServlet.CONFIG.getGraders().stream()
             .filter(g -> g.getEnabled() && g.getId().equals(graderId)).findFirst();
-        if(!gcOpt.isPresent())
+        if (!gcOpt.isPresent())
             throw new NotFoundException(String.format("GraderId '%s' does not exist or is disabled.", graderId.toString()));
         var gc = gcOpt.get();
 

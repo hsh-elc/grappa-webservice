@@ -1,8 +1,12 @@
 package de.hsh.grappa.backendstarter;
 
+import ch.qos.logback.classic.Level;
 import de.hsh.grappa.backendplugin.BackendPlugin;
 import de.hsh.grappa.util.ClassPathClassLoader;
 import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import proforma.util.div.IOUtils;
 import proforma.util.div.Strings;
 import proforma.util.div.XmlUtils;
@@ -10,12 +14,6 @@ import proforma.util.div.Zip;
 import proforma.util.resource.MimeType;
 import proforma.util.resource.ResponseResource;
 import proforma.util.resource.SubmissionResource;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Level;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -31,13 +29,13 @@ import java.util.stream.Stream;
  * This class bootstraps and runs a BackendPlugin within a Docker
  * container. It's basically the second player to the
  * grappa-backend-plugin-docker-proxy module.
- *
+ * <p>
  * The Docker Proxy module deposits the submission resource file
  * within the Docker container in a specific directory and starts
  * the GraderBackendStarter, which in turn loads up the actual
  * grader BackendPlugin and passes that submission resource file
  * on to the plugin.
- *
+ * <p>
  * Once the grading process has finished one way or another, the
  * GraderBackendStarter stores the result in a specific directory
  * for the Docker Proxy module to retrieve.
@@ -47,7 +45,7 @@ import java.util.stream.Stream;
  */
 public class GraderBackendStarter {
     private static final Logger log = LoggerFactory.getLogger(GraderBackendStarter.class);
-    
+
     static {
         String lvl = System.getProperty("logging.level");
         if (!Strings.isNullOrEmpty(lvl)) {
@@ -65,7 +63,7 @@ public class GraderBackendStarter {
     private static final String CONFIG_FILE_EXTENSIONS = "grappa.plugin.grader.fileextensions";
     private static final String CONFIG_FILE_NAME = "grappa-grader-backend-starter.properties";
     private static final String TMP_INPUT_PATH = "/var/grb_starter/tmp";
-//    private static final String GRADER_EXCEPTION_MESSAGE_FILE_PATH =
+    //    private static final String GRADER_EXCEPTION_MESSAGE_FILE_PATH =
 //        TMP_INPUT_PATH.concat("/grader_exception_message");
     private static final String GRADER_EXCEPTION_STACKTRACE_FILE_PATH =
         TMP_INPUT_PATH.concat("/grader_exception_stacktrace");
@@ -83,7 +81,7 @@ public class GraderBackendStarter {
             log.info("Loading config file: {}", configPath);
             try (InputStream input = new FileInputStream(configPath.toFile().getAbsolutePath())) {
                 bpStarterConfig.load(input);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 log.error("Failed to load config file for backend starter: {}", configPath);
                 throw e;
             }
@@ -106,14 +104,14 @@ public class GraderBackendStarter {
                 log.error(ExceptionUtils.getStackTrace(e));
                 System.exit(-1);
             }
-            
+
             // TODO: assert that the submission is self containing and (no reference to external task).
 
             String graderConfigPath = bpStarterConfig.getProperty(CONFIG_GRADER_CONFIG_PATH);
             Properties graderConfig = new Properties();
             try (InputStream input = new FileInputStream(graderConfigPath)) {
                 graderConfig.load(input);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 log.error("Failed to load grader config file: {}", graderConfigPath);
                 log.error(ExceptionUtils.getStackTrace(e));
                 System.exit(-1);
@@ -122,7 +120,7 @@ public class GraderBackendStarter {
             ResponseResource responseResource = null;
             try {
                 log.info("Initializing grader backend...");
-                bp.init(graderConfig, new BackendStarterBoundaryImpl(), System.getProperty("logging.level")); 
+                bp.init(graderConfig, new BackendStarterBoundaryImpl(), System.getProperty("logging.level"));
                 log.info("Starting grading process...");
                 responseResource = bp.grade(submissionResource);
                 log.info("Grading finished.");
@@ -131,9 +129,9 @@ public class GraderBackendStarter {
                 log.error(e.getMessage());
                 log.error(ExceptionUtils.getStackTrace(e));
 
-                try(FileOutputStream fos = new FileOutputStream(GRADER_EXCEPTION_STACKTRACE_FILE_PATH);
-                    ByteArrayInputStream baos = new ByteArrayInputStream
-                        (ExceptionUtils.getStackTrace(e).getBytes())) {
+                try (FileOutputStream fos = new FileOutputStream(GRADER_EXCEPTION_STACKTRACE_FILE_PATH);
+                     ByteArrayInputStream baos = new ByteArrayInputStream
+                         (ExceptionUtils.getStackTrace(e).getBytes())) {
                     IOUtils.copy(baos, fos);
                 } catch (Exception e2) {
                     log.error(e2.getMessage());
@@ -145,13 +143,13 @@ public class GraderBackendStarter {
 
             try {
                 Path responseFilePath = null;
-                if(responseResource.getMimeType().equals(MimeType.XML))
+                if (responseResource.getMimeType().equals(MimeType.XML))
                     responseFilePath = Paths.get(RESULT_RESPONSE_FILE_PATH_WITHOUT_EXTENSION + ".xml");
                 else
                     responseFilePath = Paths.get(RESULT_RESPONSE_FILE_PATH_WITHOUT_EXTENSION + ".zip");
                 log.info("Writing response file to: {}", responseFilePath);
                 try (OutputStream outputStream = new FileOutputStream(responseFilePath.toString());
-                    ByteArrayInputStream responseStream = new ByteArrayInputStream(responseResource.getContent())) {
+                     ByteArrayInputStream responseStream = new ByteArrayInputStream(responseResource.getContent())) {
                     IOUtils.copy(responseStream, outputStream);
                 }
                 log.info("Grading backend starter finished successfully.");
@@ -174,30 +172,30 @@ public class GraderBackendStarter {
         System.exit(0);
     }
 
-    
+
     private static BackendPlugin loadBackendPluginFromProperties(Properties config) throws Exception {
         String classpathes = config.getProperty(CONFIG_CLASS_PATHES);
         String extensions = config.getProperty(CONFIG_FILE_EXTENSIONS);
         Classpath cp = Classpath.of(classpathes, extensions);
 
         String className = config.getProperty(CONFIG_CLASS_NAME);
-        
+
         @SuppressWarnings("resource") // do not close the class loader, since we need it for further class loadings
-        ClassPathClassLoader<BackendPlugin> backendPluginLoader = 
-                new ClassPathClassLoader<>(BackendPlugin.class, "default");
+        ClassPathClassLoader<BackendPlugin> backendPluginLoader =
+            new ClassPathClassLoader<>(BackendPlugin.class, "default");
         backendPluginLoader.configure(cp);
         BackendPlugin bp = backendPluginLoader.instantiateClass(className);
         return bp;
-    
+
     }
-    
+
 
     private static SubmissionResource loadProformaSubmission() throws Exception {
         Path submZipPath = Paths.get(TMP_INPUT_PATH, "submission.zip");
         Path submXmlPath = Paths.get(TMP_INPUT_PATH, "submission.xml");
         Path submToLoadPath = null;
         MimeType mimeType = null;
-        if(Files.exists(submZipPath) && Files.isRegularFile(submZipPath)) {
+        if (Files.exists(submZipPath) && Files.isRegularFile(submZipPath)) {
             submToLoadPath = submZipPath;
             mimeType = MimeType.ZIP;
         } else if (Files.exists(submXmlPath) && Files.isRegularFile(submXmlPath)) {
@@ -208,17 +206,17 @@ public class GraderBackendStarter {
                 submXmlPath, submZipPath));
         }
         byte[] submBytes = Files.readAllBytes(submToLoadPath);
-        
+
         // validate content
         if (mimeType.equals(MimeType.ZIP) && !Zip.isZip(submBytes)) {
             throw new IllegalArgumentException(String.format("The file '%s' seemingly does not contain zip data. (first 10 bytes are %s)",
-            		submZipPath, Arrays.toString(Stream.of(submBytes).limit(10).toArray())));
+                submZipPath, Arrays.toString(Stream.of(submBytes).limit(10).toArray())));
         }
         if (mimeType.equals(MimeType.XML) && !XmlUtils.isXml(submBytes)) {
             throw new IllegalArgumentException(String.format("The file '%s' seemingly does not contain utf-8 encoded xml data. (first 10 bytes are %s)",
-            		submXmlPath, Arrays.toString(Stream.of(submBytes).limit(10).toArray())));
+                submXmlPath, Arrays.toString(Stream.of(submBytes).limit(10).toArray())));
         }
-        
+
         return new SubmissionResource(submBytes, mimeType);
     }
 }

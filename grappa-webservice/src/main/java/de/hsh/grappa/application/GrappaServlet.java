@@ -126,9 +126,9 @@ public class GrappaServlet implements ServletContextListener {
     }
 
     public static String getAppVersion() {
-        if(!Strings.isNullOrEmpty(appVersion))
+        if (!Strings.isNullOrEmpty(appVersion))
             return appVersion;
-        appVersion  = GrappaServlet.class.getPackage().getImplementationVersion();
+        appVersion = GrappaServlet.class.getPackage().getImplementationVersion();
         if (null == appVersion) {
             Properties prop = new Properties();
             try {
@@ -141,7 +141,7 @@ public class GrappaServlet implements ServletContextListener {
             } catch (Exception ex) {
                 log.warn("Could not read Implementation-Version from MANIFEST.MF file, service is probably running " +
                     "as exploded war");
-                if(!(ex instanceof NullPointerException))
+                if (!(ex instanceof NullPointerException))
                     log.warn(ex.getMessage());
                 appVersion = "N/A";
             }

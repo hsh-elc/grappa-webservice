@@ -1,10 +1,9 @@
 package de.hsh.grappa.test;
 
+import de.hsh.grappa.test.utils.TestConfig;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Before;
 import org.junit.Test;
-
-import de.hsh.grappa.test.utils.TestConfig;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;

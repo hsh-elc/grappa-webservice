@@ -9,14 +9,14 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * A "combine-ref" node points to a "combine" node in the grading scheme hierarchy.
- *         As such the result of the pointed at node is obtained and included in a bottom-up fashion in the calculation of
- *         the total result.
- *       
- * 
+ * As such the result of the pointed at node is obtained and included in a bottom-up fashion in the calculation of
+ * the total result.
+ *
+ *
  * <p>Java class for grades-combine-ref-child-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="grades-combine-ref-child-type">
  *   &lt;complexContent>
@@ -26,25 +26,20 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "grades-combine-ref-child-type", namespace = "urn:proforma:v2.1")
 public class GradesCombineRefChildType
-    extends GradesBaseRefChildType
-{
+    extends GradesBaseRefChildType {
 
     @XmlAttribute(name = "ref", required = true)
     protected String ref;
 
     /**
      * Gets the value of the ref property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getRef() {
         return ref;
@@ -52,11 +47,9 @@ public class GradesCombineRefChildType
 
     /**
      * Sets the value of the ref property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setRef(String value) {
         this.ref = value;

@@ -12,6 +12,6 @@ import javax.xml.bind.annotation.XmlTransient;
 //    // go here in case a multi versioned Proforma
 //    // library should be used
 //})
-public interface AbstractTaskType extends AbstractProformaType  {
+public interface AbstractTaskType extends AbstractProformaType {
     //String getUuid();
 }

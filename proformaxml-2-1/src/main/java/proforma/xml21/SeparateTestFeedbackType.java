@@ -9,9 +9,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for separate-test-feedback-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="separate-test-feedback-type">
  *   &lt;complexContent>
@@ -24,8 +24,6 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "separate-test-feedback-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -41,11 +39,9 @@ public class SeparateTestFeedbackType {
 
     /**
      * Gets the value of the submissionFeedbackList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link FeedbackListType }
-     *     
+     *
+     * @return possible object is
+     * {@link FeedbackListType }
      */
     public FeedbackListType getSubmissionFeedbackList() {
         return submissionFeedbackList;
@@ -53,11 +49,9 @@ public class SeparateTestFeedbackType {
 
     /**
      * Sets the value of the submissionFeedbackList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link FeedbackListType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link FeedbackListType }
      */
     public void setSubmissionFeedbackList(FeedbackListType value) {
         this.submissionFeedbackList = value;
@@ -65,11 +59,9 @@ public class SeparateTestFeedbackType {
 
     /**
      * Gets the value of the testsResponse property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link TestsResponseType }
-     *     
+     *
+     * @return possible object is
+     * {@link TestsResponseType }
      */
     public TestsResponseType getTestsResponse() {
         return testsResponse;
@@ -77,11 +69,9 @@ public class SeparateTestFeedbackType {
 
     /**
      * Sets the value of the testsResponse property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link TestsResponseType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link TestsResponseType }
      */
     public void setTestsResponse(TestsResponseType value) {
         this.testsResponse = value;

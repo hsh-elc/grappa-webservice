@@ -76,7 +76,7 @@ public class AllGraderResources {
     public static JsonArray getGraderStatusArray() {
         JsonArray graderStatusArray = new JsonArray();
         for (GraderConfig g : GrappaServlet.CONFIG.getGraders()) {
-            if(g.getEnabled()) {
+            if (g.getEnabled()) {
                 try {
                     var status = GraderResource.getGraderStatus(g.getId());
                     graderStatusArray.add(status);

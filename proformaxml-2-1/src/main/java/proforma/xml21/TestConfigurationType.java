@@ -11,9 +11,9 @@ import java.util.List;
 
 /**
  * <p>Java class for test-configuration-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="test-configuration-type">
  *   &lt;complexContent>
@@ -34,8 +34,6 @@ import java.util.List;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "test-configuration-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -60,11 +58,9 @@ public class TestConfigurationType {
 
     /**
      * Gets the value of the filerefs property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link FilerefsType }
-     *     
+     *
+     * @return possible object is
+     * {@link FilerefsType }
      */
     public FilerefsType getFilerefs() {
         return filerefs;
@@ -72,11 +68,9 @@ public class TestConfigurationType {
 
     /**
      * Sets the value of the filerefs property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link FilerefsType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link FilerefsType }
      */
     public void setFilerefs(FilerefsType value) {
         this.filerefs = value;
@@ -84,11 +78,9 @@ public class TestConfigurationType {
 
     /**
      * Gets the value of the timeout property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
+     *
+     * @return possible object is
+     * {@link BigInteger }
      */
     public BigInteger getTimeout() {
         return timeout;
@@ -96,11 +88,9 @@ public class TestConfigurationType {
 
     /**
      * Sets the value of the timeout property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigInteger }
      */
     public void setTimeout(BigInteger value) {
         this.timeout = value;
@@ -108,11 +98,9 @@ public class TestConfigurationType {
 
     /**
      * Gets the value of the externalresourcerefs property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ExternalresourcerefsType }
-     *     
+     *
+     * @return possible object is
+     * {@link ExternalresourcerefsType }
      */
     public ExternalresourcerefsType getExternalresourcerefs() {
         return externalresourcerefs;
@@ -120,11 +108,9 @@ public class TestConfigurationType {
 
     /**
      * Sets the value of the externalresourcerefs property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ExternalresourcerefsType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link ExternalresourcerefsType }
      */
     public void setExternalresourcerefs(ExternalresourcerefsType value) {
         this.externalresourcerefs = value;
@@ -132,26 +118,24 @@ public class TestConfigurationType {
 
     /**
      * Gets the value of the any property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
      * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getAny().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link Object }
      * {@link Element }
-     * 
-     * 
      */
     public List<Object> getAny() {
         if (any == null) {
@@ -162,11 +146,9 @@ public class TestConfigurationType {
 
     /**
      * Gets the value of the testMetaData property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link TestMetaDataType }
-     *     
+     *
+     * @return possible object is
+     * {@link TestMetaDataType }
      */
     public TestMetaDataType getTestMetaData() {
         return testMetaData;
@@ -174,11 +156,9 @@ public class TestConfigurationType {
 
     /**
      * Sets the value of the testMetaData property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link TestMetaDataType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link TestMetaDataType }
      */
     public void setTestMetaData(TestMetaDataType value) {
         this.testMetaData = value;

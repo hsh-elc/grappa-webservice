@@ -5,9 +5,9 @@ import javax.xml.bind.annotation.*;
 
 /**
  * <p>Java class for response-file-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="response-file-type">
  *   &lt;complexContent>
@@ -20,8 +20,6 @@ import javax.xml.bind.annotation.*;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "response-file-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -49,11 +47,9 @@ public class ResponseFileType {
 
     /**
      * Gets the value of the embeddedBinFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EmbeddedBinFileType }
-     *     
+     *
+     * @return possible object is
+     * {@link EmbeddedBinFileType }
      */
     public EmbeddedBinFileType getEmbeddedBinFile() {
         return embeddedBinFile;
@@ -61,11 +57,9 @@ public class ResponseFileType {
 
     /**
      * Sets the value of the embeddedBinFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EmbeddedBinFileType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link EmbeddedBinFileType }
      */
     public void setEmbeddedBinFile(EmbeddedBinFileType value) {
         this.embeddedBinFile = value;
@@ -73,11 +67,9 @@ public class ResponseFileType {
 
     /**
      * Gets the value of the embeddedTxtFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EmbeddedTxtFileType }
-     *     
+     *
+     * @return possible object is
+     * {@link EmbeddedTxtFileType }
      */
     public EmbeddedTxtFileType getEmbeddedTxtFile() {
         return embeddedTxtFile;
@@ -85,11 +77,9 @@ public class ResponseFileType {
 
     /**
      * Sets the value of the embeddedTxtFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EmbeddedTxtFileType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link EmbeddedTxtFileType }
      */
     public void setEmbeddedTxtFile(EmbeddedTxtFileType value) {
         this.embeddedTxtFile = value;
@@ -97,11 +87,9 @@ public class ResponseFileType {
 
     /**
      * Gets the value of the attachedBinFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getAttachedBinFile() {
         return attachedBinFile;
@@ -109,11 +97,9 @@ public class ResponseFileType {
 
     /**
      * Sets the value of the attachedBinFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setAttachedBinFile(String value) {
         this.attachedBinFile = value;
@@ -121,11 +107,9 @@ public class ResponseFileType {
 
     /**
      * Gets the value of the attachedTxtFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link AttachedTxtFileType }
-     *     
+     *
+     * @return possible object is
+     * {@link AttachedTxtFileType }
      */
     public AttachedTxtFileType getAttachedTxtFile() {
         return attachedTxtFile;
@@ -133,11 +117,9 @@ public class ResponseFileType {
 
     /**
      * Sets the value of the attachedTxtFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link AttachedTxtFileType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link AttachedTxtFileType }
      */
     public void setAttachedTxtFile(AttachedTxtFileType value) {
         this.attachedTxtFile = value;
@@ -145,11 +127,9 @@ public class ResponseFileType {
 
     /**
      * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getId() {
         return id;
@@ -157,11 +137,9 @@ public class ResponseFileType {
 
     /**
      * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setId(String value) {
         this.id = value;
@@ -169,11 +147,9 @@ public class ResponseFileType {
 
     /**
      * Gets the value of the mimetype property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getMimetype() {
         return mimetype;
@@ -181,11 +157,9 @@ public class ResponseFileType {
 
     /**
      * Sets the value of the mimetype property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setMimetype(String value) {
         this.mimetype = value;
@@ -193,11 +167,9 @@ public class ResponseFileType {
 
     /**
      * Gets the value of the title property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTitle() {
         return title;
@@ -205,11 +177,9 @@ public class ResponseFileType {
 
     /**
      * Sets the value of the title property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setTitle(String value) {
         this.title = value;

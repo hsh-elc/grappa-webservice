@@ -11,9 +11,9 @@ import java.util.List;
 
 /**
  * <p>Java class for response-meta-data-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="response-meta-data-type">
  *   &lt;complexContent>
@@ -27,8 +27,6 @@ import java.util.List;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "response-meta-data-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -48,11 +46,9 @@ public class ResponseMetaDataType {
 
     /**
      * Gets the value of the responseDatetime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
+     *
+     * @return possible object is
+     * {@link XMLGregorianCalendar }
      */
     public XMLGregorianCalendar getResponseDatetime() {
         return responseDatetime;
@@ -60,11 +56,9 @@ public class ResponseMetaDataType {
 
     /**
      * Sets the value of the responseDatetime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link XMLGregorianCalendar }
      */
     public void setResponseDatetime(XMLGregorianCalendar value) {
         this.responseDatetime = value;
@@ -72,11 +66,9 @@ public class ResponseMetaDataType {
 
     /**
      * Gets the value of the graderEngine property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link GraderEngineType }
-     *     
+     *
+     * @return possible object is
+     * {@link GraderEngineType }
      */
     public GraderEngineType getGraderEngine() {
         return graderEngine;
@@ -84,11 +76,9 @@ public class ResponseMetaDataType {
 
     /**
      * Sets the value of the graderEngine property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link GraderEngineType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link GraderEngineType }
      */
     public void setGraderEngine(GraderEngineType value) {
         this.graderEngine = value;
@@ -96,26 +86,24 @@ public class ResponseMetaDataType {
 
     /**
      * Gets the value of the any property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
      * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getAny().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link Object }
      * {@link Element }
-     * 
-     * 
      */
     public List<Object> getAny() {
         if (any == null) {

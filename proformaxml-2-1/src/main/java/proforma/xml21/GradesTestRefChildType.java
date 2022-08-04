@@ -6,13 +6,13 @@ import javax.xml.bind.annotation.*;
 
 /**
  * A "test-ref" node points to a test in a ProFormA task. As such the result of the
- *         pointed at test is obtained and included in a bottom-up fashion in the calculation of the total result.
- *       
- * 
+ * pointed at test is obtained and included in a bottom-up fashion in the calculation of the total result.
+ *
+ *
  * <p>Java class for grades-test-ref-child-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="grades-test-ref-child-type">
  *   &lt;complexContent>
@@ -28,8 +28,6 @@ import javax.xml.bind.annotation.*;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "grades-test-ref-child-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -38,8 +36,7 @@ import javax.xml.bind.annotation.*;
     "internalDescription"
 })
 public class GradesTestRefChildType
-    extends GradesBaseRefChildType
-{
+    extends GradesBaseRefChildType {
 
     @XmlElement(namespace = "urn:proforma:v2.1")
     protected String title;
@@ -54,11 +51,9 @@ public class GradesTestRefChildType
 
     /**
      * Gets the value of the title property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTitle() {
         return title;
@@ -66,11 +61,9 @@ public class GradesTestRefChildType
 
     /**
      * Sets the value of the title property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setTitle(String value) {
         this.title = value;
@@ -78,11 +71,9 @@ public class GradesTestRefChildType
 
     /**
      * Gets the value of the description property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getDescription() {
         return description;
@@ -90,11 +81,9 @@ public class GradesTestRefChildType
 
     /**
      * Sets the value of the description property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setDescription(String value) {
         this.description = value;
@@ -102,11 +91,9 @@ public class GradesTestRefChildType
 
     /**
      * Gets the value of the internalDescription property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getInternalDescription() {
         return internalDescription;
@@ -114,11 +101,9 @@ public class GradesTestRefChildType
 
     /**
      * Sets the value of the internalDescription property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setInternalDescription(String value) {
         this.internalDescription = value;
@@ -126,11 +111,9 @@ public class GradesTestRefChildType
 
     /**
      * Gets the value of the ref property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getRef() {
         return ref;
@@ -138,11 +121,9 @@ public class GradesTestRefChildType
 
     /**
      * Sets the value of the ref property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setRef(String value) {
         this.ref = value;
@@ -150,11 +131,9 @@ public class GradesTestRefChildType
 
     /**
      * Gets the value of the subRef property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getSubRef() {
         return subRef;
@@ -162,11 +141,9 @@ public class GradesTestRefChildType
 
     /**
      * Sets the value of the subRef property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setSubRef(String value) {
         this.subRef = value;

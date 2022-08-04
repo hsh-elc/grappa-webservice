@@ -1,18 +1,18 @@
 
 package proforma.xml21;
 
+import proforma.xml.AbstractTaskType;
+
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import proforma.xml.AbstractTaskType;
-
 
 /**
  * <p>Java class for task-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="task-type">
  *   &lt;complexContent>
@@ -37,8 +37,6 @@ import proforma.xml.AbstractTaskType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 
 @XmlRootElement(name = "task")
@@ -94,17 +92,16 @@ public class TaskType implements AbstractTaskType {
     @XmlSchemaType(name = "language")
     protected String lang;
 
-	@Override public String proFormAVersionNumber() {
-		return "2.1";
-	}
+    @Override
+    public String proFormAVersionNumber() {
+        return "2.1";
+    }
 
     /**
      * Gets the value of the title property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTitle() {
         return title;
@@ -112,11 +109,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the title property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setTitle(String value) {
         this.title = value;
@@ -124,11 +119,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the description property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getDescription() {
         return description;
@@ -136,11 +129,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the description property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setDescription(String value) {
         this.description = value;
@@ -148,11 +139,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the internalDescription property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getInternalDescription() {
         return internalDescription;
@@ -160,11 +149,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the internalDescription property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setInternalDescription(String value) {
         this.internalDescription = value;
@@ -172,11 +159,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the proglang property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ProglangType }
-     *     
+     *
+     * @return possible object is
+     * {@link ProglangType }
      */
     public ProglangType getProglang() {
         return proglang;
@@ -184,11 +169,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the proglang property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ProglangType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link ProglangType }
      */
     public void setProglang(ProglangType value) {
         this.proglang = value;
@@ -196,11 +179,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the submissionRestrictions property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link SubmissionRestrictionsType }
-     *     
+     *
+     * @return possible object is
+     * {@link SubmissionRestrictionsType }
      */
     public SubmissionRestrictionsType getSubmissionRestrictions() {
         return submissionRestrictions;
@@ -208,11 +189,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the submissionRestrictions property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link SubmissionRestrictionsType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link SubmissionRestrictionsType }
      */
     public void setSubmissionRestrictions(SubmissionRestrictionsType value) {
         this.submissionRestrictions = value;
@@ -220,11 +199,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the files property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link TaskFilesType }
-     *     
+     *
+     * @return possible object is
+     * {@link TaskFilesType }
      */
     public TaskFilesType getFiles() {
         return files;
@@ -232,11 +209,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the files property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link TaskFilesType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link TaskFilesType }
      */
     public void setFiles(TaskFilesType value) {
         this.files = value;
@@ -244,11 +219,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the externalResources property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ExternalResourcesType }
-     *     
+     *
+     * @return possible object is
+     * {@link ExternalResourcesType }
      */
     public ExternalResourcesType getExternalResources() {
         return externalResources;
@@ -256,11 +229,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the externalResources property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ExternalResourcesType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link ExternalResourcesType }
      */
     public void setExternalResources(ExternalResourcesType value) {
         this.externalResources = value;
@@ -268,11 +239,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the modelSolutions property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ModelSolutionsType }
-     *     
+     *
+     * @return possible object is
+     * {@link ModelSolutionsType }
      */
     public ModelSolutionsType getModelSolutions() {
         return modelSolutions;
@@ -280,11 +249,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the modelSolutions property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ModelSolutionsType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link ModelSolutionsType }
      */
     public void setModelSolutions(ModelSolutionsType value) {
         this.modelSolutions = value;
@@ -292,11 +259,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the tests property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link TestsType }
-     *     
+     *
+     * @return possible object is
+     * {@link TestsType }
      */
     public TestsType getTests() {
         return tests;
@@ -304,11 +269,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the tests property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link TestsType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link TestsType }
      */
     public void setTests(TestsType value) {
         this.tests = value;
@@ -316,11 +279,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the gradingHints property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link GradingHintsType }
-     *     
+     *
+     * @return possible object is
+     * {@link GradingHintsType }
      */
     public GradingHintsType getGradingHints() {
         return gradingHints;
@@ -328,11 +289,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the gradingHints property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link GradingHintsType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link GradingHintsType }
      */
     public void setGradingHints(GradingHintsType value) {
         this.gradingHints = value;
@@ -340,11 +299,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the metaData property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link TaskMetaDataType }
-     *     
+     *
+     * @return possible object is
+     * {@link TaskMetaDataType }
      */
     public TaskMetaDataType getMetaData() {
         return metaData;
@@ -352,11 +309,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the metaData property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link TaskMetaDataType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link TaskMetaDataType }
      */
     public void setMetaData(TaskMetaDataType value) {
         this.metaData = value;
@@ -364,11 +319,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the uuid property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getUuid() {
         return uuid;
@@ -376,11 +329,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the uuid property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setUuid(String value) {
         this.uuid = value;
@@ -388,11 +339,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the parentUuid property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getParentUuid() {
         return parentUuid;
@@ -400,11 +349,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the parentUuid property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setParentUuid(String value) {
         this.parentUuid = value;
@@ -412,11 +359,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Gets the value of the lang property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getLang() {
         return lang;
@@ -424,11 +369,9 @@ public class TaskType implements AbstractTaskType {
 
     /**
      * Sets the value of the lang property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setLang(String value) {
         this.lang = value;

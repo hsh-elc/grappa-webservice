@@ -4,7 +4,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Frame;
-
 import de.hsh.grappa.util.Tar;
 
 import java.io.ByteArrayInputStream;
@@ -31,8 +30,8 @@ class DockerController { // TODO: refactor to ctor(dockerClient, containerId)
 
     public static String createContainer(DockerClient client, String imageId, List<String> environment) throws Exception {
         String id = client.createContainerCmd(imageId)
-                .withEnv(environment)
-                .exec().getId();
+            .withEnv(environment)
+            .exec().getId();
         return id;
     }
 

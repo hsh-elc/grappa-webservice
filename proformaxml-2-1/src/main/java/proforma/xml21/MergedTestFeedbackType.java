@@ -9,9 +9,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for merged-test-feedback-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="merged-test-feedback-type">
  *   &lt;complexContent>
@@ -25,8 +25,6 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "merged-test-feedback-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -45,11 +43,9 @@ public class MergedTestFeedbackType {
 
     /**
      * Gets the value of the overallResult property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link OverallResultType }
-     *     
+     *
+     * @return possible object is
+     * {@link OverallResultType }
      */
     public OverallResultType getOverallResult() {
         return overallResult;
@@ -57,11 +53,9 @@ public class MergedTestFeedbackType {
 
     /**
      * Sets the value of the overallResult property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link OverallResultType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link OverallResultType }
      */
     public void setOverallResult(OverallResultType value) {
         this.overallResult = value;
@@ -69,11 +63,9 @@ public class MergedTestFeedbackType {
 
     /**
      * Gets the value of the studentFeedback property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getStudentFeedback() {
         return studentFeedback;
@@ -81,11 +73,9 @@ public class MergedTestFeedbackType {
 
     /**
      * Sets the value of the studentFeedback property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setStudentFeedback(String value) {
         this.studentFeedback = value;
@@ -93,11 +83,9 @@ public class MergedTestFeedbackType {
 
     /**
      * Gets the value of the teacherFeedback property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTeacherFeedback() {
         return teacherFeedback;
@@ -105,11 +93,9 @@ public class MergedTestFeedbackType {
 
     /**
      * Sets the value of the teacherFeedback property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setTeacherFeedback(String value) {
         this.teacherFeedback = value;

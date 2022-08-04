@@ -10,12 +10,12 @@ import java.math.BigDecimal;
 
 /**
  * A numerical constant serving as an operand of the comparison expression.
- *       
- * 
+ *
+ *
  * <p>Java class for grades-nullify-literal-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="grades-nullify-literal-type">
  *   &lt;complexContent>
@@ -25,25 +25,20 @@ import java.math.BigDecimal;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "grades-nullify-literal-type", namespace = "urn:proforma:v2.1")
 public class GradesNullifyLiteralType
-    extends GradesNullifyComparisonOperandType
-{
+    extends GradesNullifyComparisonOperandType {
 
     @XmlAttribute(name = "value", required = true)
     protected BigDecimal value;
 
     /**
      * Gets the value of the value property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @return possible object is
+     * {@link BigDecimal }
      */
     public BigDecimal getValue() {
         return value;
@@ -51,11 +46,9 @@ public class GradesNullifyLiteralType
 
     /**
      * Sets the value of the value property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigDecimal }
      */
     public void setValue(BigDecimal value) {
         this.value = value;

@@ -8,15 +8,15 @@ import java.util.List;
 
 /**
  * Specifies a simple comparison condition when the sub result of a pointed-at node
- *         should get nullified. This simple comparison condition is attributed with one of the six common comparison
- *         operators. Further it contains operands that refer to tests or combine nodes or that specify a numerical
- *         constant, which a result should be compared to.
- *       
- * 
+ * should get nullified. This simple comparison condition is attributed with one of the six common comparison
+ * operators. Further it contains operands that refer to tests or combine nodes or that specify a numerical
+ * constant, which a result should be compared to.
+ *
+ *
  * <p>Java class for grades-nullify-condition-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="grades-nullify-condition-type">
  *   &lt;complexContent>
@@ -44,16 +44,13 @@ import java.util.List;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "grades-nullify-condition-type", namespace = "urn:proforma:v2.1", propOrder = {
     "nullifyCombineRefOrNullifyTestRefOrNullifyLiteral"
 })
 public class GradesNullifyConditionType
-    extends GradesNullifyBaseType
-{
+    extends GradesNullifyBaseType {
 
     @XmlElements({
         @XmlElement(name = "nullify-combine-ref", namespace = "urn:proforma:v2.1", type = GradesNullifyCombineRefType.class),
@@ -66,27 +63,25 @@ public class GradesNullifyConditionType
 
     /**
      * Gets the value of the nullifyCombineRefOrNullifyTestRefOrNullifyLiteral property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
      * This is why there is not a <CODE>set</CODE> method for the nullifyCombineRefOrNullifyTestRefOrNullifyLiteral property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getNullifyCombineRefOrNullifyTestRefOrNullifyLiteral().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link GradesNullifyCombineRefType }
      * {@link GradesNullifyTestRefType }
      * {@link GradesNullifyLiteralType }
-     * 
-     * 
      */
     public List<GradesNullifyComparisonOperandType> getNullifyCombineRefOrNullifyTestRefOrNullifyLiteral() {
         if (nullifyCombineRefOrNullifyTestRefOrNullifyLiteral == null) {
@@ -97,11 +92,9 @@ public class GradesNullifyConditionType
 
     /**
      * Gets the value of the compareOp property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getCompareOp() {
         return compareOp;
@@ -109,11 +102,9 @@ public class GradesNullifyConditionType
 
     /**
      * Sets the value of the compareOp property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setCompareOp(String value) {
         this.compareOp = value;

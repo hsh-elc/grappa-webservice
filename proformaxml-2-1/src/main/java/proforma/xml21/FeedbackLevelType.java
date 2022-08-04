@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for feedback-level-type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
@@ -21,7 +21,6 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
- * 
  */
 @XmlType(name = "feedback-level-type", namespace = "urn:proforma:v2.1")
 @XmlEnum
@@ -46,7 +45,7 @@ public enum FeedbackLevelType {
     }
 
     public static FeedbackLevelType fromValue(String v) {
-        for (FeedbackLevelType c: FeedbackLevelType.values()) {
+        for (FeedbackLevelType c : FeedbackLevelType.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

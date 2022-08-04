@@ -10,13 +10,11 @@ import java.io.InputStream;
 // been read once, we can't access the data anymore,
 // which is why this class creates copies of the original
 // stream as byte array streams
-public class InputStreamCopy
-{
+public class InputStreamCopy {
     private InputStream is;
     private ByteArrayOutputStream copy = new ByteArrayOutputStream();
 
-    public InputStreamCopy(InputStream is) throws Exception
-    {
+    public InputStreamCopy(InputStream is) throws Exception {
         this.is = is;
         copy();
     }
@@ -25,7 +23,7 @@ public class InputStreamCopy
         int read = 0;
         int chunk = 0;
         byte[] data = new byte[256];
-        while(-1 != (chunk = is.read(data))) {
+        while (-1 != (chunk = is.read(data))) {
             read += data.length;
             copy.write(data, 0, chunk);
         }

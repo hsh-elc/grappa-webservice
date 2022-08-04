@@ -9,11 +9,11 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * Specifies an operand of a comparison nullify condition.
- * 
+ *
  * <p>Java class for grades-nullify-comparison-operand-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="grades-nullify-comparison-operand-type">
  *   &lt;complexContent>
@@ -22,8 +22,6 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "grades-nullify-comparison-operand-type", namespace = "urn:proforma:v2.1")

@@ -4,6 +4,10 @@ import de.hsh.grappa.config.CacheConfig;
 import de.hsh.grappa.config.GraderID;
 import de.hsh.grappa.exceptions.GrappaException;
 import de.hsh.grappa.service.GraderPoolManager;
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import proforma.util.exception.NotFoundException;
 import proforma.util.exception.UnexpectedDataException;
 import proforma.util.resource.ResponseResource;
@@ -13,11 +17,6 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.SetParams;
-
-import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -33,17 +32,17 @@ import java.util.stream.IntStream;
 /**
  * This class uses an underlying redis client instance to
  * cache submission and task resources.
- *
+ * <p>
  * Task resources are stored for the sole purpose of not having
  * the client repeatedly send task resources in submission
  * resources (so as to save on network traffic, for a crude
  * explanation). See the Grappa documentation for more info on
  * how a client should handle sending submissions with and without
  * task resources.
- *
+ * <p>
  * Submissions are cached for a given amount of time (as specified in
  * the grappa config).
- *
+ * <p>
  * Data that is currently cached along with submission resources is notably:
  * - (the entire submission resource itself)
  * - the underlying task resource
@@ -56,13 +55,13 @@ public class RedisController {
     private static final Logger log = LoggerFactory.getLogger(RedisController.class);
 
     private static RedisController instance = new RedisController();
-    private JedisPool jedisPool= null;
+    private JedisPool jedisPool = null;
     private CacheConfig cacheConfig;
 
-    private static final Base64.Encoder base64Encoder= Base64.getEncoder();
-    private static final Base64.Decoder base64Decoder= Base64.getDecoder();
-    
-    
+    private static final Base64.Encoder base64Encoder = Base64.getEncoder();
+    private static final Base64.Decoder base64Decoder = Base64.getDecoder();
+
+
     private JedisPoolConfig buildPoolConfig() {
         final JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(16);
@@ -77,7 +76,7 @@ public class RedisController {
         poolConfig.setBlockWhenExhausted(true);
         return poolConfig;
     }
-    
+
     private RedisController() {
     }
 
@@ -89,13 +88,13 @@ public class RedisController {
         this.cacheConfig = cc;
         final JedisPoolConfig poolConfig = buildPoolConfig();
         jedisPool = new JedisPool(poolConfig,
-                cacheConfig.getRedis().getHost(), 
-                cacheConfig.getRedis().getPort(),
-                Protocol.DEFAULT_TIMEOUT,
-                cacheConfig.getRedis().getPassword(),
-                false /* no ssl */);
-        log.info("Setting up redis connection with URI '{}:{}'...", cacheConfig.getRedis().getHost(), 
-                cacheConfig.getRedis().getPort());
+            cacheConfig.getRedis().getHost(),
+            cacheConfig.getRedis().getPort(),
+            Protocol.DEFAULT_TIMEOUT,
+            cacheConfig.getRedis().getPassword(),
+            false /* no ssl */);
+        log.info("Setting up redis connection with URI '{}:{}'...", cacheConfig.getRedis().getHost(),
+            cacheConfig.getRedis().getPort());
     }
 
     public synchronized void shutdown() {
@@ -104,7 +103,7 @@ public class RedisController {
     }
 
     public synchronized boolean ping() {
-        try (var jedis= jedisPool.getResource()) {
+        try (var jedis = jedisPool.getResource()) {
             log.info("PING... ");
             String pong = jedis.ping();
             log.info(pong);
@@ -212,7 +211,7 @@ public class RedisController {
         mapGraderProcIdToLmsId(gradeProcId, lmsId);
         mapGraderProcIdToTaskUuid(gradeProcId, taskUuid);
         // push the graderProcId onto the queue
-        try (var jedis= jedisPool.getResource()) {
+        try (var jedis = jedisPool.getResource()) {
             long listSize;
             if (prioritize)
                 listSize = jedis.lpush(SUBMISSION_QUEUE_PREFIX.concat(graderId.toRedisString()), gradeProcId);
@@ -235,7 +234,7 @@ public class RedisController {
         log.debug("[GradeProcId: '{}']: isSubmissionQueued() called.", gradeProcId);
         validateGraderProcId(gradeProcId);
         GraderID graderId = getAssociatedGraderId(gradeProcId);
-        try (var jedis= jedisPool.getResource()) {
+        try (var jedis = jedisPool.getResource()) {
             List<String> graderQueue = jedis.lrange(SUBMISSION_QUEUE_PREFIX.concat(graderId.toRedisString()), 0, -1);
             int index = IntStream.range(0, graderQueue.size())
                 .filter(i -> gradeProcId.equals(graderQueue.get(i)))
@@ -337,8 +336,8 @@ public class RedisController {
             } catch (org.apache.commons.lang3.SerializationException ex) {
                 log.debug("[graderId: '{}']: submission is not deserializable.", graderId.toString());
                 throw new UnexpectedDataException(String.format("a submission for graderId '%s' was found in" +
-                        " the cache but the submission could not be restored - internal error.", graderId.toString()));
-            }                
+                    " the cache but the submission could not be restored - internal error.", graderId.toString()));
+            }
         }
         return null; // submission queue is empty
     }
@@ -373,7 +372,7 @@ public class RedisController {
     public synchronized ResponseResource getResponse(String gradeProcId) throws GrappaException {
         log.debug("[GradeProcId: '{}']: getResponse()", gradeProcId);
         try (var jedis = jedisPool.getResource()) {
-            String sval= jedis.get(RESPONSE_KEY_PREFIX.concat(gradeProcId));
+            String sval = jedis.get(RESPONSE_KEY_PREFIX.concat(gradeProcId));
             if (null == sval)
                 return null;
             byte[] respBytes = decodeToBytes(sval);
@@ -383,7 +382,7 @@ public class RedisController {
         } catch (org.apache.commons.lang3.SerializationException ex) {
             log.debug("[GradeProcId: '{}']: ProformaResponse is not deserializable.", gradeProcId);
             throw new GrappaException(String.format("gradeProcessId '%s' was found in" +
-                    " the submission queue but the grade process could not be restored - internal error.", gradeProcId));
+                " the submission queue but the grade process could not be restored - internal error.", gradeProcId));
         }
     }
 
@@ -408,10 +407,10 @@ public class RedisController {
     public synchronized TaskResource getCachedTask(String taskUuid) throws NotFoundException, UnexpectedDataException {
         log.debug("[TaskUuid: '{}']: getCachedTask()", taskUuid);
         try (var jedis = jedisPool.getResource()) {
-        	String v = jedis.get(TASK_KEY_PREFIX.concat(taskUuid));
-        	if (v == null) {
+            String v = jedis.get(TASK_KEY_PREFIX.concat(taskUuid));
+            if (v == null) {
                 throw new NotFoundException(String.format("Task with uuid '%s' is not cached", taskUuid));
-        	}
+            }
             byte[] taskBytes = decodeToBytes(v);
             if (null == taskBytes)
                 throw new NotFoundException(String.format("Task with uuid '%s' is not cached", taskUuid));
@@ -419,13 +418,13 @@ public class RedisController {
         } catch (org.apache.commons.lang3.SerializationException ex) {
             log.debug("[TaskUuid: '{}']: Task is not deserializable.", taskUuid);
             try (StringWriter sw = new StringWriter();
-            		PrintWriter pw = new PrintWriter(sw)) {
-            	ex.printStackTrace(pw);
-            	log.debug("{}", sw.toString());
+                 PrintWriter pw = new PrintWriter(sw)) {
+                ex.printStackTrace(pw);
+                log.debug("{}", sw.toString());
             } catch (Exception e2) {
             }
             throw new UnexpectedDataException(String.format("TaskUuid '%s' was found in" +
-                    " the cache but the task could not be restored - internal error.", taskUuid));
+                " the cache but the task could not be restored - internal error.", taskUuid));
         }
     }
 
@@ -531,16 +530,16 @@ public class RedisController {
      * @param value
      */
     private synchronized void set(String key, byte[] value) {
-        String sval= encodeToString(value);
+        String sval = encodeToString(value);
         try (var jedis = jedisPool.getResource()) {
             jedis.set(key, sval);
         }
     }
 
     private synchronized void set(String key, byte[] value, long timeoutSeconds) {
-        String sval= encodeToString(value);
+        String sval = encodeToString(value);
         try (var jedis = jedisPool.getResource()) {
-            SetParams sp= SetParams.setParams().ex(timeoutSeconds);
+            SetParams sp = SetParams.setParams().ex(timeoutSeconds);
             jedis.set(key, sval, sp);
         }
     }
@@ -559,7 +558,7 @@ public class RedisController {
 
     private synchronized void set(String key, String value, long timeoutSeconds) {
         try (var jedis = jedisPool.getResource()) {
-            SetParams sp= SetParams.setParams().ex(timeoutSeconds);
+            SetParams sp = SetParams.setParams().ex(timeoutSeconds);
             jedis.set(key, value, sp);
         }
     }
@@ -572,7 +571,7 @@ public class RedisController {
 
     private synchronized byte[] getByteArray(String key) {
         try (var jedis = jedisPool.getResource()) {
-            String val= jedis.get(key);
+            String val = jedis.get(key);
             return decodeToBytes(val);
         }
     }
@@ -591,9 +590,8 @@ public class RedisController {
 //            throw new RuntimeException(e);
 //        }
 //    }
-    
-    
-    
+
+
     private static String encodeToString(byte[] bytes) {
         if (bytes == null) {
             return null;
@@ -601,7 +599,7 @@ public class RedisController {
         return base64Encoder.encodeToString(bytes);
         //return new String(bytes, StandardCharsets.UTF_8);
     }
-    
+
     private static byte[] decodeToBytes(String str) {
         if (str == null) return new byte[0];
         return base64Decoder.decode(str);

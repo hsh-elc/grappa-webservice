@@ -9,11 +9,11 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * An operand of a comparison expression pointing to a "test".
- * 
+ *
  * <p>Java class for grades-nullify-test-ref-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="grades-nullify-test-ref-type">
  *   &lt;complexContent>
@@ -24,14 +24,11 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "grades-nullify-test-ref-type", namespace = "urn:proforma:v2.1")
 public class GradesNullifyTestRefType
-    extends GradesNullifyComparisonOperandType
-{
+    extends GradesNullifyComparisonOperandType {
 
     @XmlAttribute(name = "ref", required = true)
     protected String ref;
@@ -40,11 +37,9 @@ public class GradesNullifyTestRefType
 
     /**
      * Gets the value of the ref property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getRef() {
         return ref;
@@ -52,11 +47,9 @@ public class GradesNullifyTestRefType
 
     /**
      * Sets the value of the ref property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setRef(String value) {
         this.ref = value;
@@ -64,11 +57,9 @@ public class GradesNullifyTestRefType
 
     /**
      * Gets the value of the subRef property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getSubRef() {
         return subRef;
@@ -76,11 +67,9 @@ public class GradesNullifyTestRefType
 
     /**
      * Sets the value of the subRef property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setSubRef(String value) {
         this.subRef = value;

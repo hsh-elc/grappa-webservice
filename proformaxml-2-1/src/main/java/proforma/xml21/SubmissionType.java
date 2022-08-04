@@ -1,16 +1,16 @@
 
 package proforma.xml21;
 
-import javax.xml.bind.annotation.*;
-
 import proforma.xml.AbstractSubmissionType;
+
+import javax.xml.bind.annotation.*;
 
 
 /**
  * <p>Java class for submission-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="submission-type">
  *   &lt;complexContent>
@@ -34,8 +34,6 @@ import proforma.xml.AbstractSubmissionType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 
 @XmlRootElement(name = "submission")
@@ -76,18 +74,17 @@ public class SubmissionType implements AbstractSubmissionType {
     @XmlAttribute(name = "id")
     protected String id;
 
-	@Override public String proFormAVersionNumber() {
-		return "2.1";
-	}
+    @Override
+    public String proFormAVersionNumber() {
+        return "2.1";
+    }
 
 
     /**
      * Gets the value of the externalTask property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ExternalTaskType }
-     *     
+     *
+     * @return possible object is
+     * {@link ExternalTaskType }
      */
     public ExternalTaskType getExternalTask() {
         return externalTask;
@@ -95,11 +92,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Sets the value of the externalTask property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ExternalTaskType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link ExternalTaskType }
      */
     public void setExternalTask(ExternalTaskType value) {
         this.externalTask = value;
@@ -107,11 +102,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Gets the value of the includedTaskFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link IncludedTaskFileType }
-     *     
+     *
+     * @return possible object is
+     * {@link IncludedTaskFileType }
      */
     public IncludedTaskFileType getIncludedTaskFile() {
         return includedTaskFile;
@@ -119,11 +112,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Sets the value of the includedTaskFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link IncludedTaskFileType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link IncludedTaskFileType }
      */
     public void setIncludedTaskFile(IncludedTaskFileType value) {
         this.includedTaskFile = value;
@@ -131,11 +122,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Gets the value of the task property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link TaskType }
-     *     
+     *
+     * @return possible object is
+     * {@link TaskType }
      */
     public TaskType getTask() {
         return task;
@@ -143,11 +132,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Sets the value of the task property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link TaskType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link TaskType }
      */
     public void setTask(TaskType value) {
         this.task = value;
@@ -155,11 +142,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Gets the value of the gradingHints property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link GradingHintsType }
-     *     
+     *
+     * @return possible object is
+     * {@link GradingHintsType }
      */
     public GradingHintsType getGradingHints() {
         return gradingHints;
@@ -167,11 +152,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Sets the value of the gradingHints property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link GradingHintsType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link GradingHintsType }
      */
     public void setGradingHints(GradingHintsType value) {
         this.gradingHints = value;
@@ -179,11 +162,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Gets the value of the externalSubmission property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ExternalSubmissionType }
-     *     
+     *
+     * @return possible object is
+     * {@link ExternalSubmissionType }
      */
     public ExternalSubmissionType getExternalSubmission() {
         return externalSubmission;
@@ -191,11 +172,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Sets the value of the externalSubmission property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ExternalSubmissionType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link ExternalSubmissionType }
      */
     public void setExternalSubmission(ExternalSubmissionType value) {
         this.externalSubmission = value;
@@ -203,11 +182,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Gets the value of the files property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link SubmissionFilesType }
-     *     
+     *
+     * @return possible object is
+     * {@link SubmissionFilesType }
      */
     public SubmissionFilesType getFiles() {
         return files;
@@ -215,11 +192,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Sets the value of the files property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link SubmissionFilesType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link SubmissionFilesType }
      */
     public void setFiles(SubmissionFilesType value) {
         this.files = value;
@@ -227,11 +202,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Gets the value of the lms property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link LmsType }
-     *     
+     *
+     * @return possible object is
+     * {@link LmsType }
      */
     public LmsType getLms() {
         return lms;
@@ -239,11 +212,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Sets the value of the lms property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link LmsType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link LmsType }
      */
     public void setLms(LmsType value) {
         this.lms = value;
@@ -251,11 +222,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Gets the value of the resultSpec property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ResultSpecType }
-     *     
+     *
+     * @return possible object is
+     * {@link ResultSpecType }
      */
     public ResultSpecType getResultSpec() {
         return resultSpec;
@@ -263,11 +232,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Sets the value of the resultSpec property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ResultSpecType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link ResultSpecType }
      */
     public void setResultSpec(ResultSpecType value) {
         this.resultSpec = value;
@@ -275,11 +242,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getId() {
         return id;
@@ -287,11 +252,9 @@ public class SubmissionType implements AbstractSubmissionType {
 
     /**
      * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setId(String value) {
         this.id = value;

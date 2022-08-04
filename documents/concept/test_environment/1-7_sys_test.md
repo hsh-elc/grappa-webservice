@@ -15,17 +15,23 @@ Navigate to http://{localip}:{apache.port}/moodle und login to Moodle as site ad
 ### Create a course
 
 Navigate to site administration > Courses > Add a new Course.
+
 * Name of the course: Grappa
 * No end date
 * Save and display.
 
-Select the new course. Turn editing on. Select *Participants* on the left menu. Modify the role of the admin user and add the roles *teacher* and *student*. Don't forget to save.
+Select the new course. Turn editing on. Select *Participants* on the left menu. Modify the role of the admin user and
+add the roles *teacher* and *student*. Don't forget to save.
 
-(Alternatively, it has proven useful to have a dedicated teacher user and a dedicated student user in the course. If you want to go that route, then create a teacher user and a student user as so-called *manual accounts* (site administration > Users > Add a new user) and enrol these users in the new course with the respective roles.)
+(Alternatively, it has proven useful to have a dedicated teacher user and a dedicated student user in the course. If you
+want to go that route, then create a teacher user and a student user as so-called *manual accounts* (site
+administration > Users > Add a new user) and enrol these users in the new course with the respective roles.)
 
 ### Create a question
 
-Select the new course. Turn editing on. Select the question bank via the gear symbol. Create a new question of type *MooPT*. Drag a ProFormA compatible zip file into the respective file field and choose *Extract information*. Select the Grader. Then save.
+Select the new course. Turn editing on. Select the question bank via the gear symbol. Create a new question of type *
+MooPT*. Drag a ProFormA compatible zip file into the respective file field and choose *Extract information*. Select the
+Grader. Then save.
 
 ### Create a quiz
 
@@ -33,8 +39,9 @@ Create a quiz and add the new question to the quiz.
 
 ### Attempt the quiz
 
-As a student attempt the quiz and submit a solution file. When using deferred feedback, the Grappa server will receive the submission only, after the student clicked *Submit all and finish*. Watch the console log of the Tomcat Server in the Eclipse console and check, if everything is working fine. Here is a positive example:
-
+As a student attempt the quiz and submit a solution file. When using deferred feedback, the Grappa server will receive
+the submission only, after the student clicked *Submit all and finish*. Watch the console log of the Tomcat Server in
+the Eclipse console and check, if everything is working fine. Here is a positive example:
 
 ```
 2021-06-23 19:34:29,084 DEBUG d.h.g.r.AllGradeProcessResources - [GraderId: 'Graja2.2']: grade() with async=1 called.

@@ -6,9 +6,9 @@ import javax.xml.bind.annotation.*;
 
 /**
  * <p>Java class for embedded-txt-file-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="embedded-txt-file-type">
  *   &lt;simpleContent>
@@ -18,8 +18,6 @@ import javax.xml.bind.annotation.*;
  *   &lt;/simpleContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "embedded-txt-file-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -34,11 +32,9 @@ public class EmbeddedTxtFileType {
 
     /**
      * Gets the value of the value property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getValue() {
         return value;
@@ -46,11 +42,9 @@ public class EmbeddedTxtFileType {
 
     /**
      * Sets the value of the value property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setValue(String value) {
         this.value = value;
@@ -58,11 +52,9 @@ public class EmbeddedTxtFileType {
 
     /**
      * Gets the value of the filename property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getFilename() {
         return filename;
@@ -70,11 +62,9 @@ public class EmbeddedTxtFileType {
 
     /**
      * Sets the value of the filename property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setFilename(String value) {
         this.filename = value;

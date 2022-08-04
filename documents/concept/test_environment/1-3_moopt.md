@@ -1,6 +1,7 @@
 # Setting up MooPT for a development environment
 
-This document describes a setup of the MooPT plugin inside a Moodle installation in a development environment setup as described [here](1_setting_up.md).
+This document describes a setup of the MooPT plugin inside a Moodle installation in a development environment setup as
+described [here](1_setting_up.md).
 
 Currently, there is a description for a setup on a Windows computer, which runs xampp.
 
@@ -25,7 +26,6 @@ git -C htdocs/moodle/question/behaviour/immediatemoopt checkout develop
 git -C htdocs/moodle/question/behaviour/deferredmoopt checkout develop
 ```
 
-
 ### Install
 
 As soon as an administrator logs in to Moodle, he will be requested to install the plugin.
@@ -39,26 +39,33 @@ As soon as an administrator logs in to Moodle, he will be requested to install t
 * Service URL: `http://{localip}:{tomcat.port}/grappa-webservice-2/rest`
 
 #### moodle:
-* site administration -> Security -> HTTP Security -> cURL blocked hosts list -> remove {localip} from the list -> Save changes
-* site administration -> Security -> HTTP Security -> cURL allowed ports list -> add {tomcat.port} to the list -> Save changes
+
+* site administration -> Security -> HTTP Security -> cURL blocked hosts list -> remove {localip} from the list -> Save
+  changes
+* site administration -> Security -> HTTP Security -> cURL allowed ports list -> add {tomcat.port} to the list -> Save
+  changes
 
 ### Uninstalling and reinstalling MooPT from command line
 
-This step isn't needed when setting up the development environment. It can be useful further on, when you want to replace the currently installed MooPT plugin with a new one after some code changes, without relying on the upgrade mechanism in Moodle plugins.
+This step isn't needed when setting up the development environment. It can be useful further on, when you want to
+replace the currently installed MooPT plugin with a new one after some code changes, without relying on the upgrade
+mechanism in Moodle plugins.
 
 * Open a bash in WSL as administrator
 * Change to directory `{xampp.home}`
-* Type 
+* Type
   ```
   php/php.exe htdocs/moodle/admin/cli/uninstall_plugins.php --plugins=qtype_moopt,qbehaviour_immediatemoopt,qbehaviour_deferredmoopt --run
   ```
-* Then copy the new version of the plugin to the apache document root, e. g. by pulling the current source from the remote repository:
+* Then copy the new version of the plugin to the apache document root, e. g. by pulling the current source from the
+  remote repository:
   ```
   git -C htdocs/moodle/question/type/moopt pull
   git -C htdocs/moodle/question/behaviour/immediatemoopt pull
   git -C htdocs/moodle/question/behaviour/deferredmoopt pull
   ```
-* Then navigate your web browser as site admin to the dashboard. The Plugin installation is done in the webbrowser as before.
+* Then navigate your web browser as site admin to the dashboard. The Plugin installation is done in the webbrowser as
+  before.
 
 
 

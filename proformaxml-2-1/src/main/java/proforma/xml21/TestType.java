@@ -7,9 +7,9 @@ import java.math.BigDecimal;
 
 /**
  * <p>Java class for test-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="test-type">
  *   &lt;complexContent>
@@ -36,8 +36,6 @@ import java.math.BigDecimal;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "test-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -66,11 +64,9 @@ public class TestType {
 
     /**
      * Gets the value of the title property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTitle() {
         return title;
@@ -78,11 +74,9 @@ public class TestType {
 
     /**
      * Sets the value of the title property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setTitle(String value) {
         this.title = value;
@@ -90,11 +84,9 @@ public class TestType {
 
     /**
      * Gets the value of the description property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getDescription() {
         return description;
@@ -102,11 +94,9 @@ public class TestType {
 
     /**
      * Sets the value of the description property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setDescription(String value) {
         this.description = value;
@@ -114,11 +104,9 @@ public class TestType {
 
     /**
      * Gets the value of the internalDescription property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getInternalDescription() {
         return internalDescription;
@@ -126,11 +114,9 @@ public class TestType {
 
     /**
      * Sets the value of the internalDescription property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setInternalDescription(String value) {
         this.internalDescription = value;
@@ -138,11 +124,9 @@ public class TestType {
 
     /**
      * Gets the value of the testType property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTestType() {
         return testType;
@@ -150,11 +134,9 @@ public class TestType {
 
     /**
      * Sets the value of the testType property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setTestType(String value) {
         this.testType = value;
@@ -162,11 +144,9 @@ public class TestType {
 
     /**
      * Gets the value of the testConfiguration property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link TestConfigurationType }
-     *     
+     *
+     * @return possible object is
+     * {@link TestConfigurationType }
      */
     public TestConfigurationType getTestConfiguration() {
         return testConfiguration;
@@ -174,11 +154,9 @@ public class TestType {
 
     /**
      * Sets the value of the testConfiguration property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link TestConfigurationType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link TestConfigurationType }
      */
     public void setTestConfiguration(TestConfigurationType value) {
         this.testConfiguration = value;
@@ -186,11 +164,9 @@ public class TestType {
 
     /**
      * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getId() {
         return id;
@@ -198,11 +174,9 @@ public class TestType {
 
     /**
      * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setId(String value) {
         this.id = value;
@@ -210,11 +184,9 @@ public class TestType {
 
     /**
      * Gets the value of the validity property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @return possible object is
+     * {@link BigDecimal }
      */
     public BigDecimal getValidity() {
         if (validity == null) {
@@ -226,11 +198,9 @@ public class TestType {
 
     /**
      * Sets the value of the validity property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigDecimal }
      */
     public void setValidity(BigDecimal value) {
         this.validity = value;

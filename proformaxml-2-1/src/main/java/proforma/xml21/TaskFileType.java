@@ -4,12 +4,11 @@ package proforma.xml21;
 import javax.xml.bind.annotation.*;
 
 
-
 /**
  * <p>Java class for task-file-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="task-file-type">
  *   &lt;complexContent>
@@ -25,8 +24,6 @@ import javax.xml.bind.annotation.*;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "task-file-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -61,11 +58,9 @@ public class TaskFileType {
 
     /**
      * Gets the value of the embeddedBinFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EmbeddedBinFileType }
-     *     
+     *
+     * @return possible object is
+     * {@link EmbeddedBinFileType }
      */
     public EmbeddedBinFileType getEmbeddedBinFile() {
         return embeddedBinFile;
@@ -73,11 +68,9 @@ public class TaskFileType {
 
     /**
      * Sets the value of the embeddedBinFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EmbeddedBinFileType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link EmbeddedBinFileType }
      */
     public void setEmbeddedBinFile(EmbeddedBinFileType value) {
         this.embeddedBinFile = value;
@@ -85,11 +78,9 @@ public class TaskFileType {
 
     /**
      * Gets the value of the embeddedTxtFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EmbeddedTxtFileType }
-     *     
+     *
+     * @return possible object is
+     * {@link EmbeddedTxtFileType }
      */
     public EmbeddedTxtFileType getEmbeddedTxtFile() {
         return embeddedTxtFile;
@@ -97,11 +88,9 @@ public class TaskFileType {
 
     /**
      * Sets the value of the embeddedTxtFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EmbeddedTxtFileType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link EmbeddedTxtFileType }
      */
     public void setEmbeddedTxtFile(EmbeddedTxtFileType value) {
         this.embeddedTxtFile = value;
@@ -109,11 +98,9 @@ public class TaskFileType {
 
     /**
      * Gets the value of the attachedBinFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getAttachedBinFile() {
         return attachedBinFile;
@@ -121,11 +108,9 @@ public class TaskFileType {
 
     /**
      * Sets the value of the attachedBinFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setAttachedBinFile(String value) {
         this.attachedBinFile = value;
@@ -133,11 +118,9 @@ public class TaskFileType {
 
     /**
      * Gets the value of the attachedTxtFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link AttachedTxtFileType }
-     *     
+     *
+     * @return possible object is
+     * {@link AttachedTxtFileType }
      */
     public AttachedTxtFileType getAttachedTxtFile() {
         return attachedTxtFile;
@@ -145,11 +128,9 @@ public class TaskFileType {
 
     /**
      * Sets the value of the attachedTxtFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link AttachedTxtFileType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link AttachedTxtFileType }
      */
     public void setAttachedTxtFile(AttachedTxtFileType value) {
         this.attachedTxtFile = value;
@@ -157,11 +138,9 @@ public class TaskFileType {
 
     /**
      * Gets the value of the internalDescription property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getInternalDescription() {
         return internalDescription;
@@ -169,11 +148,9 @@ public class TaskFileType {
 
     /**
      * Sets the value of the internalDescription property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setInternalDescription(String value) {
         this.internalDescription = value;
@@ -181,11 +158,9 @@ public class TaskFileType {
 
     /**
      * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getId() {
         return id;
@@ -193,11 +168,9 @@ public class TaskFileType {
 
     /**
      * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setId(String value) {
         this.id = value;
@@ -205,11 +178,9 @@ public class TaskFileType {
 
     /**
      * Gets the value of the mimetype property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getMimetype() {
         return mimetype;
@@ -217,11 +188,9 @@ public class TaskFileType {
 
     /**
      * Sets the value of the mimetype property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setMimetype(String value) {
         this.mimetype = value;
@@ -229,7 +198,6 @@ public class TaskFileType {
 
     /**
      * Gets the value of the usedByGrader property.
-     * 
      */
     public boolean isUsedByGrader() {
         return usedByGrader;
@@ -237,7 +205,6 @@ public class TaskFileType {
 
     /**
      * Sets the value of the usedByGrader property.
-     * 
      */
     public void setUsedByGrader(boolean value) {
         this.usedByGrader = value;
@@ -245,11 +212,9 @@ public class TaskFileType {
 
     /**
      * Gets the value of the visible property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getVisible() {
         return visible;
@@ -257,11 +222,9 @@ public class TaskFileType {
 
     /**
      * Sets the value of the visible property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setVisible(String value) {
         this.visible = value;
@@ -269,11 +232,9 @@ public class TaskFileType {
 
     /**
      * Gets the value of the usageByLms property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getUsageByLms() {
         if (usageByLms == null) {
@@ -285,11 +246,9 @@ public class TaskFileType {
 
     /**
      * Sets the value of the usageByLms property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setUsageByLms(String value) {
         this.usageByLms = value;

@@ -48,7 +48,7 @@ public class DummyGrader extends BackendPlugin {
     @Override
     public void init(Properties properties) throws Exception {
     }
-    
+
     private void printFile(StringBuilder feedback, byte[] binContent, String txtContent, String filename) {
         feedback.append("  filename: ").append(filename).append("<br>\n");
         if (binContent != null) {
@@ -73,8 +73,8 @@ public class DummyGrader extends BackendPlugin {
             feedback.append("</pre>\n");
         }
     }
-    
-    private void printZipContent(StringBuilder feedback, ProformaLiveObject<?,?> o) throws Exception {
+
+    private void printZipContent(StringBuilder feedback, ProformaLiveObject<?, ?> o) throws Exception {
         if (MimeType.ZIP.equals(o.getMimeType())) {
             feedback.append("<p>This is a zip resource</p>\n");
             feedback.append("<ul>\n");
@@ -87,7 +87,7 @@ public class DummyGrader extends BackendPlugin {
             feedback.append("<p>This is a xml resource</p>\n");
         }
     }
-    
+
     private String readAttachedTxt(ZipContent zipContent, String path, ProformaAttachedTxtFileHandle atfh) throws UnsupportedEncodingException {
         ZipContentElement elem = zipContent.get(path);
         if (elem == null) {
@@ -109,10 +109,9 @@ public class DummyGrader extends BackendPlugin {
         }
         return elem.getBytes();
     }
-    
-    
-    
-    private void processSubmission(StringBuilder feedback, SubmissionLive submissionLive, double[] inOutScore) throws UnsupportedEncodingException, MalformedURLException, IOException, Exception  {
+
+
+    private void processSubmission(StringBuilder feedback, SubmissionLive submissionLive, double[] inOutScore) throws UnsupportedEncodingException, MalformedURLException, IOException, Exception {
         ProformaSubmissionSubmissionHandle pssh = submissionLive.getSubmissionSubmissionHandle(getBoundary());
         if (pssh.hasSubmissionFiles()) {
             feedback.append("<p><b>Submission files</b></p>\n");
@@ -121,10 +120,10 @@ public class DummyGrader extends BackendPlugin {
                 feedback.append("<li>id: ").append(fi.getId()).append("<br>\n");
                 feedback.append("  mimetype: ").append(fi.getMimetype()).append("<br>\n");
                 String filename = null;
-                
+
                 byte[] binContent = null;
                 String txtContent = null;
-                
+
                 if (fi.embeddedBinFileHandle().get() != null) {
                     filename = fi.embeddedBinFileHandle().getFilename();
                     binContent = fi.embeddedBinFileHandle().getContent();
@@ -144,7 +143,7 @@ public class DummyGrader extends BackendPlugin {
                     txtContent = readAttachedTxt(submissionLive.getZipContent(), path, fi.attachedTxtFileHandle());
                 }
                 printFile(feedback, binContent, txtContent, filename);
-                
+
                 if ("score".equals(FilenameUtils.getBasename(filename))) {
                     if (txtContent != null) {
                         try {
@@ -163,7 +162,7 @@ public class DummyGrader extends BackendPlugin {
             feedback.append("<p><b>external submission</b></p>\n");
             String uri = pssh.externalSubmissionHandle().getUri();
             feedback.append("<p>uri = ").append(uri).append("</p>");
-            
+
             Resource res = pssh.externalSubmissionHandle().download();
             String filename = res.getFileNameOrDefault();
             byte[] binContent = null;
@@ -184,10 +183,10 @@ public class DummyGrader extends BackendPlugin {
         feedback.append("<p><b>Submission resource</b></p>\n");
         printZipContent(feedback, submissionLive);
     }
-    
+
     @Override
     public ResponseResource grade(SubmissionResource submissionResource) throws Exception {
-        SubmissionLive submissionLive= new SubmissionLive(submissionResource);
+        SubmissionLive submissionLive = new SubmissionLive(submissionResource);
 
         if (submissionContainsErrorFile(submissionLive)) {
             final String errorMessage = "DummyGrader detected <code>error.txt</code> file in submission, returned " +
@@ -198,11 +197,11 @@ public class DummyGrader extends BackendPlugin {
 
         StringBuilder feedback = new StringBuilder("<h4>This is dummy feedback from the dummy grader</h4>");
         feedback.append("Local time: ").append(LocalDateTime.now());
-        
+
         // As feedback we give a description of the received submission.
         // To test this grader, you could try the task in src/main/resources/task.zip
-        
-        double[] score = { 0.0 }; // the default. Array because of call by reference
+
+        double[] score = {0.0}; // the default. Array because of call by reference
 
         processSubmission(feedback, submissionLive, score);
 
@@ -212,12 +211,12 @@ public class DummyGrader extends BackendPlugin {
             processSubmission(feedback, submissionLive, score);
         }
 
-        
+
         TaskLive taskLive = submissionLive.getTask(getBoundary());
         String taskUuid = taskLive.getTaskUuid();
         feedback.append("<p><b>Task</b></p>\n");
         feedback.append("<p>UUID = ").append(taskUuid).append("</p>\n");
-        
+
         ProformaSubmissionTaskHandle sth = submissionLive.getSubmissionTaskHandle(getBoundary());
         if (sth.externalTaskHandle().get() != null) {
             feedback.append("<p>External task</p>\n<ul><li>\n");
@@ -251,14 +250,14 @@ public class DummyGrader extends BackendPlugin {
         }
         feedback.append("<p><b>Task resource</b></p>\n");
         printZipContent(feedback, taskLive);
-        
+
         AbstractResponseType response = submissionLive.getProformaVersion().getResponseHelper()
-                .createMergedTestFeedbackResponse(
-                        feedback.toString(), 
-                        BigDecimal.valueOf(score[0]),
-                        submissionLive.getSubmissionId(),
-                        this.getClass().getName());
-        
+            .createMergedTestFeedbackResponse(
+                feedback.toString(),
+                BigDecimal.valueOf(score[0]),
+                submissionLive.getSubmissionId(),
+                this.getClass().getName());
+
         ResponseLive responseLive = new ResponseLive(response, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA));
         return responseLive.getResource();
     }

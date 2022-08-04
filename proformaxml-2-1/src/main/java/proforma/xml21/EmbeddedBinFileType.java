@@ -6,9 +6,9 @@ import javax.xml.bind.annotation.*;
 
 /**
  * <p>Java class for embedded-bin-file-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="embedded-bin-file-type">
  *   &lt;simpleContent>
@@ -18,8 +18,6 @@ import javax.xml.bind.annotation.*;
  *   &lt;/simpleContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "embedded-bin-file-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -34,10 +32,9 @@ public class EmbeddedBinFileType {
 
     /**
      * Gets the value of the value property.
-     * 
-     * @return
-     *     possible object is
-     *     byte[]
+     *
+     * @return possible object is
+     * byte[]
      */
     public byte[] getValue() {
         return value;
@@ -45,10 +42,9 @@ public class EmbeddedBinFileType {
 
     /**
      * Sets the value of the value property.
-     * 
-     * @param value
-     *     allowed object is
-     *     byte[]
+     *
+     * @param value allowed object is
+     *              byte[]
      */
     public void setValue(byte[] value) {
         this.value = value;
@@ -56,11 +52,9 @@ public class EmbeddedBinFileType {
 
     /**
      * Gets the value of the filename property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getFilename() {
         return filename;
@@ -68,11 +62,9 @@ public class EmbeddedBinFileType {
 
     /**
      * Sets the value of the filename property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setFilename(String value) {
         this.filename = value;

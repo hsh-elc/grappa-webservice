@@ -1,14 +1,6 @@
 package proforma.util21;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import proforma.util.ProformaResponseHelper;
-import proforma.util.ProformaVersion;
-import proforma.util.ResponseLive;
-import proforma.util.SubmissionLive;
-import proforma.util.TaskLive;
+import proforma.util.*;
 import proforma.util.boundary.TaskBoundary;
 import proforma.util.div.XmlUtils.MarshalOption;
 import proforma.util.div.Zip.ZipContent;
@@ -20,6 +12,10 @@ import proforma.xml.AbstractResponseType;
 import proforma.xml21.*;
 import proforma.xml21.FeedbackType.Content;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This class creates a proforma response with the is-internal-error
  * flag set to true.
@@ -28,7 +24,7 @@ import proforma.xml21.FeedbackType.Content;
  * the grader, the client needs a proper proforma response so it can
  * invalidate the submission as the error is attributed to the grading
  * system.
- *
+ * <p>
  * Using a HTTP status code in case of a server-side error is not
  * sufficient since there is only a generic 500 error code without
  * any indication to the true nature of the problem. If we were to
@@ -41,20 +37,20 @@ import proforma.xml21.FeedbackType.Content;
  * (as specified by the proforma format), and so the client would not retry
  * submitting the submission until the actual problem has been resolved by
  * the grading system.
- * 
+ * <p>
  * This converter can handle ProFormA 2.1 submission and response only.
  */
 public class Proforma21ResponseHelper extends ProformaResponseHelper {
-	
-	public Proforma21ResponseHelper(ProformaVersion pv) {
-		super(pv);
-	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends AbstractProformaType> Class<T>  getPojoType() {
-		return (Class<T>) ResponseType.class;
-	}
+    public Proforma21ResponseHelper(ProformaVersion pv) {
+        super(pv);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends AbstractProformaType> Class<T> getPojoType() {
+        return (Class<T>) ResponseType.class;
+    }
 
 
     private static final String DEFAULT_STUDENT_INTERNAL_ERROR_MESSAGE = "An error occurred during the grading process. Please ask your teacher for details.";
@@ -73,7 +69,7 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
     }
 
     /**
-     * @param merged Either merged or separate should be null
+     * @param merged   Either merged or separate should be null
      * @param separate Either separate or merged should be null
      */
     private ResponseType createUnknownGraderEngineResponse(MergedTestFeedbackType merged, SeparateTestFeedbackType separate) {
@@ -98,7 +94,7 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
     }
 
     private FeedbackListType createInternalErrorFeedbackList(String errorMessage, Audience audience) {
-        FeedbackListType feedbackList= new FeedbackListType();
+        FeedbackListType feedbackList = new FeedbackListType();
         feedbackList.getTeacherFeedback().add(createInternalErrorFeedback(errorMessage));
         if (audience.equals(Audience.BOTH)) {
             feedbackList.getStudentFeedback().add(createInternalErrorFeedback(errorMessage));
@@ -119,11 +115,11 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
             SubmissionType submPojo = sw.getSubmission();
             String structure = submPojo.getResultSpec().getStructure();
             if ("separate-test-feedback".equals(structure)) {
-            	TaskLive tw = sw.getTask(tb);
+                TaskLive tw = sw.getTask(tb);
                 TaskType taskPojo = tw.getTask();
                 TestsResponseType testsResponse = new TestsResponseType();
-                for (TestType test : taskPojo.getTests().getTest() ) {
-                    TestResponseType testResponse= new TestResponseType();
+                for (TestType test : taskPojo.getTests().getTest()) {
+                    TestResponseType testResponse = new TestResponseType();
                     testResponse.setId(test.getId());
                     TestResultType testResult = new TestResultType();
                     testResult.setFeedbackList(createInternalErrorFeedbackList(errorMessage, audience));
@@ -170,7 +166,8 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
         return createInternalErrorResponse(errorMessage, subm, tb, audience, false);
     }
 
-    @Deprecated @Override
+    @Deprecated
+    @Override
     public ResponseResource createInternalErrorResponse(String errorMessage, SubmissionResource subm, TaskBoundary tb, Audience audience, @Deprecated boolean isExpectedInternalErrorTypeAlwaysMergedTestFeedback) throws Exception {
         final String finalMsg = "Grappa encountered a fatal error: " + errorMessage;
 
@@ -182,7 +179,7 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
         if (separate == null) merged = createInternalErrorMergedTestFeedback(finalMsg, audience);
 
         ResponseType resp = createUnknownGraderEngineResponse(merged, separate);
-        
+
         return new ResponseLive(resp, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA)).getResource();
     }
 
@@ -234,27 +231,26 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
         ge.setName(graderEngineName);
         meta.setGraderEngine(ge);
         response.setResponseMetaData(meta);
-    	
+
         return response;
     }
 
-    
 
-	private Proforma21ResponseFileHandle getResponseFileHandle(ResponseFileType file, ZipContent zipContent) {
-		if (file == null) return null;
-		return new Proforma21ResponseFileHandle(file, zipContent);
-	}
-		
-	@Override
-	public List<Proforma21ResponseFileHandle> getResponseFileHandles(AbstractResponseType response, ZipContent zipContent) {
+    private Proforma21ResponseFileHandle getResponseFileHandle(ResponseFileType file, ZipContent zipContent) {
+        if (file == null) return null;
+        return new Proforma21ResponseFileHandle(file, zipContent);
+    }
+
+    @Override
+    public List<Proforma21ResponseFileHandle> getResponseFileHandles(AbstractResponseType response, ZipContent zipContent) {
         ResponseType r = (ResponseType) response;
-		ResponseFilesType rf = r.getFiles();
-		if (rf == null) return null;
-		ArrayList<Proforma21ResponseFileHandle> list= new ArrayList<>();
-		for (ResponseFileType file : rf.getFile()) {
-			list.add(getResponseFileHandle(file, zipContent));
-		}
-		return list;
-	}
+        ResponseFilesType rf = r.getFiles();
+        if (rf == null) return null;
+        ArrayList<Proforma21ResponseFileHandle> list = new ArrayList<>();
+        for (ResponseFileType file : rf.getFile()) {
+            list.add(getResponseFileHandle(file, zipContent));
+        }
+        return list;
+    }
 
 }

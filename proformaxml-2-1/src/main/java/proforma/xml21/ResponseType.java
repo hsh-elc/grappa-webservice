@@ -1,18 +1,18 @@
 
 package proforma.xml21;
 
+import proforma.xml.AbstractResponseType;
+
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import proforma.xml.AbstractResponseType;
-
 
 /**
  * <p>Java class for response-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="response-type">
  *   &lt;complexContent>
@@ -31,8 +31,6 @@ import proforma.xml.AbstractResponseType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 
 @XmlRootElement(name = "response")
@@ -44,7 +42,7 @@ import proforma.xml.AbstractResponseType;
     "responseMetaData"
 })
 public class ResponseType implements AbstractResponseType {
-	
+
 //	@Override
 //	public Class<? extends AbstractProformaType> getContextClass() {
 //		return ResponseType.class;
@@ -65,19 +63,18 @@ public class ResponseType implements AbstractResponseType {
     @XmlAttribute(name = "submission-id")
     protected String submissionId;
 
-    
-    @Override public String proFormAVersionNumber() {
+
+    @Override
+    public String proFormAVersionNumber() {
         return "2.1";
     }
 
 
     /**
      * Gets the value of the mergedTestFeedback property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link MergedTestFeedbackType }
-     *     
+     *
+     * @return possible object is
+     * {@link MergedTestFeedbackType }
      */
     public MergedTestFeedbackType getMergedTestFeedback() {
         return mergedTestFeedback;
@@ -85,11 +82,9 @@ public class ResponseType implements AbstractResponseType {
 
     /**
      * Sets the value of the mergedTestFeedback property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link MergedTestFeedbackType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link MergedTestFeedbackType }
      */
     public void setMergedTestFeedback(MergedTestFeedbackType value) {
         this.mergedTestFeedback = value;
@@ -97,11 +92,9 @@ public class ResponseType implements AbstractResponseType {
 
     /**
      * Gets the value of the separateTestFeedback property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link SeparateTestFeedbackType }
-     *     
+     *
+     * @return possible object is
+     * {@link SeparateTestFeedbackType }
      */
     public SeparateTestFeedbackType getSeparateTestFeedback() {
         return separateTestFeedback;
@@ -109,11 +102,9 @@ public class ResponseType implements AbstractResponseType {
 
     /**
      * Sets the value of the separateTestFeedback property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link SeparateTestFeedbackType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link SeparateTestFeedbackType }
      */
     public void setSeparateTestFeedback(SeparateTestFeedbackType value) {
         this.separateTestFeedback = value;
@@ -121,11 +112,9 @@ public class ResponseType implements AbstractResponseType {
 
     /**
      * Gets the value of the files property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ResponseFilesType }
-     *     
+     *
+     * @return possible object is
+     * {@link ResponseFilesType }
      */
     public ResponseFilesType getFiles() {
         return files;
@@ -133,11 +122,9 @@ public class ResponseType implements AbstractResponseType {
 
     /**
      * Sets the value of the files property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ResponseFilesType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link ResponseFilesType }
      */
     public void setFiles(ResponseFilesType value) {
         this.files = value;
@@ -145,11 +132,9 @@ public class ResponseType implements AbstractResponseType {
 
     /**
      * Gets the value of the responseMetaData property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ResponseMetaDataType }
-     *     
+     *
+     * @return possible object is
+     * {@link ResponseMetaDataType }
      */
     public ResponseMetaDataType getResponseMetaData() {
         return responseMetaData;
@@ -157,11 +142,9 @@ public class ResponseType implements AbstractResponseType {
 
     /**
      * Sets the value of the responseMetaData property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ResponseMetaDataType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link ResponseMetaDataType }
      */
     public void setResponseMetaData(ResponseMetaDataType value) {
         this.responseMetaData = value;
@@ -169,11 +152,9 @@ public class ResponseType implements AbstractResponseType {
 
     /**
      * Gets the value of the lang property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getLang() {
         return lang;
@@ -181,11 +162,9 @@ public class ResponseType implements AbstractResponseType {
 
     /**
      * Sets the value of the lang property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setLang(String value) {
         this.lang = value;
@@ -193,11 +172,9 @@ public class ResponseType implements AbstractResponseType {
 
     /**
      * Gets the value of the submissionId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getSubmissionId() {
         return submissionId;
@@ -205,11 +182,9 @@ public class ResponseType implements AbstractResponseType {
 
     /**
      * Sets the value of the submissionId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setSubmissionId(String value) {
         this.submissionId = value;

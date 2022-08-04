@@ -20,7 +20,7 @@ on:
 
   # Triggers when a new base image was pushed (when the action building base image has completed)
   workflow_run:
-    workflows: ["Java2Docker Baseimage"]
+    workflows: [ "Java2Docker Baseimage" ]
     types:
       - completed
 
@@ -29,7 +29,7 @@ env:
   IMAGE_NAME: grappa-backend-dummygrader
   # only this subdir will be built
   SUBDIR: grappa-backendplugin-dummygrader
-  
+
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -44,7 +44,7 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
-        
+
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:

@@ -9,7 +9,7 @@ public class MyFileAppender<E> extends RollingFileAppender<E> {
     protected void writeOut(E event) throws IOException {
         super.writeOut(event);
         ResilientFileOutputStream resilientFos = (ResilientFileOutputStream) super
-                .getOutputStream();
+            .getOutputStream();
         resilientFos.flush();
         resilientFos.getChannel().force(true);
     }

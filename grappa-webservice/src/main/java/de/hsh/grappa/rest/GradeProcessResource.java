@@ -6,11 +6,10 @@ import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.util.Json;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import proforma.util.resource.MimeType;
-import proforma.util.resource.ResponseResource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import proforma.util.resource.MimeType;
+import proforma.util.resource.ResponseResource;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.DELETE;
@@ -57,17 +56,17 @@ public class GradeProcessResource {
         long avgGradingSeconds = RedisController.getInstance().getSubmissionAverageGradingDurationSeconds
             (gradeProcessId, GrappaServlet.CONFIG.getService()
                 .getDefault_estimated_grading_seconds());
-        
+
         // Check if the submission has been graded and if a response is available result
         ResponseResource responseResource = RedisController.getInstance().getResponse(gradeProcessId);
         if (null != responseResource) {
             log.debug("[GradeProcId: '{}']: ProformaResponse file is available.", gradeProcessId);
-            String responseFileName = "response." +  (responseResource.getMimeType()
+            String responseFileName = "response." + (responseResource.getMimeType()
                 .equals(MimeType.XML) ? "xml" : "zip");
 
             Response.ResponseBuilder resp =
                 Response.status(Response.Status.OK)
-                    .header("content-disposition","attachment; filename = " + responseFileName)
+                    .header("content-disposition", "attachment; filename = " + responseFileName)
                     .entity(responseResource.getContent());
 
             var acceptableTypes = headers.getAcceptableMediaTypes();
@@ -85,14 +84,14 @@ public class GradeProcessResource {
             try {
                 estimatedSecondsRemaining = GraderPoolManager.getInstance()
                     .getEstimatedSecondsUntilGradeProcIdIsFinished(gradeProcessId);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 log.error("Could not estimate seconds remaining");
                 log.error(e.getMessage());
                 log.error(ExceptionUtils.getStackTrace(e));
                 throw new proforma.util.exception.NotFoundException(String.format("gradeProcessId '%s' was neither found in " +
                     "the submission queue nor in an active grading process.", gradeProcessId));
             }
-            String jsonResp = Json.createJsonKeyValueAsString(new String[][] {
+            String jsonResp = Json.createJsonKeyValueAsString(new String[][]{
                 {"estimatedSecondsRemaining", String.valueOf(estimatedSecondsRemaining)}
             });
             return Response.status(Response.Status.ACCEPTED).entity(jsonResp)
@@ -106,7 +105,7 @@ public class GradeProcessResource {
     public Response cancel(@PathParam("gradeProcessId") String gradeProcessId) throws Exception {
         log.debug("[GradeProcId: '{}']: cancel() called.", gradeProcessId);
         // If the submission is still queued, remove it
-        if(RedisController.getInstance().removeSubmission(gradeProcessId))  {
+        if (RedisController.getInstance().removeSubmission(gradeProcessId)) {
             log.info("[GradeProcId: '{}']: Queued submission removed.", gradeProcessId);
             return Response.status(Response.Status.OK).build();
         } else { // Submission might be in mid-grading process
@@ -117,7 +116,7 @@ public class GradeProcessResource {
                 return Response.status(Response.Status.OK).build();
             }
         }
-         throw new proforma.util.exception.NotFoundException(String.format("gradeProcessId '%s' was neither found in" +
-             " the submission queue nor in an active grading process.", gradeProcessId));
+        throw new proforma.util.exception.NotFoundException(String.format("gradeProcessId '%s' was neither found in" +
+            " the submission queue nor in an active grading process.", gradeProcessId));
     }
 }

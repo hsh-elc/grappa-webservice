@@ -1,12 +1,12 @@
 package proforma.util.resource;
 
+import proforma.util.div.XmlUtils;
+import proforma.util.div.Zip;
+
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Stream;
-
-import proforma.util.div.XmlUtils;
-import proforma.util.div.Zip;
 
 /**
  * The base class for the three different Proforma types,
@@ -18,29 +18,29 @@ public abstract class ProformaResource implements Serializable {
     private final MimeType mimeType;
 
     public ProformaResource(byte[] content, MimeType mimeType) {
-        if(null == content)
+        if (null == content)
             throw new IllegalArgumentException("content byte array parameter must not be null.");
-        if(0 == content.length)
+        if (0 == content.length)
             throw new IllegalArgumentException("content byte array is empty.");
         this.content = content;
-        if(null == mimeType)
+        if (null == mimeType)
             throw new IllegalArgumentException("mimeType parameter must not be null.");
         this.mimeType = mimeType;
     }
-    
+
     protected ProformaResource(byte[] content) {
-          this(content, guessMimeType(content));
+        this(content, guessMimeType(content));
     }
 
     public byte[] getContent() {
         return content;
     }
-    
+
     public String getXmlContent() {
-    	if (mimeType.equals(MimeType.XML)) {
-    		return new String(content, StandardCharsets.UTF_8);
-    	}
-    	throw new UnsupportedOperationException("Cannot get xml content from a zip resource");
+        if (mimeType.equals(MimeType.XML)) {
+            return new String(content, StandardCharsets.UTF_8);
+        }
+        throw new UnsupportedOperationException("Cannot get xml content from a zip resource");
     }
 
 //    public void setContent(byte[] content) {
@@ -60,12 +60,12 @@ public abstract class ProformaResource implements Serializable {
         return String.format("%s{content=byte[%d], mimeType=%s}",
             getClass().getSimpleName(), content.length, mimeType);
     }
-    
+
     private static MimeType guessMimeType(byte[] bytes) {
-    	if (Zip.isZip(bytes)) return MimeType.ZIP; 
+        if (Zip.isZip(bytes)) return MimeType.ZIP;
         if (XmlUtils.isXml(bytes)) return MimeType.XML;
-        throw new IllegalArgumentException("Cant guess mimetype - neither ZP nor XML detected (first 10 bytes are " 
-        		+ Arrays.toString(Stream.of(bytes).limit(10).toArray()) 
-        		+ ")");
+        throw new IllegalArgumentException("Cant guess mimetype - neither ZP nor XML detected (first 10 bytes are "
+            + Arrays.toString(Stream.of(bytes).limit(10).toArray())
+            + ")");
     }
 }

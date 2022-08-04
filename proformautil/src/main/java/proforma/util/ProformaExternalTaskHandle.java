@@ -10,58 +10,60 @@ import proforma.util.div.PropertyHandle;
  * The type {@code clazz} must implement a default constructor.
  */
 public abstract class ProformaExternalTaskHandle {
-	private PropertyHandle propertyHandle;
-	
-	public ProformaExternalTaskHandle(Object submission, String propertyName, Class<?> clazz) {
-		propertyHandle = new PropertyHandle(submission, propertyName, clazz);
-		if (submission == null) throw new AssertionError(this.getClass() + ": submission shouldn't be null");
-	}
-	
-	protected void assertNotNull(String whatToDo) throws NullPointerException {
-		propertyHandle.assertNotNull(whatToDo, this);
-	}
-	
+    private PropertyHandle propertyHandle;
 
-	
-	public Object get() {
-		return propertyHandle.get();
-	}
+    public ProformaExternalTaskHandle(Object submission, String propertyName, Class<?> clazz) {
+        propertyHandle = new PropertyHandle(submission, propertyName, clazz);
+        if (submission == null) throw new AssertionError(this.getClass() + ": submission shouldn't be null");
+    }
 
-	public void set(Object value) {
-		propertyHandle.set(value);
-	}
-	
-	public ProformaExternalTaskHandle createAndSet() {
-		propertyHandle.createAndSet();
-		return this;
-	}
+    protected void assertNotNull(String whatToDo) throws NullPointerException {
+        propertyHandle.assertNotNull(whatToDo, this);
+    }
 
-	public void remove() {
-		propertyHandle.set(null);
-	}
-	
-	/**
-	 * @return uuid
-	 */
-	public abstract String getUuid();
-	
-	/**
-	 * Sets the uuid
-	 * @param uuid
-	 * @return can be used for method call chaining on this object.
-	 */
-	public abstract ProformaExternalTaskHandle setUuid(String value);
-	
-	/**
-	 * @return uri
-	 */
-	public abstract String getUri();
-	/**
-	 * Sets the uri
-	 * @param uri
-	 * @return can be used for method call chaining on this object.
-	 */
-	public abstract ProformaExternalTaskHandle setUri(String value);
-	
-	
+
+    public Object get() {
+        return propertyHandle.get();
+    }
+
+    public void set(Object value) {
+        propertyHandle.set(value);
+    }
+
+    public ProformaExternalTaskHandle createAndSet() {
+        propertyHandle.createAndSet();
+        return this;
+    }
+
+    public void remove() {
+        propertyHandle.set(null);
+    }
+
+    /**
+     * @return uuid
+     */
+    public abstract String getUuid();
+
+    /**
+     * Sets the uuid
+     *
+     * @param uuid
+     * @return can be used for method call chaining on this object.
+     */
+    public abstract ProformaExternalTaskHandle setUuid(String value);
+
+    /**
+     * @return uri
+     */
+    public abstract String getUri();
+
+    /**
+     * Sets the uri
+     *
+     * @param uri
+     * @return can be used for method call chaining on this object.
+     */
+    public abstract ProformaExternalTaskHandle setUri(String value);
+
+
 }

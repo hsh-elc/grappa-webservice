@@ -8,18 +8,17 @@ import javax.xml.namespace.QName;
 
 
 /**
- * This object contains factory methods for each 
- * Java content interface and Java element interface 
- * generated in the proforma.xml package. 
- * <p>An ObjectFactory allows you to programatically 
- * construct new instances of the Java representation 
- * for XML content. The Java representation of XML 
- * content can consist of schema derived interfaces 
- * and classes representing the binding of schema 
- * type definitions, element declarations and model 
- * groups.  Factory methods for each of these are 
+ * This object contains factory methods for each
+ * Java content interface and Java element interface
+ * generated in the proforma.xml package.
+ * <p>An ObjectFactory allows you to programatically
+ * construct new instances of the Java representation
+ * for XML content. The Java representation of XML
+ * content can consist of schema derived interfaces
+ * and classes representing the binding of schema
+ * type definitions, element declarations and model
+ * groups.  Factory methods for each of these are
  * provided in this class.
- * 
  */
 @XmlRegistry
 public class ObjectFactory {
@@ -32,14 +31,12 @@ public class ObjectFactory {
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: proforma.xml
-     * 
      */
     public ObjectFactory() {
     }
 
     /**
      * Create an instance of {@link FeedbackType }
-     * 
      */
     public FeedbackType createFeedbackType() {
         return new FeedbackType();
@@ -47,7 +44,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TaskType }
-     * 
      */
     public TaskType createTaskType() {
         return new TaskType();
@@ -55,7 +51,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ResponseType }
-     * 
      */
     public ResponseType createResponseType() {
         return new ResponseType();
@@ -63,7 +58,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SubmissionType }
-     * 
      */
     public SubmissionType createSubmissionType() {
         return new SubmissionType();
@@ -71,7 +65,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link EmbeddedBinFileType }
-     * 
      */
     public EmbeddedBinFileType createEmbeddedBinFileType() {
         return new EmbeddedBinFileType();
@@ -79,7 +72,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradesNullifyConditionsType }
-     * 
      */
     public GradesNullifyConditionsType createGradesNullifyConditionsType() {
         return new GradesNullifyConditionsType();
@@ -87,7 +79,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradesNullifyTestRefType }
-     * 
      */
     public GradesNullifyTestRefType createGradesNullifyTestRefType() {
         return new GradesNullifyTestRefType();
@@ -95,7 +86,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradesNullifyConditionType }
-     * 
      */
     public GradesNullifyConditionType createGradesNullifyConditionType() {
         return new GradesNullifyConditionType();
@@ -103,7 +93,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradesTestRefChildType }
-     * 
      */
     public GradesTestRefChildType createGradesTestRefChildType() {
         return new GradesTestRefChildType();
@@ -111,7 +100,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SubtestsResponseType }
-     * 
      */
     public SubtestsResponseType createSubtestsResponseType() {
         return new SubtestsResponseType();
@@ -119,7 +107,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TestResultType }
-     * 
      */
     public TestResultType createTestResultType() {
         return new TestResultType();
@@ -127,7 +114,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradesNullifyLiteralType }
-     * 
      */
     public GradesNullifyLiteralType createGradesNullifyLiteralType() {
         return new GradesNullifyLiteralType();
@@ -135,7 +121,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ModelSolutionsType }
-     * 
      */
     public ModelSolutionsType createModelSolutionsType() {
         return new ModelSolutionsType();
@@ -143,7 +128,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradingHintsType }
-     * 
      */
     public GradingHintsType createGradingHintsType() {
         return new GradingHintsType();
@@ -151,7 +135,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ExternalResourcesType }
-     * 
      */
     public ExternalResourcesType createExternalResourcesType() {
         return new ExternalResourcesType();
@@ -159,7 +142,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GraderEngineType }
-     * 
      */
     public GraderEngineType createGraderEngineType() {
         return new GraderEngineType();
@@ -167,7 +149,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradesNullifyBaseType }
-     * 
      */
     public GradesNullifyBaseType createGradesNullifyBaseType() {
         return new GradesNullifyBaseType();
@@ -175,7 +156,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ExternalSubmissionType }
-     * 
      */
     public ExternalSubmissionType createExternalSubmissionType() {
         return new ExternalSubmissionType();
@@ -183,7 +163,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TaskFileType }
-     * 
      */
     public TaskFileType createTaskFileType() {
         return new TaskFileType();
@@ -191,7 +170,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link FileRestrType }
-     * 
      */
     public FileRestrType createFileRestrType() {
         return new FileRestrType();
@@ -199,7 +177,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ExternalTaskType }
-     * 
      */
     public ExternalTaskType createExternalTaskType() {
         return new ExternalTaskType();
@@ -207,7 +184,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SeparateTestFeedbackType }
-     * 
      */
     public SeparateTestFeedbackType createSeparateTestFeedbackType() {
         return new SeparateTestFeedbackType();
@@ -215,7 +191,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ProglangType }
-     * 
      */
     public ProglangType createProglangType() {
         return new ProglangType();
@@ -223,7 +198,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link FilerefsType }
-     * 
      */
     public FilerefsType createFilerefsType() {
         return new FilerefsType();
@@ -231,7 +205,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SubmissionFileType }
-     * 
      */
     public SubmissionFileType createSubmissionFileType() {
         return new SubmissionFileType();
@@ -239,7 +212,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ModelSolutionType }
-     * 
      */
     public ModelSolutionType createModelSolutionType() {
         return new ModelSolutionType();
@@ -247,7 +219,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SubtestResponseType }
-     * 
      */
     public SubtestResponseType createSubtestResponseType() {
         return new SubtestResponseType();
@@ -255,7 +226,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link FeedbackListType }
-     * 
      */
     public FeedbackListType createFeedbackListType() {
         return new FeedbackListType();
@@ -263,7 +233,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link IncludedTaskFileType }
-     * 
      */
     public IncludedTaskFileType createIncludedTaskFileType() {
         return new IncludedTaskFileType();
@@ -271,7 +240,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TaskFilesType }
-     * 
      */
     public TaskFilesType createTaskFilesType() {
         return new TaskFilesType();
@@ -279,7 +247,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TestConfigurationType }
-     * 
      */
     public TestConfigurationType createTestConfigurationType() {
         return new TestConfigurationType();
@@ -287,7 +254,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradesNodeType }
-     * 
      */
     public GradesNodeType createGradesNodeType() {
         return new GradesNodeType();
@@ -295,7 +261,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradesBaseRefChildType }
-     * 
      */
     public GradesBaseRefChildType createGradesBaseRefChildType() {
         return new GradesBaseRefChildType();
@@ -303,7 +268,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradesNullifyComparisonOperandType }
-     * 
      */
     public GradesNullifyComparisonOperandType createGradesNullifyComparisonOperandType() {
         return new GradesNullifyComparisonOperandType();
@@ -311,7 +275,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TestsType }
-     * 
      */
     public TestsType createTestsType() {
         return new TestsType();
@@ -319,7 +282,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ExternalresourcerefType }
-     * 
      */
     public ExternalresourcerefType createExternalresourcerefType() {
         return new ExternalresourcerefType();
@@ -327,7 +289,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TestMetaDataType }
-     * 
      */
     public TestMetaDataType createTestMetaDataType() {
         return new TestMetaDataType();
@@ -335,7 +296,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link EmbeddedTxtFileType }
-     * 
      */
     public EmbeddedTxtFileType createEmbeddedTxtFileType() {
         return new EmbeddedTxtFileType();
@@ -343,7 +303,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ResultType }
-     * 
      */
     public ResultType createResultType() {
         return new ResultType();
@@ -351,7 +310,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link FilerefType }
-     * 
      */
     public FilerefType createFilerefType() {
         return new FilerefType();
@@ -359,7 +317,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SubmissionFilesType }
-     * 
      */
     public SubmissionFilesType createSubmissionFilesType() {
         return new SubmissionFilesType();
@@ -367,7 +324,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ResultSpecType }
-     * 
      */
     public ResultSpecType createResultSpecType() {
         return new ResultSpecType();
@@ -375,7 +331,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link LmsType }
-     * 
      */
     public LmsType createLmsType() {
         return new LmsType();
@@ -383,7 +338,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ResponseMetaDataType }
-     * 
      */
     public ResponseMetaDataType createResponseMetaDataType() {
         return new ResponseMetaDataType();
@@ -391,7 +345,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link OverallResultType }
-     * 
      */
     public OverallResultType createOverallResultType() {
         return new OverallResultType();
@@ -399,7 +352,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradesNullifyCombineRefType }
-     * 
      */
     public GradesNullifyCombineRefType createGradesNullifyCombineRefType() {
         return new GradesNullifyCombineRefType();
@@ -407,7 +359,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ResponseFilesType }
-     * 
      */
     public ResponseFilesType createResponseFilesType() {
         return new ResponseFilesType();
@@ -415,7 +366,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link AttachedTxtFileType }
-     * 
      */
     public AttachedTxtFileType createAttachedTxtFileType() {
         return new AttachedTxtFileType();
@@ -423,7 +373,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GradesCombineRefChildType }
-     * 
      */
     public GradesCombineRefChildType createGradesCombineRefChildType() {
         return new GradesCombineRefChildType();
@@ -431,7 +380,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link MergedTestFeedbackType }
-     * 
      */
     public MergedTestFeedbackType createMergedTestFeedbackType() {
         return new MergedTestFeedbackType();
@@ -439,7 +387,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TaskMetaDataType }
-     * 
      */
     public TaskMetaDataType createTaskMetaDataType() {
         return new TaskMetaDataType();
@@ -447,7 +394,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SubmissionRestrictionsType }
-     * 
      */
     public SubmissionRestrictionsType createSubmissionRestrictionsType() {
         return new SubmissionRestrictionsType();
@@ -455,7 +401,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ResponseFileType }
-     * 
      */
     public ResponseFileType createResponseFileType() {
         return new ResponseFileType();
@@ -463,7 +408,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TestsResponseType }
-     * 
      */
     public TestsResponseType createTestsResponseType() {
         return new TestsResponseType();
@@ -471,7 +415,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TestResponseType }
-     * 
      */
     public TestResponseType createTestResponseType() {
         return new TestResponseType();
@@ -479,7 +422,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ExternalResourceType }
-     * 
      */
     public ExternalResourceType createExternalResourceType() {
         return new ExternalResourceType();
@@ -487,7 +429,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ExternalresourcerefsType }
-     * 
      */
     public ExternalresourcerefsType createExternalresourcerefsType() {
         return new ExternalresourcerefsType();
@@ -495,7 +436,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TestType }
-     * 
      */
     public TestType createTestType() {
         return new TestType();
@@ -503,7 +443,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link FeedbackType.Content }
-     * 
      */
     public FeedbackType.Content createFeedbackTypeContent() {
         return new FeedbackType.Content();
@@ -511,7 +450,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link TaskType }{@code >}}
-     * 
      */
     @XmlElementDecl(namespace = "urn:proforma:v2.1", name = "task")
     public JAXBElement<TaskType> createTask(TaskType value) {
@@ -520,7 +458,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ResponseType }{@code >}}
-     * 
      */
     @XmlElementDecl(namespace = "urn:proforma:v2.1", name = "response")
     public JAXBElement<ResponseType> createResponse(ResponseType value) {
@@ -529,7 +466,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link SubmissionType }{@code >}}
-     * 
      */
     @XmlElementDecl(namespace = "urn:proforma:v2.1", name = "submission")
     public JAXBElement<SubmissionType> createSubmission(SubmissionType value) {
@@ -538,7 +474,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link FeedbackType }{@code >}}
-     * 
      */
     @XmlElementDecl(namespace = "urn:proforma:v2.1", name = "teacher-feedback", scope = FeedbackListType.class)
     public JAXBElement<FeedbackType> createFeedbackListTypeTeacherFeedback(FeedbackType value) {
@@ -547,7 +482,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link FeedbackType }{@code >}}
-     * 
      */
     @XmlElementDecl(namespace = "urn:proforma:v2.1", name = "student-feedback", scope = FeedbackListType.class)
     public JAXBElement<FeedbackType> createFeedbackListTypeStudentFeedback(FeedbackType value) {

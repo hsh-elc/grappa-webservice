@@ -10,9 +10,9 @@ import java.util.List;
 
 /**
  * <p>Java class for feedback-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="feedback-type">
  *   &lt;complexContent>
@@ -43,8 +43,6 @@ import java.util.List;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "feedback-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -68,11 +66,9 @@ public class FeedbackType {
 
     /**
      * Gets the value of the title property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTitle() {
         return title;
@@ -80,11 +76,9 @@ public class FeedbackType {
 
     /**
      * Sets the value of the title property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setTitle(String value) {
         this.title = value;
@@ -92,11 +86,9 @@ public class FeedbackType {
 
     /**
      * Gets the value of the content property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link FeedbackType.Content }
-     *     
+     *
+     * @return possible object is
+     * {@link FeedbackType.Content }
      */
     public FeedbackType.Content getContent() {
         return content;
@@ -104,11 +96,9 @@ public class FeedbackType {
 
     /**
      * Sets the value of the content property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link FeedbackType.Content }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link FeedbackType.Content }
      */
     public void setContent(FeedbackType.Content value) {
         this.content = value;
@@ -116,11 +106,9 @@ public class FeedbackType {
 
     /**
      * Gets the value of the filerefs property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link FilerefsType }
-     *     
+     *
+     * @return possible object is
+     * {@link FilerefsType }
      */
     public FilerefsType getFilerefs() {
         return filerefs;
@@ -128,11 +116,9 @@ public class FeedbackType {
 
     /**
      * Sets the value of the filerefs property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link FilerefsType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link FilerefsType }
      */
     public void setFilerefs(FilerefsType value) {
         this.filerefs = value;
@@ -140,26 +126,24 @@ public class FeedbackType {
 
     /**
      * Gets the value of the any property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
      * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getAny().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link Object }
      * {@link Element }
-     * 
-     * 
      */
     public List<Object> getAny() {
         if (any == null) {
@@ -170,11 +154,9 @@ public class FeedbackType {
 
     /**
      * Gets the value of the level property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link FeedbackLevelType }
-     *     
+     *
+     * @return possible object is
+     * {@link FeedbackLevelType }
      */
     public FeedbackLevelType getLevel() {
         return level;
@@ -182,11 +164,9 @@ public class FeedbackType {
 
     /**
      * Sets the value of the level property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link FeedbackLevelType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link FeedbackLevelType }
      */
     public void setLevel(FeedbackLevelType value) {
         this.level = value;
@@ -195,9 +175,9 @@ public class FeedbackType {
 
     /**
      * <p>Java class for anonymous complex type.
-     * 
+     *
      * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
+     *
      * <pre>
      * &lt;complexType>
      *   &lt;simpleContent>
@@ -214,8 +194,6 @@ public class FeedbackType {
      *   &lt;/simpleContent>
      * &lt;/complexType>
      * </pre>
-     * 
-     * 
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
@@ -230,11 +208,9 @@ public class FeedbackType {
 
         /**
          * Gets the value of the value property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link String }
-         *     
+         *
+         * @return possible object is
+         * {@link String }
          */
         public String getValue() {
             return value;
@@ -242,11 +218,9 @@ public class FeedbackType {
 
         /**
          * Sets the value of the value property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *     
+         *
+         * @param value allowed object is
+         *              {@link String }
          */
         public void setValue(String value) {
             this.value = value;
@@ -254,11 +228,9 @@ public class FeedbackType {
 
         /**
          * Gets the value of the format property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link String }
-         *     
+         *
+         * @return possible object is
+         * {@link String }
          */
         public String getFormat() {
             return format;
@@ -266,11 +238,9 @@ public class FeedbackType {
 
         /**
          * Sets the value of the format property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *     
+         *
+         * @param value allowed object is
+         *              {@link String }
          */
         public void setFormat(String value) {
             this.format = value;

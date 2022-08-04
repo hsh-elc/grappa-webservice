@@ -55,8 +55,8 @@ public class GrappaResource {
         service.addProperty("totalGradingProcessesCancelled", total.getCancelled());
         service.addProperty("totalGradingProcessesTimedOut", total.getTimedOut());
         service.addProperty("totalAllExceptExecuted",
-            total.getSucceeded()+total.getCancelled()+total.getFailed()+
-            total.getTimedOut());
+            total.getSucceeded() + total.getCancelled() + total.getFailed() +
+                total.getTimedOut());
         service.add("graderRuntimeInfo", graderStatusArray);
 
         // TODO maybe add: service.add("static_config", new JsonParser().parse(gson.toJson(GrappaServlet.CONFIG))

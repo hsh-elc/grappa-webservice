@@ -1,7 +1,6 @@
 package de.hsh.grappa.rest;
 
 import de.hsh.grappa.exceptions.AuthenticationException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

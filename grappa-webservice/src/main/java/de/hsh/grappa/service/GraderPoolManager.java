@@ -63,7 +63,7 @@ public class GraderPoolManager implements Runnable {
         for (Map.Entry<GraderID, GraderPool> e : pools.entrySet()) {
             try {
                 e.getValue().shutdown();
-            } catch(Throwable ex) {
+            } catch (Throwable ex) {
                 log.error(ex.getMessage());
                 log.error(ExceptionUtils.getStackTrace(ex));
             }
@@ -120,6 +120,7 @@ public class GraderPoolManager implements Runnable {
 
     /**
      * Get the graderID from the pool by graderName and graderVersion
+     *
      * @param graderName
      * @param graderVersion
      * @return The GraderID Object that is used in the GraderPool
@@ -137,7 +138,7 @@ public class GraderPoolManager implements Runnable {
 
     public int getPoolSize(GraderID graderId) throws NotFoundException {
         var pool = pools.get(graderId);
-        if(null != pool)
+        if (null != pool)
             return pool.getPoolSize();
         throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId.toString()));
     }
@@ -145,13 +146,14 @@ public class GraderPoolManager implements Runnable {
     /**
      * Get the number of currently busy (i.e. in use) grader instances
      * for a particular graderId.
+     *
      * @param graderId
      * @return
      * @throws NotFoundException
      */
     public int getBusyCount(GraderID graderId) throws NotFoundException {
         var pool = pools.get(graderId);
-        if(null != pool)
+        if (null != pool)
             return pool.getBusyCount();
         throw new NotFoundException(String.format("GraderId '%s' does not exist.", graderId.toString()));
     }
@@ -159,12 +161,13 @@ public class GraderPoolManager implements Runnable {
     /**
      * Get the estimated remaining seconds remaining until a particular
      * grading process (i.e. submission) is finished.
-     *
+     * <p>
      * This takes into account the number of the total pool size of a grader
      * that a submission has been submitted to, as well as the number of
      * currently busy grader instances in that pool, along with the previously
      * measured time it took to grade the task that the submission has been
      * submitted for.
+     *
      * @param gradeProcId
      * @return
      * @throws NotFoundException
@@ -183,7 +186,7 @@ public class GraderPoolManager implements Runnable {
             // if the subm. index is -1, it is being processed right now (if it has not been graded already)
             // if the subm. index is 0 or above, it's probably next up for grading once a grader instance
             // becomes free. We also need to account for asynchronous grading, i.e. the grader pool size
-            if(-1 == submPos) {
+            if (-1 == submPos) {
                 long running = pool.getRunningTimeSeconds(gradeProcId);
                 estimated = avgGradingSeconds - running;
 //                log.debug("[GradeProcId: {}]: submPos: {}, avgGradingSec: {}, running: {}, estimatedSecs: {}",

@@ -8,63 +8,63 @@ import proforma.util.div.PropertyHandle;
  * property named "{@code propertyName}" of type {@code clazz}.
  * The type {@code clazz} must implement a default constructor.
  */
-public abstract class ProformaEmbeddedTxtFileHandle  implements ProformaAttachedOrEmbeddedBonOrTxtFileHandle {
+public abstract class ProformaEmbeddedTxtFileHandle implements ProformaAttachedOrEmbeddedBonOrTxtFileHandle {
 
-	private PropertyHandle  propertyHandle;
-	
-	public ProformaEmbeddedTxtFileHandle(Object file, String propertyName, Class<?> clazz) {
-		propertyHandle = new PropertyHandle (file, propertyName, clazz);
-		if (file == null) throw new AssertionError(this.getClass() + ": file shouldn't be null");
-	}
-	
-	protected void assertNotNull(String whatToDo) throws NullPointerException {
-		propertyHandle.assertNotNull(whatToDo, this);
-	}
-	
+    private PropertyHandle propertyHandle;
 
-	
-	public Object get() {
-		return propertyHandle.get();
-	}
+    public ProformaEmbeddedTxtFileHandle(Object file, String propertyName, Class<?> clazz) {
+        propertyHandle = new PropertyHandle(file, propertyName, clazz);
+        if (file == null) throw new AssertionError(this.getClass() + ": file shouldn't be null");
+    }
 
-	public void set(Object value) {
-		propertyHandle.set(value);
-	}
-	
+    protected void assertNotNull(String whatToDo) throws NullPointerException {
+        propertyHandle.assertNotNull(whatToDo, this);
+    }
 
-	public ProformaEmbeddedTxtFileHandle createAndSet() {
-		propertyHandle.createAndSet();
-		return this;
-	}
 
-	public void remove() {
-		propertyHandle.set(null);
-	}
-	
-	
+    public Object get() {
+        return propertyHandle.get();
+    }
 
-	/**
-	 * @return the filename
-	 */
-	public abstract String getFilename();
-	
-	/**
-	 * @return the text content
-	 */
-	public abstract String getContent();
-	
-	/**
-	 * Sets the filename
-	 * @param filename
-	 * @return can be used for method call chaining on this object.
-	 */
-	public abstract ProformaEmbeddedTxtFileHandle setFilename(String filename);
-	
-	/**
-	 * Sets the text content
-	 * @param content
-	 * @return can be used for method call chaining on this object.
-	 */
-	public abstract ProformaEmbeddedTxtFileHandle setContent(String content);
+    public void set(Object value) {
+        propertyHandle.set(value);
+    }
+
+
+    public ProformaEmbeddedTxtFileHandle createAndSet() {
+        propertyHandle.createAndSet();
+        return this;
+    }
+
+    public void remove() {
+        propertyHandle.set(null);
+    }
+
+
+    /**
+     * @return the filename
+     */
+    public abstract String getFilename();
+
+    /**
+     * @return the text content
+     */
+    public abstract String getContent();
+
+    /**
+     * Sets the filename
+     *
+     * @param filename
+     * @return can be used for method call chaining on this object.
+     */
+    public abstract ProformaEmbeddedTxtFileHandle setFilename(String filename);
+
+    /**
+     * Sets the text content
+     *
+     * @param content
+     * @return can be used for method call chaining on this object.
+     */
+    public abstract ProformaEmbeddedTxtFileHandle setContent(String content);
 
 }

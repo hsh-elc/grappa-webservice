@@ -11,9 +11,9 @@ import java.util.List;
 
 /**
  * <p>Java class for tests-response-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="tests-response-type">
  *   &lt;complexContent>
@@ -25,8 +25,6 @@ import java.util.List;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tests-response-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -39,25 +37,23 @@ public class TestsResponseType {
 
     /**
      * Gets the value of the testResponse property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
      * This is why there is not a <CODE>set</CODE> method for the testResponse property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getTestResponse().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link TestResponseType }
-     * 
-     * 
      */
     public List<TestResponseType> getTestResponse() {
         if (testResponse == null) {

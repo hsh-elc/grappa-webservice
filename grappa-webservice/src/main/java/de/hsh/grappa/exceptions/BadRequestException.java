@@ -9,13 +9,13 @@ package de.hsh.grappa.exceptions;
 public class BadRequestException extends Exception { // must not be GrappaException {
 
     /**
-	 * 
-	 */
+     *
+     */
     private static final long serialVersionUID = 1L;
 
     /**
-	 * 
-	 */
+     *
+     */
     public BadRequestException() {
 
     }
@@ -28,7 +28,7 @@ public class BadRequestException extends Exception { // must not be GrappaExcept
     }
 
     /***
-     * 
+     *
      * @param message
      * @param cause
      */

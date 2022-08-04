@@ -1,10 +1,10 @@
 package proforma.util.exception;
 
 public class UnexpectedDataException extends Exception {
-    
-	private static final long serialVersionUID = 57937972127716009L;
 
-	public UnexpectedDataException() {
+    private static final long serialVersionUID = 57937972127716009L;
+
+    public UnexpectedDataException() {
     }
 
     public UnexpectedDataException(String s) {

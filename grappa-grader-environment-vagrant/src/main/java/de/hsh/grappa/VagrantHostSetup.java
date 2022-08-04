@@ -34,7 +34,7 @@ public class VagrantHostSetup implements GradingEnvironmentSetup {
         String[] up = {shell, "/C", "vagrant up"};
         int exitCode = runProcess(up);
         log.info("Container host startup finished with exit code: {}", exitCode);
-        if(exitCode != 0)
+        if (exitCode != 0)
             throw new Exception("Container host failed to start.");
     }
 
@@ -46,7 +46,7 @@ public class VagrantHostSetup implements GradingEnvironmentSetup {
     }
 
     private void readProcessOutputToLog(Process proc) throws IOException {
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));) {
             String line = null;
             while ((line = reader.readLine()) != null) {
                 log.info(line);

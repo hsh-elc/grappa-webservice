@@ -54,8 +54,8 @@ public class GraderPool {
     private ClassPathClassLoader<BackendPlugin> backendPluginLoader;
     private Boundary boundary;
 
-    private static final String OP_MODE_LOCAL_VM="host_jvm_bp";
-    private static final String OP_MODE_DOCKER_VM="docker_jvm_bp";
+    private static final String OP_MODE_LOCAL_VM = "host_jvm_bp";
+    private static final String OP_MODE_DOCKER_VM = "docker_jvm_bp";
 
     private final ConcurrentHashMap<String /*gradeProcId*/, GradeProcess> gpMap =
         new ConcurrentHashMap<>();
@@ -71,8 +71,8 @@ public class GraderPool {
         this.graderConfig = graderConfig;
         this.backendPluginLoader = new ClassPathClassLoader<>(BackendPlugin.class, graderConfig.getId().toString());
         this.boundary = new BoundaryImpl();
-        
-        if(0 >= graderConfig.getConcurrent_grading_processes())
+
+        if (0 >= graderConfig.getConcurrent_grading_processes())
             throw new IllegalArgumentException(String.format("concurrent_grading_processes must not be less than 1 " +
                 "for graderId '%s'.", graderConfig.getConcurrent_grading_processes()));
 
@@ -138,99 +138,108 @@ public class GraderPool {
         }
         return false; // will not grade (all workers are busy)
     }
-    
-    private BackendPlugin loadAndInitBackendPlugin(String submId) throws Exception{
-    	BackendPlugin bp=null;
-    	Properties props=graderConfig.getGrader_plugin_defaults();
+
+    private BackendPlugin loadAndInitBackendPlugin(String submId) throws Exception {
+        BackendPlugin bp = null;
+        Properties props = graderConfig.getGrader_plugin_defaults();
         if (props == null) props = new Properties(); // empty map instead of null
 
-        String logLevel=graderConfig.getLogging_level();
-        GraderID graderId=graderConfig.getId();
+        String logLevel = graderConfig.getLogging_level();
+        GraderID graderId = graderConfig.getId();
         //Encodings 
-        String fileEncoding=graderConfig.getFile_encoding();
-        String userLanguage=graderConfig.getUser_language();
-        String userCountry=graderConfig.getUser_country();
+        String fileEncoding = graderConfig.getFile_encoding();
+        String userLanguage = graderConfig.getUser_language();
+        String userCountry = graderConfig.getUser_country();
 
         //Determines whether dockerProxy is used
-    	String operatingMode=graderConfig.getOperating_mode();
-    	if(operatingMode.equals(OP_MODE_DOCKER_VM)) {
-    		//DOCKER BP
-    		    		
-            log.info("Loading grader plugin '{}' with '{}'...", graderId, DockerProxyBackendPlugin.class.getSimpleName());
-    		DockerProxyBackendPlugin dockerBp=new DockerProxyBackendPlugin();
-    		
-        	//init and call 3 additional DockerBP methods
-            log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing DockerProxyBackendPlugin...",graderId,submId);
+        String operatingMode = graderConfig.getOperating_mode();
+        if (operatingMode.equals(OP_MODE_DOCKER_VM)) {
+            //DOCKER BP
 
-    		dockerBp.init(props,boundary,logLevel, fileEncoding, userLanguage, userCountry);
-    		
-    		dockerBp.setContext(graderId.toString(),submId);
-    		
-    		//Docker 
-    		//Host prefs
-        	DockerProxyConfig dockerConfig=GrappaServlet.CONFIG.getDocker_proxy();
-        	if(dockerConfig==null)throw new IllegalArgumentException(String.format("Missing definition of 'docker_proxy' for operating_mode: %s.",OP_MODE_DOCKER_VM));
-    		String dockerHost=dockerConfig.getHost();
-    		if(dockerHost==null || dockerHost.equals(""))throw new IllegalArgumentException(String.format("Missing definition of 'docker_proxy.host' for operating_mode: %s.",OP_MODE_DOCKER_VM));
-    		
-    		//Docker prefs
-    		GraderDockerJvmBpConfig dockerBPConfig=graderConfig.getDocker_jvm_bp();
-    		if(dockerBPConfig==null)throw new IllegalArgumentException(String.format("Missing '%s' for operating_mode.",OP_MODE_DOCKER_VM));
-    		//Image info
-    		String imageName=dockerBPConfig.getImage_name();
-    		if(imageName==null || imageName.equals(""))throw new IllegalArgumentException(String.format("Missing definition of 'image_name' for operating_mode '%s'.",OP_MODE_DOCKER_VM));
-    		//Pathes (default values in case of null will be set in DockerProxyBackendPlugin)
-    		String copySubmissionToDirPath=dockerBPConfig.getCopy_submission_to_dir_path();
-    		String loadResponseFromDirPath=dockerBPConfig.getLoad_response_from_dir_path();
-    		String copyGraderPluginDefaultsPropertiesToFile=dockerBPConfig.getCopy_grader_plugin_defaults_properties_to_file();
-    		//set prefs
-    		dockerBp.setDockerPrefs(dockerHost,imageName, copySubmissionToDirPath, loadResponseFromDirPath, copyGraderPluginDefaultsPropertiesToFile);
-                       
+            log.info("Loading grader plugin '{}' with '{}'...", graderId, DockerProxyBackendPlugin.class.getSimpleName());
+            DockerProxyBackendPlugin dockerBp = new DockerProxyBackendPlugin();
+
+            //init and call 3 additional DockerBP methods
+            log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing DockerProxyBackendPlugin...", graderId, submId);
+
+            dockerBp.init(props, boundary, logLevel, fileEncoding, userLanguage, userCountry);
+
+            dockerBp.setContext(graderId.toString(), submId);
+
+            //Docker
+            //Host prefs
+            DockerProxyConfig dockerConfig = GrappaServlet.CONFIG.getDocker_proxy();
+            if (dockerConfig == null)
+                throw new IllegalArgumentException(String.format("Missing definition of 'docker_proxy' for operating_mode: %s.", OP_MODE_DOCKER_VM));
+            String dockerHost = dockerConfig.getHost();
+            if (dockerHost == null || dockerHost.equals(""))
+                throw new IllegalArgumentException(String.format("Missing definition of 'docker_proxy.host' for operating_mode: %s.", OP_MODE_DOCKER_VM));
+
+            //Docker prefs
+            GraderDockerJvmBpConfig dockerBPConfig = graderConfig.getDocker_jvm_bp();
+            if (dockerBPConfig == null)
+                throw new IllegalArgumentException(String.format("Missing '%s' for operating_mode.", OP_MODE_DOCKER_VM));
+            //Image info
+            String imageName = dockerBPConfig.getImage_name();
+            if (imageName == null || imageName.equals(""))
+                throw new IllegalArgumentException(String.format("Missing definition of 'image_name' for operating_mode '%s'.", OP_MODE_DOCKER_VM));
+            //Pathes (default values in case of null will be set in DockerProxyBackendPlugin)
+            String copySubmissionToDirPath = dockerBPConfig.getCopy_submission_to_dir_path();
+            String loadResponseFromDirPath = dockerBPConfig.getLoad_response_from_dir_path();
+            String copyGraderPluginDefaultsPropertiesToFile = dockerBPConfig.getCopy_grader_plugin_defaults_properties_to_file();
+            //set prefs
+            dockerBp.setDockerPrefs(dockerHost, imageName, copySubmissionToDirPath, loadResponseFromDirPath, copyGraderPluginDefaultsPropertiesToFile);
+
             bp = dockerBp;
 
-    	}else if(operatingMode.equals(OP_MODE_LOCAL_VM)) {
-    		//"NORMAL" BP
-    		
-    		GraderHostJvmBpConfig bpConfig=graderConfig.getHost_jvm_bp();
-    		if(bpConfig==null)throw new IllegalArgumentException(String.format("Missing '%s' for operating_mode.",OP_MODE_LOCAL_VM));
-    		
-    		String bpDirectory=bpConfig.getDir();
-    		String bpAdditionalAbsoluteClasspathes=bpConfig.getAdditional_absolute_classpathes();
-            String bpClassName=bpConfig.getBackend_plugin_classname();
-    		String bpFileExtensions=bpConfig.getFileextensions();
+        } else if (operatingMode.equals(OP_MODE_LOCAL_VM)) {
+            //"NORMAL" BP
 
-    		if(bpDirectory==null || bpDirectory.equals(""))throw new IllegalArgumentException(String.format("Missing '%s.dir' definition.", OP_MODE_LOCAL_VM));
-    		if(bpClassName==null || bpClassName.equals(""))throw new IllegalArgumentException(String.format("Missing '%s.backend_plugin_classname' definition.", OP_MODE_LOCAL_VM));
-    		//choose ".jar" by default
-    		if(bpFileExtensions==null)bpFileExtensions=".jar";
-    		
-    		//build classpath
-    		//collect everything in bpDirectory
-        	String absoluteClassPathes=bpDirectory;
-        	//optionally add absolute pathes
-    		if(bpAdditionalAbsoluteClasspathes!=null && !bpAdditionalAbsoluteClasspathes.equals("")){
-    			absoluteClassPathes+=";"+bpAdditionalAbsoluteClasspathes;
-    		}
-        	
+            GraderHostJvmBpConfig bpConfig = graderConfig.getHost_jvm_bp();
+            if (bpConfig == null)
+                throw new IllegalArgumentException(String.format("Missing '%s' for operating_mode.", OP_MODE_LOCAL_VM));
+
+            String bpDirectory = bpConfig.getDir();
+            String bpAdditionalAbsoluteClasspathes = bpConfig.getAdditional_absolute_classpathes();
+            String bpClassName = bpConfig.getBackend_plugin_classname();
+            String bpFileExtensions = bpConfig.getFileextensions();
+
+            if (bpDirectory == null || bpDirectory.equals(""))
+                throw new IllegalArgumentException(String.format("Missing '%s.dir' definition.", OP_MODE_LOCAL_VM));
+            if (bpClassName == null || bpClassName.equals(""))
+                throw new IllegalArgumentException(String.format("Missing '%s.backend_plugin_classname' definition.", OP_MODE_LOCAL_VM));
+            //choose ".jar" by default
+            if (bpFileExtensions == null) bpFileExtensions = ".jar";
+
+            //build classpath
+            //collect everything in bpDirectory
+            String absoluteClassPathes = bpDirectory;
+            //optionally add absolute pathes
+            if (bpAdditionalAbsoluteClasspathes != null && !bpAdditionalAbsoluteClasspathes.equals("")) {
+                absoluteClassPathes += ";" + bpAdditionalAbsoluteClasspathes;
+            }
+
             log.info("Loading grader plugin '{}' with classpathes '{}'...", graderId, absoluteClassPathes);
             backendPluginLoader.configure(Classpath.of(absoluteClassPathes, bpFileExtensions));
             bp = backendPluginLoader.instantiateClass(bpClassName);
-            
-            log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing BackendPlugin...",graderId,submId);
+
+            log.info("[GraderId: '{}', GradeProcessId: '{}']: Initializing BackendPlugin...", graderId, submId);
             bp.init(props, boundary, logLevel, fileEncoding, userLanguage, userCountry);
 
-    	}else {
-    		//neither host_jvm_bp nor docker_jvm_bp 
-            throw new IllegalArgumentException(String.format("operating_mode must be either '%s' or '%s'. Given was '%s'.",OP_MODE_DOCKER_VM,OP_MODE_LOCAL_VM,operatingMode));        		
-    	}
-    	return bp;
+        } else {
+            //neither host_jvm_bp nor docker_jvm_bp
+            throw new IllegalArgumentException(String.format("operating_mode must be either '%s' or '%s'. Given was '%s'.", OP_MODE_DOCKER_VM, OP_MODE_LOCAL_VM, operatingMode));
+        }
+        return bp;
     }
 
-    
+
     public ResponseResource runGradingProcess(QueuedSubmission subm) {
         @SuppressWarnings("serial")
         class NoResultGraderExecption extends Exception {
-            public NoResultGraderExecption(String s) { super(s); }
+            public NoResultGraderExecption(String s) {
+                super(s);
+            }
         }
         try {
             GradeProcess gradeProc = new GradeProcess(subm.getGradeProcId(), LocalDateTime.now(), null);
@@ -240,8 +249,8 @@ public class GraderPool {
                 log.error("Class loader of BackendPlugin '{}' not found", graderConfig.getId());
                 throw new Exception("Class loader of backend plugin '" + graderConfig.getId() + "' not found");
             }
-            
-            BackendPlugin bp=loadAndInitBackendPlugin(subm.getGradeProcId());
+
+            BackendPlugin bp = loadAndInitBackendPlugin(subm.getGradeProcId());
             int timeoutSeconds = graderConfig.getTimeout_seconds();
             try {
                 gradeProc.response = new FutureTask<ResponseResource>(() -> {
@@ -256,7 +265,7 @@ public class GraderPool {
                     totalGradingProcessesSucceeded.incrementAndGet();
                     long durationSeconds = Duration.between(gradeProc.startTime, LocalDateTime.now()).getSeconds();
                     log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process finished successfully after {} " +
-                            "seconds.", graderConfig.getId(), subm.getGradeProcId(), durationSeconds);
+                        "seconds.", graderConfig.getId(), subm.getGradeProcId(), durationSeconds);
                     // set the average grading duration only for grading processes that actually produced
                     // a valid proforma response. Anything else (such as errors) will skew the average duration.
                     setAverageGradingDuration(durationSeconds, subm.getGradeProcId());
@@ -266,7 +275,7 @@ public class GraderPool {
             } catch (ExecutionException | NoResultGraderExecption e) { // BackendPlugin threw an exception
                 totalGradingProcessesFailed.incrementAndGet();
                 String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process failed " +
-                        "with error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
+                    "with error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
                 log.error(errorMessage);
                 log.error(ExceptionUtils.getStackTrace(e));
                 return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY, e);
@@ -296,7 +305,7 @@ public class GraderPool {
                 // Treat this as cancellation, a direct result of the interrupt
                 totalGradingProcessesCancelled.incrementAndGet();
                 log.debug("[GraderId: '{}', GradeProcessId: '{}']: Grading process has been cancelled after parent " +
-                        "thread interruption.", graderConfig.getId(), subm.getGradeProcId());
+                    "thread interruption.", graderConfig.getId(), subm.getGradeProcId());
                 return createInternalErrorResponse("Grading process was interrupted.", subm, Audience.TEACHER_ONLY, e);
             } catch (Throwable e) { // catch any other error
                 totalGradingProcessesFailed.incrementAndGet();
@@ -308,14 +317,14 @@ public class GraderPool {
             }
         } catch (Throwable e) {
             String errorMessage = String.format("[GraderId: '%s', GradeProcessId: '%s']: Grading process encountered " +
-                    "error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
+                "error: %s", graderConfig.getId(), subm.getGradeProcId(), e.getMessage());
             log.error(errorMessage);
             log.error(ExceptionUtils.getStackTrace(e));
             try {
-				return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY, e);
-			} catch (Exception e1) {
-				throw new Error(e1);
-			}
+                return createInternalErrorResponse(errorMessage, subm, Audience.TEACHER_ONLY, e);
+            } catch (Exception e1) {
+                throw new Error(e1);
+            }
         } finally {
             totalGradingProcessesExecuted.incrementAndGet(); // finished one way or the other
             semaphore.release();
@@ -328,12 +337,12 @@ public class GraderPool {
 
     private LmsConfig getLmsConfig(String lmsId) {
         var lms = GrappaServlet.CONFIG.getLms().stream()
-                .filter(l -> l.getId().equals(lmsId)).findFirst();
+            .filter(l -> l.getId().equals(lmsId)).findFirst();
         if (!lms.isPresent())
-            throw new AuthenticationException("Unknown lmsId '"+lmsId+"'.");
+            throw new AuthenticationException("Unknown lmsId '" + lmsId + "'.");
         return lms.get();
     }
-    
+
     private ProformaVersion detectProformaVersion(QueuedSubmission subm) {
         try {
             return new SubmissionLive(subm.getSubmission()).getProformaVersion();
@@ -344,7 +353,7 @@ public class GraderPool {
         }
     }
 
-    private ResponseResource createInternalErrorResponse(String errorMessage, QueuedSubmission subm, Audience audience, final Throwable throwable)  throws Exception {
+    private ResponseResource createInternalErrorResponse(String errorMessage, QueuedSubmission subm, Audience audience, final Throwable throwable) throws Exception {
         if (audience == Audience.TEACHER_ONLY && this.graderConfig.getShow_stacktrace()) {
             errorMessage += "<br><strong>Stacktrace</strong><br><small>" + DebugUtils.getStackTrace(throwable) + "</small>";
         }
@@ -361,10 +370,10 @@ public class GraderPool {
     private void setAverageGradingDuration(long newestDuration, String gradeProcId) {
         try {
             String taskUuid = RedisController.getInstance().getAssociatedTaskUuid(gradeProcId);
-            if(null == taskUuid)
+            if (null == taskUuid)
                 throw new NotFoundException(String
                     .format("There is no associated taskUuid for gradeProcId '%s'.",
-                    gradeProcId));
+                        gradeProcId));
 
             long avgDuration;
             CircularFifoQueue<Long> queue = null;
@@ -451,7 +460,6 @@ public class GraderPool {
     }
 
     /**
-     *
      * @return an unsorted array of running time seconds of all currently graded submissions.
      */
     public long[] getRunningTimeSecondsList() {
@@ -459,10 +467,10 @@ public class GraderPool {
         GradeProcess[] gpList = gpMap.values().toArray(new GradeProcess[0]);
         if (secondsList.length < gpList.length)
             throw new IllegalStateException("gradeProcess list size must not be greater than seconds list size");
-        for(int i = 0; i < gpList.length; ++i)
+        for (int i = 0; i < gpList.length; ++i)
             secondsList[i] = getRunningTimeSeconds(gpList[i]);
         return secondsList;
-}
+    }
 
     /**
      * Get the current running time for a submission.

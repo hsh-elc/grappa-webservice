@@ -6,9 +6,9 @@ import javax.xml.bind.annotation.*;
 
 /**
  * <p>Java class for file-restr-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="file-restr-type">
  *   &lt;simpleContent>
@@ -34,8 +34,6 @@ import javax.xml.bind.annotation.*;
  *   &lt;/simpleContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "file-restr-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -52,11 +50,9 @@ public class FileRestrType {
 
     /**
      * Gets the value of the value property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getValue() {
         return value;
@@ -64,11 +60,9 @@ public class FileRestrType {
 
     /**
      * Sets the value of the value property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setValue(String value) {
         this.value = value;
@@ -76,11 +70,9 @@ public class FileRestrType {
 
     /**
      * Gets the value of the use property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getUse() {
         if (use == null) {
@@ -92,11 +84,9 @@ public class FileRestrType {
 
     /**
      * Sets the value of the use property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setUse(String value) {
         this.use = value;
@@ -104,11 +94,9 @@ public class FileRestrType {
 
     /**
      * Gets the value of the patternFormat property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getPatternFormat() {
         if (patternFormat == null) {
@@ -120,11 +108,9 @@ public class FileRestrType {
 
     /**
      * Sets the value of the patternFormat property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setPatternFormat(String value) {
         this.patternFormat = value;

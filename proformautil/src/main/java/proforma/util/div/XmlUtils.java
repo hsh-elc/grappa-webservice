@@ -5,7 +5,6 @@ import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,28 +15,28 @@ import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.ThreadFactory;
 
 public class XmlUtils {
-    
+
     public static enum MarshalOption {
         /**
-         * leads to marshaling POJO into XML-String using CDATA-tags if element 
+         * leads to marshaling POJO into XML-String using CDATA-tags if element
          * contains XML-control-characters (instead of transform them to XML-entities)
          */
         CDATA;
 
         private static final MarshalOption[] NONE = new MarshalOption[0];
-        
+
         public static MarshalOption[] none() {
             return NONE;
         }
 
-        public static MarshalOption[] of(MarshalOption ... o) {
+        public static MarshalOption[] of(MarshalOption... o) {
             return o;
         }
-        
+
         public static boolean isCData(MarshalOption[] options) {
             return isContained(CDATA, options);
         }
-        
+
         private static boolean isContained(MarshalOption option, MarshalOption[] options) {
             for (MarshalOption o : options) {
                 if (option.equals(o)) return true;
@@ -45,24 +44,24 @@ public class XmlUtils {
             return false;
         }
     }
-    
+
     /**
-     * @param source: POJO that should be marshaled
+     * @param source:        POJO that should be marshaled
      * @param marshalOptions options
-     * @param type: JAXB class of given POJO
-     * @return XML-String of POJO 
+     * @param type:          JAXB class of given POJO
+     * @return XML-String of POJO
      * @throws IOException
      * @throws JAXBException
      */
     public static String marshalToXml(Object source, MarshalOption[] marshalOptions, Class<?>... type) throws IOException, JAXBException {
         String result;
         JAXBContext jaxbContext;
-        jaxbContext=JAXBContext.newInstance(type);
-        Marshaller marshaller=jaxbContext.createMarshaller();
-        
+        jaxbContext = JAXBContext.newInstance(type);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+
         XMLOutputFactory xof = XMLOutputFactory.newInstance();
-        XMLStreamWriter streamWriter= null;
-        ByteArrayOutputStream baos= new ByteArrayOutputStream();
+        XMLStreamWriter streamWriter = null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             streamWriter = xof.createXMLStreamWriter(baos, StandardCharsets.UTF_8.name());
         } catch (XMLStreamException e) {
@@ -70,12 +69,12 @@ public class XmlUtils {
         }
 
         if (MarshalOption.isCData(marshalOptions)) {
-            CDataContentHandler cdataStreamWriter = new CDataContentHandler( streamWriter );
+            CDataContentHandler cdataStreamWriter = new CDataContentHandler(streamWriter);
             streamWriter = cdataStreamWriter;
         }
         marshaller.setProperty(Marshaller.JAXB_ENCODING, StandardCharsets.UTF_8.name());
         marshaller.marshal(source, streamWriter);
-        
+
         try {
             streamWriter.flush();
         } catch (XMLStreamException e) {
@@ -99,12 +98,12 @@ public class XmlUtils {
             return unmarshalToObject(baos, clazz);
         }
     }
-    
+
     public static String getUriNamespace(Class<?> jaxbAnnotatedClass) {
         return jaxbAnnotatedClass.getPackage().getAnnotation(XmlSchema.class).namespace();
     }
 
-    
+
     // Context, reason, and source of this class:
     // https://stackoverflow.com/questions/51518781/jaxb-not-available-on-tomcat-9-and-java-9-10
     // modified to ThreadFactory
@@ -122,7 +121,7 @@ public class XmlUtils {
             return thread;
         }
     }
-    
+
     // Context, reason, and source of this class:
     // https://stackoverflow.com/questions/51518781/jaxb-not-available-on-tomcat-9-and-java-9-10
     public class JaxbForkJoinWorkerThreadFactory implements ForkJoinPool.ForkJoinWorkerThreadFactory {
@@ -145,18 +144,18 @@ public class XmlUtils {
             }
         }
     }
-    
+
     public static boolean isXml(byte[] bytes) {
         int i = 0;
-        while (i < bytes.length && Character.isWhitespace((char)bytes[i])) {
+        while (i < bytes.length && Character.isWhitespace((char) bytes[i])) {
             i++;
         }
-        
-        return bytes.length > i+5 
-                && bytes[i++] == (byte)'<' 
-                && bytes[i++] == (byte)'?' 
-                && bytes[i++] == (byte)'x'
-                && bytes[i++] == (byte)'m' 
-                && bytes[i++] == (byte)'l';        
+
+        return bytes.length > i + 5
+            && bytes[i++] == (byte) '<'
+            && bytes[i++] == (byte) '?'
+            && bytes[i++] == (byte) 'x'
+            && bytes[i++] == (byte) 'm'
+            && bytes[i++] == (byte) 'l';
     }
 }

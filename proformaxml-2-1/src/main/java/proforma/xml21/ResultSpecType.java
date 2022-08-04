@@ -8,9 +8,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * <p>Java class for result-spec-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="result-spec-type">
  *   &lt;complexContent>
@@ -40,8 +40,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "result-spec-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -67,11 +65,9 @@ public class ResultSpecType {
 
     /**
      * Gets the value of the studentFeedbackLevel property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link FeedbackLevelType }
-     *     
+     *
+     * @return possible object is
+     * {@link FeedbackLevelType }
      */
     public FeedbackLevelType getStudentFeedbackLevel() {
         return studentFeedbackLevel;
@@ -79,11 +75,9 @@ public class ResultSpecType {
 
     /**
      * Sets the value of the studentFeedbackLevel property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link FeedbackLevelType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link FeedbackLevelType }
      */
     public void setStudentFeedbackLevel(FeedbackLevelType value) {
         this.studentFeedbackLevel = value;
@@ -91,11 +85,9 @@ public class ResultSpecType {
 
     /**
      * Gets the value of the teacherFeedbackLevel property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link FeedbackLevelType }
-     *     
+     *
+     * @return possible object is
+     * {@link FeedbackLevelType }
      */
     public FeedbackLevelType getTeacherFeedbackLevel() {
         return teacherFeedbackLevel;
@@ -103,11 +95,9 @@ public class ResultSpecType {
 
     /**
      * Sets the value of the teacherFeedbackLevel property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link FeedbackLevelType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link FeedbackLevelType }
      */
     public void setTeacherFeedbackLevel(FeedbackLevelType value) {
         this.teacherFeedbackLevel = value;
@@ -115,11 +105,9 @@ public class ResultSpecType {
 
     /**
      * Gets the value of the format property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getFormat() {
         return format;
@@ -127,11 +115,9 @@ public class ResultSpecType {
 
     /**
      * Sets the value of the format property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setFormat(String value) {
         this.format = value;
@@ -139,11 +125,9 @@ public class ResultSpecType {
 
     /**
      * Gets the value of the structure property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getStructure() {
         return structure;
@@ -151,11 +135,9 @@ public class ResultSpecType {
 
     /**
      * Sets the value of the structure property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setStructure(String value) {
         this.structure = value;
@@ -163,11 +145,9 @@ public class ResultSpecType {
 
     /**
      * Gets the value of the lang property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getLang() {
         return lang;
@@ -175,11 +155,9 @@ public class ResultSpecType {
 
     /**
      * Sets the value of the lang property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setLang(String value) {
         this.lang = value;

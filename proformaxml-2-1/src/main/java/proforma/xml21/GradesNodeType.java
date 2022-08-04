@@ -8,13 +8,13 @@ import java.util.List;
 
 /**
  * Inner node of the grading scheme hierarchy. There are only two types of inner
- *         nodes: the "root" node and "combine" nodes.
- *       
- * 
+ * nodes: the "root" node and "combine" nodes.
+ *
+ *
  * <p>Java class for grades-node-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="grades-node-type">
  *   &lt;complexContent>
@@ -42,8 +42,6 @@ import java.util.List;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "grades-node-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -72,11 +70,9 @@ public class GradesNodeType {
 
     /**
      * Gets the value of the title property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTitle() {
         return title;
@@ -84,11 +80,9 @@ public class GradesNodeType {
 
     /**
      * Sets the value of the title property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setTitle(String value) {
         this.title = value;
@@ -96,11 +90,9 @@ public class GradesNodeType {
 
     /**
      * Gets the value of the description property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getDescription() {
         return description;
@@ -108,11 +100,9 @@ public class GradesNodeType {
 
     /**
      * Sets the value of the description property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setDescription(String value) {
         this.description = value;
@@ -120,11 +110,9 @@ public class GradesNodeType {
 
     /**
      * Gets the value of the internalDescription property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getInternalDescription() {
         return internalDescription;
@@ -132,11 +120,9 @@ public class GradesNodeType {
 
     /**
      * Sets the value of the internalDescription property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setInternalDescription(String value) {
         this.internalDescription = value;
@@ -144,26 +130,24 @@ public class GradesNodeType {
 
     /**
      * Gets the value of the testRefOrCombineRef property.
-     * 
+     *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
      * This is why there is not a <CODE>set</CODE> method for the testRefOrCombineRef property.
-     * 
+     *
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getTestRefOrCombineRef().add(newItem);
      * </pre>
-     * 
-     * 
+     *
+     *
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link GradesTestRefChildType }
      * {@link GradesCombineRefChildType }
-     * 
-     * 
      */
     public List<GradesBaseRefChildType> getTestRefOrCombineRef() {
         if (testRefOrCombineRef == null) {
@@ -174,11 +158,9 @@ public class GradesNodeType {
 
     /**
      * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getId() {
         return id;
@@ -186,11 +168,9 @@ public class GradesNodeType {
 
     /**
      * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setId(String value) {
         this.id = value;
@@ -198,11 +178,9 @@ public class GradesNodeType {
 
     /**
      * Gets the value of the function property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getFunction() {
         if (function == null) {
@@ -214,11 +192,9 @@ public class GradesNodeType {
 
     /**
      * Sets the value of the function property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setFunction(String value) {
         this.function = value;

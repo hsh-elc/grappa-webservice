@@ -7,14 +7,12 @@ import de.hsh.grappa.service.GradePoller;
 import de.hsh.grappa.service.GraderPoolManager;
 import de.hsh.grappa.service.SubmissionProcessor;
 import de.hsh.grappa.util.Json;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import proforma.util.div.IOUtils;
-import proforma.util.exception.NotFoundException;
 import proforma.util.resource.MimeType;
 import proforma.util.resource.ResponseResource;
 import proforma.util.resource.SubmissionResource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.*;
@@ -75,7 +73,7 @@ public class AllGradeProcessResources {
             }
             String gradeProcId = new SubmissionProcessor(proformaSubm, graderId, lmsConfig).process(prioritize);
 
-            if(Boolean.parseBoolean(async) || async.equals("1"))
+            if (Boolean.parseBoolean(async) || async.equals("1"))
                 return replyWithTimeRemaining(gradeProcId);
             return replyWhenResponseIsAvailable(gradeProcId);
         }
@@ -85,6 +83,7 @@ public class AllGradeProcessResources {
 
     /**
      * Determines the estimated grading time remaining.
+     *
      * @param gradeProcId
      * @return Status 201 Created and estimated time remaining
      * @throws Exception
@@ -95,7 +94,7 @@ public class AllGradeProcessResources {
         long estimatedSecondsRemaining =
             GraderPoolManager.getInstance()
                 .getEstimatedSecondsUntilGradeProcIdIsFinished(gradeProcId);
-        String jsonResp = Json.createJsonKeyValueAsString(new String[][] {
+        String jsonResp = Json.createJsonKeyValueAsString(new String[][]{
             {"gradeProcessId", gradeProcId},
             {"estimatedSecondsRemaining", String.valueOf(estimatedSecondsRemaining)}
         });
@@ -104,6 +103,7 @@ public class AllGradeProcessResources {
 
     /**
      * Blocks the calling thread until the submission has been graded or a timeout occurred.
+     *
      * @param gradeProcId
      * @return Status 200 OK and a valid proforma response.
      * @throws Exception
@@ -121,13 +121,13 @@ public class AllGradeProcessResources {
             return replyWithTimeRemaining(gradeProcId);
         }
 
-        String responseFileName = "response." +  (respBlob.getMimeType()
+        String responseFileName = "response." + (respBlob.getMimeType()
             .equals(MimeType.XML) ? "xml" : "zip");
         MediaType mediaType = respBlob.getMimeType().equals(MimeType.XML)
             ? MediaType.APPLICATION_XML_TYPE : MediaType.APPLICATION_OCTET_STREAM_TYPE;
         Response.ResponseBuilder resp =
             Response.status(Response.Status.OK)
-                .header("content-disposition","attachment; filename = " + responseFileName)
+                .header("content-disposition", "attachment; filename = " + responseFileName)
                 .entity(respBlob.getContent());
 
         return resp.type(mediaType).build();

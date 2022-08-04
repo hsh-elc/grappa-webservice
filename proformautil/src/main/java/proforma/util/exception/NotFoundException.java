@@ -2,11 +2,11 @@ package proforma.util.exception;
 
 public class NotFoundException extends Exception {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = -9065686485673860733L;
+     *
+     */
+    private static final long serialVersionUID = -9065686485673860733L;
 
-	public NotFoundException() {
+    public NotFoundException() {
     }
 
     public NotFoundException(String s) {

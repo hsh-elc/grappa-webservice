@@ -7,13 +7,13 @@ package de.hsh.grappa.exceptions;
 public class GrappaException extends Exception {
 
     /**
-	 * 
-	 */
+     *
+     */
     private static final long serialVersionUID = -8330435536570550002L;
 
     /**
-	 * 
-	 */
+     *
+     */
     public GrappaException() {
 
     }
@@ -50,7 +50,7 @@ public class GrappaException extends Exception {
      * @param writableStackTrace
      */
     public GrappaException(String message, Throwable cause,
-            boolean enableSuppression, boolean writableStackTrace) {
+                           boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
 
     }

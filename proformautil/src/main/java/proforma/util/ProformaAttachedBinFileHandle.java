@@ -10,49 +10,47 @@ import proforma.util.div.PropertyHandle;
  */
 public abstract class ProformaAttachedBinFileHandle implements ProformaAttachedOrEmbeddedBonOrTxtFileHandle {
 
-	private PropertyHandle propertyHandle;
-	
-	public ProformaAttachedBinFileHandle(Object file, String propertyName, Class<?> clazz) {
-		propertyHandle = new PropertyHandle(file, propertyName, clazz);
-		if (file == null) throw new AssertionError(this.getClass() + ": file shouldn't be null");
-	}
-	
-	protected void assertNotNull(String whatToDo) throws NullPointerException {
-		propertyHandle.assertNotNull(whatToDo, this);
-	}
-	
+    private PropertyHandle propertyHandle;
 
-	
+    public ProformaAttachedBinFileHandle(Object file, String propertyName, Class<?> clazz) {
+        propertyHandle = new PropertyHandle(file, propertyName, clazz);
+        if (file == null) throw new AssertionError(this.getClass() + ": file shouldn't be null");
+    }
 
-	public Object get() {
-		return propertyHandle.get();
-	}
+    protected void assertNotNull(String whatToDo) throws NullPointerException {
+        propertyHandle.assertNotNull(whatToDo, this);
+    }
 
-	public void set(Object value) {
-		propertyHandle.set(value);
-	}
-	
-	public ProformaAttachedBinFileHandle createAndSet() {
-		propertyHandle.createAndSet();
-		return this;
-	}
 
-	public void remove() {
-		propertyHandle.set(null);
-	}
-	
-	/**
-	 * Sets the path
-	 * @param path
-	 * @return  can be used for method call chaining on this object.
-	 */
-	public abstract ProformaAttachedBinFileHandle setPath(String path);
-	
-	/**
-	 * @return the path inside the zip file
-	 */
-	public abstract String getPath();
-	
-	
-	
+    public Object get() {
+        return propertyHandle.get();
+    }
+
+    public void set(Object value) {
+        propertyHandle.set(value);
+    }
+
+    public ProformaAttachedBinFileHandle createAndSet() {
+        propertyHandle.createAndSet();
+        return this;
+    }
+
+    public void remove() {
+        propertyHandle.set(null);
+    }
+
+    /**
+     * Sets the path
+     *
+     * @param path
+     * @return can be used for method call chaining on this object.
+     */
+    public abstract ProformaAttachedBinFileHandle setPath(String path);
+
+    /**
+     * @return the path inside the zip file
+     */
+    public abstract String getPath();
+
+
 }

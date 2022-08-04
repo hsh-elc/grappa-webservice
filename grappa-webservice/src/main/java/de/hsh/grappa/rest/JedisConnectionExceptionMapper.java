@@ -14,7 +14,7 @@ import javax.ws.rs.ext.Provider;
 /**
  * This class is for responding with HTTP 503 to clients
  * when redis is unavailable.
- *
+ * <p>
  * This is an implementation dependent exception mapper
  * This class specifically maps a jedis client
  * implementation detail. However, if Grappa were to use

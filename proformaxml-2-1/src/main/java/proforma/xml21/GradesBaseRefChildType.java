@@ -6,14 +6,14 @@ import javax.xml.bind.annotation.*;
 
 /**
  * Inner nodes of the grading scheme hierarchy carry pointers to children. This
- *         element represents such a pointer. There are two kinds of pointers: "test-ref" pointers and "combine-ref"
- *         pointers.
- *       
- * 
+ * element represents such a pointer. There are two kinds of pointers: "test-ref" pointers and "combine-ref"
+ * pointers.
+ *
+ *
  * <p>Java class for grades-base-ref-child-type complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="grades-base-ref-child-type">
  *   &lt;complexContent>
@@ -29,8 +29,6 @@ import javax.xml.bind.annotation.*;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "grades-base-ref-child-type", namespace = "urn:proforma:v2.1", propOrder = {
@@ -52,11 +50,9 @@ public class GradesBaseRefChildType {
 
     /**
      * Gets the value of the nullifyConditions property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link GradesNullifyConditionsType }
-     *     
+     *
+     * @return possible object is
+     * {@link GradesNullifyConditionsType }
      */
     public GradesNullifyConditionsType getNullifyConditions() {
         return nullifyConditions;
@@ -64,11 +60,9 @@ public class GradesBaseRefChildType {
 
     /**
      * Sets the value of the nullifyConditions property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link GradesNullifyConditionsType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link GradesNullifyConditionsType }
      */
     public void setNullifyConditions(GradesNullifyConditionsType value) {
         this.nullifyConditions = value;
@@ -76,11 +70,9 @@ public class GradesBaseRefChildType {
 
     /**
      * Gets the value of the nullifyCondition property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link GradesNullifyConditionType }
-     *     
+     *
+     * @return possible object is
+     * {@link GradesNullifyConditionType }
      */
     public GradesNullifyConditionType getNullifyCondition() {
         return nullifyCondition;
@@ -88,11 +80,9 @@ public class GradesBaseRefChildType {
 
     /**
      * Sets the value of the nullifyCondition property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link GradesNullifyConditionType }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link GradesNullifyConditionType }
      */
     public void setNullifyCondition(GradesNullifyConditionType value) {
         this.nullifyCondition = value;
@@ -100,11 +90,9 @@ public class GradesBaseRefChildType {
 
     /**
      * Gets the value of the weight property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Double }
-     *     
+     *
+     * @return possible object is
+     * {@link Double }
      */
     public Double getWeight() {
         return weight;
@@ -112,11 +100,9 @@ public class GradesBaseRefChildType {
 
     /**
      * Sets the value of the weight property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Double }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Double }
      */
     public void setWeight(Double value) {
         this.weight = value;
