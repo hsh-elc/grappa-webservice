@@ -13,7 +13,7 @@ setting up a test environment, checkout the [developers documentation](developer
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[2.2.1 Installing Redis](#221-installing-redis)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[2.2.2 Installing Docker](#222-installing-docker)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;2.3 [Building and Deployment](#23-building-and-deployment)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;2.4 [Configuration](#24-configuration)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Configuration](#configuration)<br>
 3 [REST API](#3-rest-api)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[Get web service status](#get-web-service-status)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[Grade a Proforma submission](#grade-a-proforma-submission)<br>
@@ -321,7 +321,7 @@ Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-pro
 7. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2/rest`.  
 	Note to set name here according to filename in step 4.
 
-### 2.4 Configuration
+### Configuration
 
 Any changes to Grappa's configuration file will require a web service restart to take effect.
 
