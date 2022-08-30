@@ -6,7 +6,7 @@ module proformautil {
     requires org.apache.commons.io;
     requires org.apache.commons.text;
 
-    requires slf4j.api;
+    requires transitive slf4j.api;
 
     requires proformaxml;
 

@@ -18,13 +18,13 @@
         <maven.compiler.target>11</maven.compiler.target>
         <de.hsh.grappa.grappa-util.version>0.1</de.hsh.grappa.grappa-util.version>
         <de.hsh.grappa.grappa-backendplugin.version>0.1</de.hsh.grappa.grappa-backendplugin.version>
-        <de.hsh.grappa.grappa-backendplugin-dockerproxy.version>0.1
+        <de.hsh.grappa.grappa-backendplugin-dockerproxy.version>0.2
         </de.hsh.grappa.grappa-backendplugin-dockerproxy.version>
         <de.hsh.grappa.grappa-webservice.version>2.3.0</de.hsh.grappa.grappa-webservice.version>
-        <proforma.proformaxml.version>0.1</proforma.proformaxml.version>
-        <proforma.proformautil.version>0.1</proforma.proformautil.version>
-        <proforma.proformaxml-2-1.version>0.1</proforma.proformaxml-2-1.version>
-        <proforma.proformautil-2-1.version>0.1</proforma.proformautil-2-1.version>
+        <proforma.proformaxml.version>0.2</proforma.proformaxml.version>
+        <proforma.proformautil.version>0.2</proforma.proformautil.version>
+        <proforma.proformaxml-2-1.version>0.2</proforma.proformaxml-2-1.version>
+        <proforma.proformautil-2-1.version>0.2</proforma.proformautil-2-1.version>
     </properties>
 
     <modules>
