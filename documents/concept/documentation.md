@@ -185,9 +185,21 @@ docker run -d \
     redis/redis-stack-server:latest
 ```
 
+This command will expose the redis server to anyone, however. **If you want to protect the server using a password**, you need to specify a password:
+
+```bash
+docker run -d \
+    --name redis-stack-server \
+    --restart=always \
+    -v ~/grappa/cache/:/data \
+    -p 6379:6379 \
+    redis/redis-stack-server:latest \
+    redis-server --requirepass foobared
+```
+
 ### Starting Grappa Container
 
-Pull the Grappa Docker image first:
+Pull the Grappa Docker image first. Check [here](https://github.com/hsh-elc/grappa-webservice/pkgs/container/grappa-webservice) for the latest tag version.
 
 ```bash
 docker pull ghcr.io/hsh-elc/grappa-webservice:latest_develop
