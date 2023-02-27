@@ -112,9 +112,6 @@ Then:
 ```
 sudo apt install maven
 
-cd github_hsh-elc_grappa-webservice/grappa-backendplugin-dockerproxy/src/main/resources/docker/
-sudo build-images.sh
-
 cd `wslpath "{workspace.path}"`/github_hsh-elc_grappa-webservice
 sudo mvn package -DskipTests
 ```
@@ -125,7 +122,7 @@ In a WSL terminal:
 
 ```
 cd `wslpath "{workspace.path}"`/github_hsh-elc_grappa-webservice
-cp grappa-webservice/target/grappa-webservice-2.0.0.war `wslpath "{xampp.home}"`/tomcat/webapps/grappa-webservice-2.war
+cp grappa-webservice/target/grappa-webservice-2.3.0.war `wslpath "{xampp.home}"`/tomcat/webapps/grappa-webservice-2.war
 ```
 
 Check in Tomcat Manager if the Grappa webapp has been reconized by Tomcat: `http://{localip}:{tomcat.port}/manager/html`
