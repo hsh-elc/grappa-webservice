@@ -21,7 +21,7 @@ git clone https://github.com/hsh-elc/moodle-qtype_moopt.git htdocs/moodle/questi
 git clone https://github.com/hsh-elc/moodle-qbehaviour_immediatemoopt.git htdocs/moodle/question/behaviour/immediatemoopt
 git clone https://github.com/hsh-elc/moodle-qbehaviour_deferredmoopt.git htdocs/moodle/question/behaviour/deferredmoopt
 git clone https://github.com/hsh-elc/moodle-qbehaviour_deferredmooptcbm.git htdocs/moodle/question/behaviour/deferredmooptcbm
-git clone https://github.com/hsh-elc/moodle-qbehaviour_immediatemooptcbm.git htdocs/moodle/question/behaviour/immediatemoopt
+git clone https://github.com/hsh-elc/moodle-qbehaviour_immediatemooptcbm.git htdocs/moodle/question/behaviour/immediatemooptcbm
 git clone https://github.com/hsh-elc/moodle-qbehaviour_interactivemoopt.git htdocs/moodle/question/behaviour/interactivemoopt
 git clone https://github.com/hsh-elc/moodle-qbehaviour_adaptivemoopt.git htdocs/moodle/question/behaviour/adaptivemoopt
 git clone https://github.com/hsh-elc/moodle-qbehaviour_adaptivemooptnopenalty.git htdocs/moodle/question/behaviour/adaptivemooptnopenalty
