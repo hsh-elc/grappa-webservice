@@ -1,12 +1,11 @@
 module proformautil {
-    requires java.xml;
     requires java.xml.bind;
 
     requires org.apache.commons.compress;
     requires org.apache.commons.io;
     requires org.apache.commons.text;
 
-    requires transitive slf4j.api;
+    requires transitive org.slf4j;
 
     requires proformaxml;
 
