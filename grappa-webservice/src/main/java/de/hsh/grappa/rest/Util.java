@@ -1,7 +1,7 @@
 package de.hsh.grappa.rest;
 
 import de.hsh.grappa.util.Json;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 class Util {
 

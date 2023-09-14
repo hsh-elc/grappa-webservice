@@ -29,7 +29,15 @@
         </dependency>
         <dependency>
             <groupId>com.github.docker-java</groupId>
-            <artifactId>docker-java</artifactId>
+            <artifactId>docker-java-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-transport-jersey</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

@@ -1,5 +1,5 @@
-module proforma21_util {
-    requires proformaxml;
-    requires proforma21_xml;
-    requires proformautil;
+module proforma.util21 {
+    requires proforma.xml;
+    requires proforma.xml21;
+    requires proforma.util;
 }
