@@ -1,4 +1,4 @@
 module grappa.backendplugin {
-    requires proforma.util;
+    requires transitive proforma.util;
     exports de.hsh.grappa.backendplugin;
 }

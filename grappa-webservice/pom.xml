@@ -7,7 +7,7 @@
         <groupId>de.hsh.grappa</groupId>
         <version>2.3.0</version>
     </parent>
-
+    
     <artifactId>grappa-webservice</artifactId>
     <!-- inherit version from parent -->
     <packaging>war</packaging>

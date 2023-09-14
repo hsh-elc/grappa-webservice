@@ -6,7 +6,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
-import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import de.hsh.grappa.backendplugin.BackendPlugin;
 import de.hsh.grappa.util.DebugUtils;
 import de.hsh.grappa.util.LogbackHelper;
@@ -134,7 +134,7 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
             .withDockerTlsVerify(false)
             .build();
 
-        try (JerseyDockerHttpClient httpClient = new JerseyDockerHttpClient.Builder()
+        try (ApacheDockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
             .dockerHost(config.getDockerHost())
             .build(); DockerClient dockerClient = DockerClientImpl.getInstance(config, httpClient)) {
 

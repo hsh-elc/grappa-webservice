@@ -7,7 +7,7 @@ module proforma.util {
 
     requires transitive org.slf4j;
 
-    requires proforma.xml;
+    requires transitive proforma.xml;
 
     exports proforma.util;
     exports proforma.util.exception;
