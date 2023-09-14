@@ -14,11 +14,6 @@
 
     <name>proformautil-2-1</name>
 
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>proforma</groupId>

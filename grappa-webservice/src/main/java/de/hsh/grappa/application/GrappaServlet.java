@@ -3,7 +3,7 @@ package de.hsh.grappa.application;
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.base.Strings;
+import proforma.util.div.Strings;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.service.GraderPoolManager;
