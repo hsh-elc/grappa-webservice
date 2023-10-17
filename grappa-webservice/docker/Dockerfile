@@ -18,6 +18,9 @@ ENV CATALINA_HOME /usr/share/tomcat9
 ENV CATALINA_BASE /var/lib/tomcat9
 ENV PATH $CATALINA_HOME/bin:$PATH
 
+ENV TZ=Europe/Berlin
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 ADD ["grappa-webservice-2.war",  "$CATALINA_BASE/webapps"]
 
 EXPOSE 8080
