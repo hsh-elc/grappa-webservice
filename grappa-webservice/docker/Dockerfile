@@ -11,7 +11,7 @@ RUN apt-get -qq update && apt-get -yq install \
      default-jdk \
      tomcat9 tomcat9-admin \
      nano vim \
-     tzdata
+     tzdata \
      && rm -rf /var/lib/apt/lists/*
 
 ENV CATALINA_HOME /usr/share/tomcat9
