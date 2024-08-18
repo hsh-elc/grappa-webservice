@@ -5,12 +5,12 @@
     <parent>
         <artifactId>grappa-webservice-parent</artifactId>
         <groupId>de.hsh.grappa</groupId>
-        <version>2.4.0</version>
+        <version>2.4.1</version>
     </parent>
 
     <groupId>proforma</groupId>
     <artifactId>proformautil-2-1</artifactId>
-    <version>0.2</version>
+    <version>0.2.1</version>
 
     <name>proformautil-2-1</name>
 

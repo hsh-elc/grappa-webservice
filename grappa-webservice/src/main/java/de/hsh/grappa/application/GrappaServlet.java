@@ -38,7 +38,7 @@ public class GrappaServlet implements ServletContextListener {
     public void contextInitialized(ServletContextEvent ctxEvent) {
         servletContextEvent = ctxEvent;
         try {
-            log.info("Running {} version {}.", getAppName(), getAppVersion());
+            log.info("Running {} version {} on JRE at {} version {}.", getAppName(), getAppVersion(), System.getProperty("java.home"), System.getProperty("java.version"));
             readConfigFile();
             ProformaVersion.getDefaultVersionNumber(); // fail fast, if the required grappa-proforma-N-M.jar is missing
             setupRedisConnection();

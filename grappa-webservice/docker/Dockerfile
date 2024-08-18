@@ -8,7 +8,7 @@ FROM ubuntu:20.04
 ### Install additional software
 # Use `apt-get` in quiet mode and remove caches after to save storage.
 RUN apt-get -qq update && apt-get -yq install \
-     default-jdk \
+     openjdk-17-jdk \
      tomcat9 tomcat9-admin \
      nano vim \
      && rm -rf /var/lib/apt/lists/*

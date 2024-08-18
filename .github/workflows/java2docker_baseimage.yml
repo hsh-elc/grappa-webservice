@@ -6,12 +6,14 @@ on:
   push:
     branches:
       - 'develop'
+      - 'dev/robert_131'
       #- 'master'
     paths:
       - 'grappa-backendstarter/**'
   pull_request:
     branches:
       - 'develop'
+      - 'dev/robert_131'
       #- 'master'
     paths:
       - 'grappa-backendstarter/**'
@@ -37,10 +39,10 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v2
 
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'adopt'
           cache: maven
 

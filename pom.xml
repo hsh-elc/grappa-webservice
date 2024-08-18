@@ -5,7 +5,7 @@
     <groupId>de.hsh.grappa</groupId>
     <artifactId>grappa-webservice-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.4.0</version>
+    <version>2.4.1</version>
 
     <name>grappa-webservice</name>
     <description>A web service for connecting multiple Learn Management Systems (e.g. moodle, LON-CAPA) to multiple
@@ -14,17 +14,16 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <de.hsh.grappa.grappa-util.version>0.2</de.hsh.grappa.grappa-util.version>
-        <de.hsh.grappa.grappa-backendplugin.version>0.2</de.hsh.grappa.grappa-backendplugin.version>
-        <de.hsh.grappa.grappa-backendplugin-dockerproxy.version>0.2
+        <maven.compiler.release>17</maven.compiler.release>
+        <de.hsh.grappa.grappa-util.version>0.2.1</de.hsh.grappa.grappa-util.version>
+        <de.hsh.grappa.grappa-backendplugin.version>0.2.1</de.hsh.grappa.grappa-backendplugin.version>
+        <de.hsh.grappa.grappa-backendplugin-dockerproxy.version>0.2.1
         </de.hsh.grappa.grappa-backendplugin-dockerproxy.version>
-        <de.hsh.grappa.grappa-webservice.version>2.4.0</de.hsh.grappa.grappa-webservice.version>
-        <proforma.proformaxml.version>0.2</proforma.proformaxml.version>
-        <proforma.proformautil.version>0.2</proforma.proformautil.version>
-        <proforma.proformaxml-2-1.version>0.2</proforma.proformaxml-2-1.version>
-        <proforma.proformautil-2-1.version>0.2</proforma.proformautil-2-1.version>
+        <de.hsh.grappa.grappa-webservice.version>2.4.1</de.hsh.grappa.grappa-webservice.version>
+        <proforma.proformaxml.version>0.2.1</proforma.proformaxml.version>
+        <proforma.proformautil.version>0.2.1</proforma.proformautil.version>
+        <proforma.proformaxml-2-1.version>0.2.1</proforma.proformaxml-2-1.version>
+        <proforma.proformautil-2-1.version>0.2.1</proforma.proformautil-2-1.version>
     </properties>
 
     <modules>
