@@ -6,14 +6,12 @@ on:
   push:
     branches:
       - 'develop'
-      - 'dev/robert_131'
       #- 'master'
     paths:
       - 'grappa-backendplugin-dummygrader/**'
   pull_request:
     branches:
       - 'develop'
-      - 'dev/robert_131'
       #- 'master'
     paths:
       - 'grappa-backendplugin-dummygrader/**'
