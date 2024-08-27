@@ -1,5 +1,10 @@
 name: Java2Docker grappa webservice
 
+# This workflow supports local execution using act (https://github.com/nektos/act)
+# by skipping two steps concerned about publishing docker images to ghcr.
+# You can skip these steps by adding the variable GITHUB_PUBLISH:
+# act --var GITHUB_PUBLISH=false -j build -W java2docker_graja.yml
+
 # Controls when the workflow will run
 on:
   schedule:
@@ -75,7 +80,11 @@ jobs:
       - name: Log in to registry
         # This is where you will update the PAT to GITHUB_TOKEN
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          if [[ "${{ vars.GITHUB_PUBLISH }}" != "false" ]]; then
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          else
+            echo "::warning Skipping Log in to registry"
+          fi
 
       - name: Build image
         run: |
@@ -87,28 +96,32 @@ jobs:
         env:
           IMAGE_VERSION: ${{ env.RELEASE_VERSION }}
         run: |
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
-          # Change all uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          # Get branch name and replace special chars to "-"
-          BRANCH=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')
-          echo "-current branch: '${BRANCH}'"
+          if [[ "${{ vars.GITHUB_PUBLISH }}" != "false" ]]; then
+            IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+            # Change all uppercase to lowercase
+            IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+            # Get branch name and replace special chars to "-"
+            BRANCH=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')
+            echo "-current branch: '${BRANCH}'"
       
-          if [[ "$BRANCH" == "master" ]]; then
-            IMAGE_TAG=$IMAGE_VERSION
-            # Use Docker `latest` tag convention
-            docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
-            docker tag $IMAGE_NAME $IMAGE_ID:latest
-            docker push $IMAGE_ID:$IMAGE_TAG
-            docker push $IMAGE_ID:latest
+            if [[ "$BRANCH" == "master" ]]; then
+              IMAGE_TAG=$IMAGE_VERSION
+              # Use Docker `latest` tag convention
+              docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
+              docker tag $IMAGE_NAME $IMAGE_ID:latest
+              docker push $IMAGE_ID:$IMAGE_TAG
+              docker push $IMAGE_ID:latest
+            else
+              # some other branch
+              IMAGE_TAG="${IMAGE_VERSION}-${BRANCH}"
+              docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
+              docker push $IMAGE_ID:$IMAGE_TAG
+            fi
+      
+            if [[ "$BRANCH" == "develop" ]]; then
+              docker tag $IMAGE_NAME $IMAGE_ID:latest_develop
+              docker push $IMAGE_ID:latest_develop
+            fi
           else
-            # some other branch
-            IMAGE_TAG="${IMAGE_VERSION}-${BRANCH}"
-            docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
-            docker push $IMAGE_ID:$IMAGE_TAG
-          fi
-      
-          if [[ "$BRANCH" == "develop" ]]; then
-            docker tag $IMAGE_NAME $IMAGE_ID:latest_develop
-            docker push $IMAGE_ID:latest_develop
+            echo "::warning Skipping Push image"
           fi
