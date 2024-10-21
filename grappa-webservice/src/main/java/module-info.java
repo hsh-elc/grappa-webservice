@@ -12,4 +12,6 @@ module grappa.webservice {
     requires com.google.gson;
     requires java.ws.rs;
     requires java.servlet;
+    requires proforma.xml;
+    requires proforma.util;
 }

@@ -16,6 +16,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import proforma.util.ProformaResponseHelper.Audience;
+import proforma.util.ProformaSubmissionHelper;
 import proforma.util.ProformaVersion;
 import proforma.util.SubmissionLive;
 import proforma.util.boundary.Boundary;
@@ -23,6 +24,7 @@ import proforma.util.div.Strings;
 import proforma.util.div.XmlUtils;
 import proforma.util.exception.NotFoundException;
 import proforma.util.resource.ResponseResource;
+import proforma.xml.AbstractSubmissionType;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -254,6 +256,12 @@ public class GraderPool {
             int timeoutSeconds = graderConfig.getTimeout_seconds();
             try {
                 gradeProc.response = new FutureTask<ResponseResource>(() -> {
+                    SubmissionLive sl = new SubmissionLive(subm.getSubmission());
+                    AbstractSubmissionType as = sl.getSubmission();
+                    ProformaVersion pv = ProformaVersion.getInstanceByVersionNumber(as.proFormAVersionNumber());
+                    ProformaSubmissionHelper helper = pv.getSubmissionHelper();
+                    String format = helper.getResultSpecFormat(as);
+                    
                     return bp.grade(subm.getSubmission());
                 });
                 gpMap.put(subm.getGradeProcId(), gradeProc);

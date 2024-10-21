@@ -82,6 +82,13 @@ public class Proforma21SubmissionHelper extends ProformaSubmissionHelper {
         }
         return result;
     }
-
-
+    
+    @Override
+    public String getResultSpecFormat(AbstractSubmissionType submission) {
+        SubmissionType s = (SubmissionType) submission;
+        if (s == null) return null;
+        ResultSpecType rs = s.getResultSpec();
+        if (rs == null) return null;
+        return rs.getFormat();
+    }
 }
