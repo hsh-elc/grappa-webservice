@@ -24,5 +24,6 @@ public abstract class ProformaSubmissionHelper extends ProformaHelper {
 
     public abstract void addObjectsToLmsAnyNamespace(AbstractSubmissionType submission, Object... objects);
 
+    public abstract String getResultSpecFormat(AbstractSubmissionType submission);
 
 }

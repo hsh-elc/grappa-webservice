@@ -16,6 +16,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import proforma.util.ProformaResponseHelper.Audience;
+import proforma.util.ProformaSubmissionHelper;
 import proforma.util.ProformaVersion;
 import proforma.util.SubmissionLive;
 import proforma.util.boundary.Boundary;
@@ -23,7 +24,10 @@ import proforma.util.div.Strings;
 import proforma.util.div.XmlUtils;
 import proforma.util.exception.NotFoundException;
 import proforma.util.resource.ResponseResource;
+import proforma.xml.AbstractSubmissionType;
+import proforma.util.resource.MimeType;
 
+import java.io.ByteArrayOutputStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -31,6 +35,9 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 
 /**
  * Manages worker threads for a specific graderId.
@@ -262,6 +269,36 @@ public class GraderPool {
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process exited.",
                     graderConfig.getId(), subm.getGradeProcId());
                 if (null != resp) {
+                    MimeType respType = resp.getMimeType(); //get the format of the response
+                    //get requested format from submission; read the result-spec element
+                    SubmissionLive sl = new SubmissionLive(subm.getSubmission());
+                    AbstractSubmissionType as = sl.getSubmission();
+                    ProformaVersion pv = ProformaVersion.getInstanceByVersionNumber(as.proFormAVersionNumber());
+                    ProformaSubmissionHelper helper = pv.getSubmissionHelper();
+                    String requestedFormat = helper.getResultSpecFormat(as);
+                    //if needed convert xml to zip
+                    log.debug("[GraderId: '{}', GradeProcessId: '{}']: Response Format is '{}' and requested Format is '{}'",
+                    graderConfig.getId(), subm.getGradeProcId(), respType.toString(), requestedFormat);
+                    if(respType == MimeType.XML && requestedFormat.equals("zip")) {
+                        //content der resp mit resp.getContent (byte Array)
+                        byte[] content = resp.getContent();
+                        try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            ZipOutputStream zos = new ZipOutputStream(baos)) {
+                                ZipEntry entry = new ZipEntry("response.xml");
+                                entry.setSize(content.length);
+                                zos.putNextEntry(entry);
+                                zos.write(content);
+                                zos.closeEntry();
+
+                                zos.close();
+
+                                resp.setContent(baos.toByteArray());
+                                resp.setMimeType(MimeType.ZIP);
+                            }
+                        //mimetype und response content setzen nicht vergessen
+                    }
+                    log.debug("[GraderId: '{}', GradeProcessId: '{}']: Response Format is now '{}'",
+                    graderConfig.getId(), subm.getGradeProcId(), resp.getMimeType().toString());
                     totalGradingProcessesSucceeded.incrementAndGet();
                     long durationSeconds = Duration.between(gradeProc.startTime, LocalDateTime.now()).getSeconds();
                     log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process finished successfully after {} " +

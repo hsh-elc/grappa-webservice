@@ -14,8 +14,8 @@ import java.util.stream.Stream;
  */
 public abstract class ProformaResource implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final byte[] content;
-    private final MimeType mimeType;
+    private byte[] content;
+    private MimeType mimeType;
 
     public ProformaResource(byte[] content, MimeType mimeType) {
         if (null == content)
@@ -43,17 +43,17 @@ public abstract class ProformaResource implements Serializable {
         throw new UnsupportedOperationException("Cannot get xml content from a zip resource");
     }
 
-//    public void setContent(byte[] content) {
-//        this.content = content;
-//    }
+    public void setContent(byte[] content) {
+        this.content = content;
+    }
 
     public MimeType getMimeType() {
         return mimeType;
     }
 
-//    public void setMimeType(MimeType mimeType) {
-//        this.mimeType = mimeType;
-//    }
+    public void setMimeType(MimeType mimeType) {
+        this.mimeType = mimeType;
+    }
 
     @Override
     public String toString() {
