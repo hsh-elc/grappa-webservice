@@ -5,7 +5,7 @@
     <groupId>de.hsh.grappa</groupId>
     <artifactId>grappa-webservice-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.3.0</version>
+    <version>2.4.1</version>
 
     <name>grappa-webservice</name>
     <description>A web service for connecting multiple Learn Management Systems (e.g. moodle, LON-CAPA) to multiple
@@ -14,17 +14,16 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <de.hsh.grappa.grappa-util.version>0.1</de.hsh.grappa.grappa-util.version>
-        <de.hsh.grappa.grappa-backendplugin.version>0.1</de.hsh.grappa.grappa-backendplugin.version>
-        <de.hsh.grappa.grappa-backendplugin-dockerproxy.version>0.1
+        <maven.compiler.release>17</maven.compiler.release>
+        <de.hsh.grappa.grappa-util.version>0.2.1</de.hsh.grappa.grappa-util.version>
+        <de.hsh.grappa.grappa-backendplugin.version>0.2.1</de.hsh.grappa.grappa-backendplugin.version>
+        <de.hsh.grappa.grappa-backendplugin-dockerproxy.version>0.2.1
         </de.hsh.grappa.grappa-backendplugin-dockerproxy.version>
-        <de.hsh.grappa.grappa-webservice.version>2.3.0</de.hsh.grappa.grappa-webservice.version>
-        <proforma.proformaxml.version>0.1</proforma.proformaxml.version>
-        <proforma.proformautil.version>0.1</proforma.proformautil.version>
-        <proforma.proformaxml-2-1.version>0.1</proforma.proformaxml-2-1.version>
-        <proforma.proformautil-2-1.version>0.1</proforma.proformautil-2-1.version>
+        <de.hsh.grappa.grappa-webservice.version>2.4.1</de.hsh.grappa.grappa-webservice.version>
+        <proforma.proformaxml.version>0.2.1</proforma.proformaxml.version>
+        <proforma.proformautil.version>0.2.1</proforma.proformautil.version>
+        <proforma.proformaxml-2-1.version>0.2.1</proforma.proformaxml-2-1.version>
+        <proforma.proformautil-2-1.version>0.2.1</proforma.proformautil-2-1.version>
     </properties>
 
     <modules>
@@ -91,12 +90,22 @@
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
-                <version>1.2.3</version>
+                <version>1.3.11</version>
             </dependency>
             <dependency>
                 <groupId>com.github.docker-java</groupId>
-                <artifactId>docker-java</artifactId>
-                <version>3.2.8</version>
+                <artifactId>docker-java-core</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.docker-java</groupId>
+                <artifactId>docker-java-api</artifactId>
+                <version>3.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.docker-java</groupId>
+                <artifactId>docker-java-transport-httpclient5</artifactId>
+                <version>3.3.3</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -114,14 +123,14 @@
                 <version>1.20</version>
             </dependency>
             <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>2.3.1</version>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>2.3.3</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-runtime</artifactId>
-                <version>2.3.1</version>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>2.3.8</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -153,7 +162,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.0</version>
+                    <version>3.8.1</version>
                     <configuration>
                         <compilerArgs>
                             <arg>-Xlint:all</arg>

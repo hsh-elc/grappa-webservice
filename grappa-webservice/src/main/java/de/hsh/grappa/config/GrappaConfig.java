@@ -1,6 +1,6 @@
 package de.hsh.grappa.config;
 
-import com.google.common.base.Strings;
+import proforma.util.div.Strings;
 
 import java.util.List;
 

@@ -41,7 +41,7 @@
     </appender>
 
     <logger name="com.github" level="INFO"/>
-    <logger name="org.apache.http" level="INFO"/>
+    <logger name="org.apache.hc" level="INFO"/>
     <logger name="io.lettuce" level="ERROR"/>
     <logger name="io.netty" level="ERROR"/>
     <logger name="de.hsh.grappa" level="DEBUG"/>

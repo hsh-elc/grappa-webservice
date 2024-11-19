@@ -3,7 +3,7 @@ package de.hsh.grappa.application;
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.base.Strings;
+import proforma.util.div.Strings;
 import de.hsh.grappa.cache.RedisController;
 import de.hsh.grappa.config.GrappaConfig;
 import de.hsh.grappa.service.GraderPoolManager;
@@ -38,7 +38,7 @@ public class GrappaServlet implements ServletContextListener {
     public void contextInitialized(ServletContextEvent ctxEvent) {
         servletContextEvent = ctxEvent;
         try {
-            log.info("Running {} version {}.", getAppName(), getAppVersion());
+            log.info("Running {} version {} on JRE at {} version {}.", getAppName(), getAppVersion(), System.getProperty("java.home"), System.getProperty("java.version"));
             readConfigFile();
             ProformaVersion.getDefaultVersionNumber(); // fail fast, if the required grappa-proforma-N-M.jar is missing
             setupRedisConnection();

@@ -51,7 +51,7 @@ A web service for connecting multiple Learn Management Systems to multiple autom
 - [Redis](https://redis.io/) for storing ProFormA submissions and results
 - [Docker](https://www.docker.com/) for providing an additional security layer to the web service
 
-## 2.x Insalling and Running Grappa as a Docker Container
+## 2.x Installing and Running Grappa as a Docker Container
 
 You can use a pre-packaged Docker container running Grappa out-of-the-box. The only external dependency required is
 Redis, which can also be installed as a [Docker container](), or [as a regular service](#2.2.1-installing-redis) on the
@@ -1049,16 +1049,7 @@ ProFormA version without modifications.
 `grappa-util` is a module of useful routines that are not specific to Grappa or ProFormA. Think about one of the Apache
 commons projects and you get the point about `grappa-util`.
 
-The following modules currently are built for Java-1.8-compatibility:
-
-- grappa-util
-- grappa-backendplugin
-- proformautil
-- proformautil-2-1
-- proformaxml
-- proformaxml-2-1
-
-The other modules are compiled for Java-11-compatibility.
+All modules currently are built for Java-11-compatibility.
 
 
 

@@ -33,7 +33,7 @@ ENV GRAPPA_PLUGIN_GRADER_CLASSNAME="de.hsh.grappa.backendplugin.BackendPlugin" \
 # - 'file', 'unzip', 'less', 'dos2unix' for debugging
 # - 'gettext-base' for 'envsubst' to prepare properties files from envs
 RUN apt-get -qq update && apt-get -yq install \
-    default-jdk \
+    openjdk-17-jdk \
     file unzip less dos2unix \
     tzdata \
     gettext-base \
