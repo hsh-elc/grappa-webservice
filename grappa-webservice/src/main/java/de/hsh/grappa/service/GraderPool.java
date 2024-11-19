@@ -269,18 +269,17 @@ public class GraderPool {
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process exited.",
                     graderConfig.getId(), subm.getGradeProcId());
                 if (null != resp) {
-                    MimeType respType = resp.getMimeType(); //get the format of the response
-                    //get requested format from submission; read the result-spec element
+                    //get all information for conversion
+                    MimeType respType = resp.getMimeType();
                     SubmissionLive sl = new SubmissionLive(subm.getSubmission());
                     AbstractSubmissionType as = sl.getSubmission();
                     ProformaVersion pv = ProformaVersion.getInstanceByVersionNumber(as.proFormAVersionNumber());
                     ProformaSubmissionHelper helper = pv.getSubmissionHelper();
                     String requestedFormat = helper.getResultSpecFormat(as);
                     //if needed convert xml to zip
-                    log.debug("[GraderId: '{}', GradeProcessId: '{}']: Response Format is '{}' and requested Format is '{}'",
+                    log.debug("[GraderId: '{}', GradeProcessId: '{}']: Response Format is '{}' and requested Format is '{}'. Response will be converted.",
                     graderConfig.getId(), subm.getGradeProcId(), respType.toString(), requestedFormat);
                     if(respType == MimeType.XML && requestedFormat.equals("zip")) {
-                        //content der resp mit resp.getContent (byte Array)
                         byte[] content = resp.getContent();
                         try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
                             ZipOutputStream zos = new ZipOutputStream(baos)) {
@@ -289,16 +288,12 @@ public class GraderPool {
                                 zos.putNextEntry(entry);
                                 zos.write(content);
                                 zos.closeEntry();
-
                                 zos.close();
 
                                 resp.setContent(baos.toByteArray());
                                 resp.setMimeType(MimeType.ZIP);
                             }
-                        //mimetype und response content setzen nicht vergessen
                     }
-                    log.debug("[GraderId: '{}', GradeProcessId: '{}']: Response Format is now '{}'",
-                    graderConfig.getId(), subm.getGradeProcId(), resp.getMimeType().toString());
                     totalGradingProcessesSucceeded.incrementAndGet();
                     long durationSeconds = Duration.between(gradeProc.startTime, LocalDateTime.now()).getSeconds();
                     log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process finished successfully after {} " +
