@@ -16,14 +16,14 @@ on:
   push:
     branches:
       - 'develop'
-      #- 'master'
+      - 'master'
     paths:
       - 'grappa-webservice/**'
       - '.github/workflows/**'
   pull_request:
     branches:
       - 'develop'
-      #- 'master'
+      - 'master'
     paths:
       - 'grappa-webservice/**'
       - '.github/workflows/**'

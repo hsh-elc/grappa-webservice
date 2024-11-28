@@ -11,13 +11,13 @@ on:
   push:
     branches:
       - 'develop'
-      #- 'master'
+      - 'master'
     paths:
       - 'grappa-backendplugin-dummygrader/**'
   pull_request:
     branches:
       - 'develop'
-      #- 'master'
+      - 'master'
     paths:
       - 'grappa-backendplugin-dummygrader/**'
   # Allows you to run this workflow manually from the Actions tab
