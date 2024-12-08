@@ -1,0 +1,107 @@
+name: Java2Docker grappa webservice test V4
+
+# This workflow supports local execution using act (https://github.com/nektos/act)
+# by skipping two steps concerned about publishing docker images to ghcr.
+# You can skip these steps by adding the variable GITHUB_PUBLISH:
+# act --var GITHUB_PUBLISH=false -j build -W java2docker_graja.yml
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: grappa-webservice
+  SUBDIR: grappa-webservice
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    name: Build Maven Project, Docker Image and push it to Registry
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: maven
+
+      - name: Set Release version env variable
+        run: |
+          cd ${SUBDIR}
+          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      - name: Build with Maven
+        run: |
+          #mvn --batch-mode --update-snapshots clean package
+          mvn --batch-mode --update-snapshots --projects ${SUBDIR} --also-make clean package -DskipTests
+
+      - name: Upload war file as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.SUBDIR }}
+          path: ${{ env.SUBDIR }}/target/grappa-webservice-*.war
+
+      - name: Copy war file to docker directory for the Dockerfile to pick up
+        env:
+          WAR_FILE: ${{ env.SUBDIR }}-${{ env.RELEASE_VERSION }}.war
+        run: |
+          cp ${SUBDIR}/target/$WAR_FILE ${SUBDIR}/docker/grappa-webservice-2.war
+
+      # login to registry before building and pushing to github registry
+      - name: Log in to registry
+        # This is where you will update the PAT to GITHUB_TOKEN
+        run: |
+          if [[ "${{ vars.GITHUB_PUBLISH }}" != "false" ]]; then
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          else
+            echo "::warning Skipping Log in to registry"
+          fi
+
+      - name: Build image
+        run: |
+          cd ${SUBDIR}/docker
+          # use docker build --pull so we don't re-use stale base images from cache
+          docker build . --pull --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+
+      - name: Push image
+        env:
+          IMAGE_VERSION: ${{ env.RELEASE_VERSION }}
+        run: |
+          if [[ "${{ vars.GITHUB_PUBLISH }}" != "false" ]]; then
+            IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+            # Change all uppercase to lowercase
+            IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+            # Get branch name and replace special chars to "-"
+            BRANCH=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')
+            echo "-current branch: '${BRANCH}'"
+      
+            if [[ "$BRANCH" == "master" ]]; then
+              IMAGE_TAG=$IMAGE_VERSION
+              # Use Docker `latest` tag convention
+              docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
+              docker tag $IMAGE_NAME $IMAGE_ID:latest
+              docker push $IMAGE_ID:$IMAGE_TAG
+              docker push $IMAGE_ID:latest
+            else
+              # some other branch
+              IMAGE_TAG="${IMAGE_VERSION}-${BRANCH}"
+              docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
+              docker push $IMAGE_ID:$IMAGE_TAG
+            fi
+      
+            if [[ "$BRANCH" == "develop" ]]; then
+              docker tag $IMAGE_NAME $IMAGE_ID:latest_develop
+              docker push $IMAGE_ID:latest_develop
+            fi
+          else
+            echo "::warning Skipping Push image"
+          fi
