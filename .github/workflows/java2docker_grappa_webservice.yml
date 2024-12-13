@@ -65,7 +65,7 @@ jobs:
           mvn --batch-mode --update-snapshots --projects ${SUBDIR} --also-make clean package -DskipTests
 
       - name: Upload war file as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.SUBDIR }}
           path: ${{ env.SUBDIR }}/target/grappa-webservice-*.war
