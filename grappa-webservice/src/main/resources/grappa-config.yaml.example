@@ -57,6 +57,7 @@ graders:
   # An ID consists of: gradername and graderversion
   # The gradername and graderversion must not contain a '$' character
   # A grader version is structured as follows: major separated from minor with a dot: {major}.{minor}
+  # {minor} can consist of an arbitrary number of subminor versions, each separated by a dot
   - id:
       name: "DummyGrader"
       version: "1.0"
