@@ -108,16 +108,6 @@ IP in file `/etc/hosts`.
 
 The command to run Grappa with the `network="host"` enabled is listed below.
 
-Either way, we will need to edit Docker's configuration file to allow TCP requests to the **host's** Docker socket:
-
-1. on the host, edit file `/lib/systemd/system/docker.service`
-2. comment out line `ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock`
-3. Add line `ExecStart=/usr/bin/dockerd -H tcp://127.0.0.1:2375 --containerd=/run/containerd/containerd.sock`
-4. reload docker daemon `sudo systemctl daemon-reload`
-5. restart docker `sudo systemctl restart docker`
-
-TODO: verify that this is still correct and necessary.
-
 #### Using Grappa with the Host's Network
 
 Using this option, any request to `127.0.0.1` will point to the host (no matter the port).
@@ -132,11 +122,11 @@ redis:
   port: 6379
 ```
 
-Similarly, Grappa is configured to use the Docker socket at URI `tcp://127.0.0.1:2375`.
+Similarly, Grappa is configured to use the Docker socket at `unix:///var/run/docker.sock`.
 
 ```yaml
 docker_proxy:
-  host: "tcp://127.0.0.1:2375"
+  host: "unix:///var/run/docker.sock"
 ```
 
 #### Using Grappa with host name mapped to host IP
@@ -158,7 +148,7 @@ Configuring the docker socket:
 
 ```yaml
 docker_proxy:
-  host: "host.docker.internal:2375"
+  host: "unix:///var/run/docker.sock"
 ```
 
 ### Starting Redis Container
@@ -216,6 +206,7 @@ docker run -d \
     --network="host" \
     -v /etc/grappa/grappa-config.yaml:/etc/grappa/grappa-config.yaml \
     -v ~/grappa/log:/var/log/tomcat9/ \
+    -v /var/run/docker.sock:/var/run/docker.sock \
     -e TZ=$(cat /etc/timezone) \
     ghcr.io/hsh-elc/grappa-webservice:latest
 ```
@@ -235,6 +226,7 @@ docker run -d \
     -p 8080:8080 \
     -v /etc/grappa/grappa-config.yaml:/etc/grappa/grappa-config.yaml \
     -v ~/grappa/log:/var/log/tomcat9/ \
+    -v /var/run/docker.sock:/var/run/docker.sock \
     -e TZ=$(cat /etc/timezone) \
     ghcr.io/hsh-elc/grappa-webservice:latest
 ```
@@ -273,17 +265,6 @@ Install the software listed in the [System Requirements](#21-system-requirements
 #### 2.2.2 Installing Docker
 
 - Install Docker, e.g. https://docs.docker.com/engine/install/ubuntu/
-- if Grappa and Docker are intended to run on different servers, you may need to expose the Docker API over TCP so a
-  connection can be established remotely
-    - edit file `/lib/systemd/system/docker.service`
-    - comment out line `ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock`
-    - add line `ExecStart=/usr/bin/dockerd -H tcp://127.0.0.1:2375 --containerd=/run/containerd/containerd.sock`
-    - reload the Docker service
-        - `sudo systemctl daemon-reload`
-        - `sudo systemctl restart docker`
-        - Note that you may need to reboot the entire machine after these changes if remote API calls to Docker cause
-          the following exception: `com.github.dockerjava.api.exception.InternalServerErrorException:
-          Status 500: failed to create endpoint <containerName> on network bridge`
 
 ### 2.3 Building and Deployment
 

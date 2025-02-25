@@ -40,8 +40,8 @@ Create a quiz and add the new question to the quiz.
 ### Attempt the quiz
 
 As a student attempt the quiz and submit a solution file. When using deferred feedback, the Grappa server will receive
-the submission only, after the student clicked *Submit all and finish*. Watch the console log of the Tomcat Server in
-the Eclipse console and check, if everything is working fine. Here is a positive example:
+the submission only, after the student clicked *Submit all and finish*. Watch the console log of the Tomcat Server and check, if everything is working fine. 
+Here is a positive example:
 
 ```
 2021-06-23 19:34:29,084 DEBUG d.h.g.r.AllGradeProcessResources - [GraderId: 'Graja2.2']: grade() with async=1 called.

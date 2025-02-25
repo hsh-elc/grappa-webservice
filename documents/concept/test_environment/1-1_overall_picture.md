@@ -13,10 +13,10 @@ You need to install a web server (Apache), a database (MySQL), and PHP as well a
 need WSL and (as a proposal) eclipse as your IDE. Some Grappa backend plugins need Gradle as a build tool. Grappa will
 be built using Maven. As Java versions you need JDK SE 10 and (for some graders) JDK SE 8.
 
-* Apache, MySQL, PHP and Tomcat come with the xampp distribution and will run on Windows.
+* Apache, MySQL and PHP come with the xampp distribution and will run on Windows.
 * Eclipse will run on Windows.
 * The Windows subsystem for linux (WSL) will be installed on top of Windows
-* Redis and Docker will run in WSL
+* Redis, Docker and Tomcat will run in WSL
 * Maven will run in WSL
 * Gradle could run in WSL or Windows
 
@@ -33,7 +33,7 @@ The call chain of software modules when grading a submission is as follows:
     - Moodle reads and writes data on the MySQL database running on your development computer's OS
     - Moodle delegates to the MooPT plugin
     - The MooPT plugin contacts the Tomcat Server, which is also running on your development computer.
-    - The Tomcat server delegates to the Grappa webapp
+    - The Tomcat server, which lives in the WSL subsystem, delegates to the Grappa webapp
     - The Grappa webapp contacts and reads and writes data on the Redis database, which lives in the WSL subsystem
     - The Grappa webapp delegates to the so-called grappa-backend-plugin-docker-proxy. This is a jar file installed on
       your development computer and running inside the Tomcat JVM.

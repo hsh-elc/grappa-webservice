@@ -157,35 +157,14 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io
 
 ### Configure
 
-Then edit the file `/lib/systemd/system/docker.service`:
-
-* comment out line `ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock`
-* add line `ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 --containerd=/run/containerd/containerd.sock`
-
-Next edit the three files `/etc/init.d/docker` and `/etc/default/docker` and `/etc/init/docker.conf`:
-
-* set Variable DOCKER_OPTS="-H tcp://0.0.0.0:2375"
-
 In order to be able to use the docker CLI as root in a WSL terminal, you should add the following line at the end
 of `.bashrc` of user root:
-`export DOCKER_HOST=tcp://127.0.0.1:2375`
-
-The following step might not be necessary. Put a rule in your Windows firewall that allows incoming connections on port
-2375.
+`export DOCKER_HOST=unix:///var/run/docker.sock`
 
 ### Test
 
 Reloading the Docker service should work using
 `sudo service docker start`
-
-But strange enough - it doesn't work. So you could use `/etc/init.d/docker start`  to start the docker daemon.
-
-Now check, if the docker daemon ist listening on port 2375:
-`netstat -na`.
-
-Also you should check, if a Windows process can contact the docker damon from outside WSL. Open a cmd command prompt and
-type `telnet localhost 2375`. This should show a blank console screen and there shouldn't be any messages reporting a
-failed connection.
 
 You can verify that Docker Engine is installed correctly by running the hello-world image: `sudo docker run hello-world`
 .

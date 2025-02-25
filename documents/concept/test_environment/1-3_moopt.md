@@ -46,7 +46,7 @@ As soon as an administrator logs in to Moodle, he will be requested to install t
 
 * LMS-ID: `test`
 * LMS- Password: `test`
-* Service URL: `http://{localip}:{tomcat.port}/grappa-webservice-2/rest`
+* Service URL: Leave the field blank for now
 
 #### moodle:
 
