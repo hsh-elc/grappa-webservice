@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import proforma.util.ProformaResponseHelper.Audience;
 import proforma.util.ProformaSubmissionHelper;
+import proforma.util.ProformaSubmissionRestrictionsChecker;
+import proforma.util.ProformaSubmissionRestrictionViolations;
 import proforma.util.ProformaVersion;
 import proforma.util.SubmissionLive;
 import proforma.util.boundary.Boundary;
@@ -249,6 +251,22 @@ public class GraderPool {
             }
         }
         try {
+            SubmissionLive sl = new SubmissionLive(subm.getSubmission());
+            AbstractSubmissionType as = sl.getSubmission();
+            ProformaVersion pv = ProformaVersion.getInstanceByVersionNumber(as.proFormAVersionNumber());
+            ProformaSubmissionHelper helper = pv.getSubmissionHelper();
+
+            if (this.graderConfig.getGrappa_submission_restriction_checks()) {
+                ProformaSubmissionRestrictionsChecker restrictionsChecker = helper.getSubmissionRestrictionsChecker(sl);
+
+                log.info("Checking Proforma Submission Restrictions.....");
+                ProformaSubmissionRestrictionViolations restrictionViolations = restrictionsChecker.checkSubmissionRestrictions();
+                if (!restrictionViolations.getViolations().isEmpty()) {
+                    log.info("Submission Restrictions were violated. Submission will not be graded.");
+                    return createSubmissionRestrictionViolationResponse(restrictionViolations, subm);
+                }
+            }
+
             GradeProcess gradeProc = new GradeProcess(subm.getGradeProcId(), LocalDateTime.now(), null);
 
             // Create a fresh backend plugin instance for every grading request
@@ -271,10 +289,6 @@ public class GraderPool {
                 if (null != resp) {
                     //get all information for conversion
                     MimeType respType = resp.getMimeType();
-                    SubmissionLive sl = new SubmissionLive(subm.getSubmission());
-                    AbstractSubmissionType as = sl.getSubmission();
-                    ProformaVersion pv = ProformaVersion.getInstanceByVersionNumber(as.proFormAVersionNumber());
-                    ProformaSubmissionHelper helper = pv.getSubmissionHelper();
                     String requestedFormat = helper.getResultSpecFormat(as);
                     //if needed convert xml to zip
                     log.debug("[GraderId: '{}', GradeProcessId: '{}']: Response Format is '{}' and requested Format is '{}'. Response will be converted.",
@@ -397,6 +411,11 @@ public class GraderPool {
         // when eliminating the flag isExpected_internal_error_type_always_merged_test_feedback,
         // then the following call we do:
         //return ProformaResponseGenerator.createInternalErrorResponse(errorMessage, subm.getSubmission(), audience);
+    }
+
+    private ResponseResource createSubmissionRestrictionViolationResponse(ProformaSubmissionRestrictionViolations violations, QueuedSubmission subm) throws Exception {
+        ProformaVersion pv = detectProformaVersion(subm);
+        return pv.getResponseHelper().createSubmissionRestrictionViolationResponse(violations, subm.getSubmission(), boundary);
     }
 
     private void setAverageGradingDuration(long newestDuration, String gradeProcId) {

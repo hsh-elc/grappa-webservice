@@ -12,3 +12,6 @@ catalina*
 target/
 out/
 classes/
+
+# Visual Studio Code
+.vscode/
