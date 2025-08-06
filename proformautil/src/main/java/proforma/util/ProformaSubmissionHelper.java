@@ -16,6 +16,8 @@ public abstract class ProformaSubmissionHelper extends ProformaHelper {
 
     public abstract ProformaSubmissionSubmissionHandle getSubmissionSubmissionHandle(SubmissionLive submission, SubmissionBoundary sb);
 
+    public abstract ProformaSubmissionRestrictionsChecker getSubmissionRestrictionsChecker(SubmissionLive submission);
+
 
     public abstract void setResultSpecDetailsIfEmpty(AbstractSubmissionType submission, String structure, String format,
                                                      String studentFeedbackLevel, String teacherFeedbackLevel);

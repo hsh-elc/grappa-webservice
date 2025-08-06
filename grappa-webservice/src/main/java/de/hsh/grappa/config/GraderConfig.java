@@ -8,6 +8,7 @@ public class GraderConfig {
     private String display_name;
     private List<String> proglangs;
     private boolean enabled;
+    private boolean grappa_submission_restriction_checks = true;
     private int timeout_seconds = 120;
     private int concurrent_grading_processes = 5;
     private String logging_level;
@@ -54,6 +55,14 @@ public class GraderConfig {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean getGrappa_submission_restriction_checks() {
+        return this.grappa_submission_restriction_checks;
+    }
+
+    public void setGrappa_submission_restriction_checks(boolean grappa_submission_restriction_checks) {
+        this.grappa_submission_restriction_checks = grappa_submission_restriction_checks;
     }
 
     public int getTimeout_seconds() {
@@ -159,6 +168,7 @@ public class GraderConfig {
             + ", display_name=" + display_name
             + ", proglangs=" + proglangs
             + ", enabled=" + enabled
+            + ", grappa_submission_restriction_checks=" + grappa_submission_restriction_checks
             + ", timeout_seconds=" + timeout_seconds
             + ", concurrent_grading_processes=" + concurrent_grading_processes
             + ", logging_level=" + logging_level
