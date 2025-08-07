@@ -36,6 +36,10 @@ public class Proforma21SubmissionRestrictionsChecker extends ProformaSubmissionR
         TaskType task = (TaskType) taskLive.getTask();
         SubmissionRestrictionsType restrictions = task.getSubmissionRestrictions();
 
+        if (null == restrictions) {
+            return null;
+        }
+
         BigInteger maxSize = restrictions.getMaxSize();
         if (maxSize != null) {
             checkMaxSize(restrictions.getMaxSize());

@@ -261,7 +261,7 @@ public class GraderPool {
 
                 log.info("Checking Proforma Submission Restrictions.....");
                 ProformaSubmissionRestrictionViolations restrictionViolations = restrictionsChecker.checkSubmissionRestrictions();
-                if (!restrictionViolations.getViolations().isEmpty()) {
+                if (null != restrictionViolations && !restrictionViolations.getViolations().isEmpty()) {
                     log.info("Submission Restrictions were violated. Submission will not be graded.");
                     return createSubmissionRestrictionViolationResponse(restrictionViolations, subm);
                 }
