@@ -1,0 +1,488 @@
+package proforma.util21;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import proforma.util21.format.CombineNode;
+import proforma.util21.format.GradingNode;
+import proforma.util21.format.ResponseFormatter;
+import proforma.util21.format.TestNode;
+import proforma.xml21.SeparateTestFeedbackType;
+import proforma.xml21.TaskType;
+
+/**
+ * Class that can be used to convert Separate Test Feedback to a
+ * HTML document that displays the Separate Test Feedback Response
+ * as a HTML page
+ */
+public class Proforma21HtmlFeedbackGenerator {
+
+    private static final int INDENTATION_SIZE = 4; // Spaces to be used for nested HTML
+
+    private static final String CSS_BODY = "max-width: 1300px; margin: 20px auto; border: 1px solid #ccc; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); padding: 10px;";
+    private static final String CSS_H1_H2 = "color: navy; margin-bottom: 0;";
+    private static final String CSS_EXPAND_COLLAPSE_BUTTONS = "display: flex; gap: 10px; margin: 10px 0; padding: 10px; justify-content: flex-end;";
+    private static final String CSS_EXPAND_COLLAPSE_BUTTON = "padding: 5px 10px; background-color:navy; color: white; border: none; border-radius: 4px; cursor: pointer;";
+    private static final String CSS_COLLAPSIBLE = "cursor: pointer; padding: 10px; width: 100%; border: none; text-align: left; outline: none; font-size: 15px; background-color: #eee; margin-top: 5px;";
+    private static final String CSS_INNER_COLLAPSIBLE = "cursor: pointer; padding: 5px 10px; width: auto; border: 1px solid #ccc; text-align: left; outline: none; font-size: 12px; background-color: #f0f0f0; margin-top: 3px; display: inline-block;";
+    private static final String CSS_CONTENT = "padding: 0; overflow: hidden; transition: max-height 0.2s ease-out; background-color: inherit; max-height: none;";
+    private static final String CSS_INNER_CONTENT = "padding: 5px 10px; border-top: 1px dashed #ccc; overflow: hidden; transition: max-height 0.2s ease-out; background-color: inherit;";
+    private static final String CSS_FEEDBACK_LIST = "margin-bottom: 5px;";
+    private static final String CSS_FEEDBACK_CONTENT = "margin-bottom: 5px;";
+    private static final String CSS_GRADING_NODE = "padding: 5px; margin-bottom: 0; border-bottom: 1px solid #ddd;";
+    private static final String CSS_TITLE_CONTAINER = "display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;";
+    private static final String CSS_TITLE_CONTAINER_P_H3 = "margin: 0; flex-grow: 1;";
+    private static final String CSS_TITLE_RESULT = "margin-left: auto; padding-left: 10px; white-space: normal; font-style: italic; font-size: 1.0em;";
+    private static final String CSS_NULLIFY_REASON = "color: red; font-style: italic; font-weight: bold; margin-top: 10px;";
+    private static final String CSS_TEST_REF = "padding: 5px; margin-bottom: 0; border-bottom: 1px solid #ddd;";
+
+    private static final String TEXT_EXPAND_ALL = "Expand All";
+    private static final String TEXT_COLLAPSE_ALL = "Collapse All";
+    private static final String TEXT_DETAILS = "Details";
+    private static final String TEXT_DETAILS_FEEDBACK = "Details & Feedback";
+
+    private static final String PAGE_TITLE = "Evaluation Report";
+    private static final String FEEDBACK_TITLE_SUMMARIZED = "Summarized Feedback";
+    private static final String FEEDBACK_TITLE_DETAILED = "Detailed Feedback";
+    private static final String FEEDBACK_TITLE_STUDENT = "Student Feedback";
+    private static final String FEEDBACK_TITLE_TEACHER = "Teacher Feedback";
+    private static final String ROOT_NODE_TITLE = "Overall result";
+    private static final String NO_FEEDBACK_MSG = "No feedback provided.";
+    private static final String NULLIFIED_REASON_PREFIX = "Nullified. Reason for nullification:";
+    private static final String NULLIFIED_SUFFIX = "[nullified]";
+    private static final String INTERNAL_FEEDBACK_PREFIX = "Internal Feedback";
+    private static final String SCORE_CALC_PREFIX = "Score calculation:";
+    private static final String SCORE_CALC_POSTFIX = "of the following sub-aspects";
+    private static final String TEST_RESULT_CORRECT = "correct";
+    private static final String TEST_RESULT_WRONG = "wrong";
+    private static final String TEST_ACTUAL_SCORE = "actual score.";
+    private static final String TEST_RAW_SCORE = "raw test score.";
+
+    private final SeparateTestFeedbackType separateFeedback;
+    private final TaskType task;
+    private final CombineNode rootNode;
+    private StringBuilder sb;
+    private boolean includeTeacherFeedback = false;
+    private int indentationLevel;
+    
+    public Proforma21HtmlFeedbackGenerator(SeparateTestFeedbackType separateFeedback, TaskType task) {
+        this.separateFeedback = separateFeedback;
+        this.task = task;
+        
+        ResponseFormatter formatter = new ResponseFormatter(this.separateFeedback, this.task);
+        this.rootNode = formatter.generateGradingStructure();
+    }
+
+    /**
+     * Builds the entire HTML from Separate Test Feedback
+     * 
+     * @param includeTeacherFeedback should teacher feedback be included in HTML?
+     * @param generateWholeHtmlDocument should the document also contain &lt;!DOCTYPE html&gt;, &lt;html&gt;, &lt;head&gt; and &lt;body&gt; tags?
+     */
+    public String buildFeedbackHtml(boolean includeTeacherFeedback, boolean generateWholeHtmlDocument) {
+        this.sb = new StringBuilder();
+        this.includeTeacherFeedback = includeTeacherFeedback;
+        this.indentationLevel = 0;
+
+        if (generateWholeHtmlDocument) {
+            initializeHtmlDocument();
+            addHeadSection();
+            addOpeningBodyTag(); // leaves indentationLevel incremented after call
+        }
+
+        addExpandCollapseAllButtons();
+        addSummarizedFeedbackSection();
+        addDetailedFeedbackSection();
+        addCommonJavaScript();
+
+        if (generateWholeHtmlDocument) {
+            addClosingBodyTag(); // leaves indentationLevel decremented after call
+            finalizeHtmlDocument();
+        }
+
+        return this.sb.toString();
+    }
+
+    /**
+     * Returns the overall score
+     */
+    public BigDecimal getScore() {
+        return new BigDecimal(this.rootNode.getActualScore());
+    }
+
+    /**
+     * Appends indented text to sb and appends a new-line-character
+     * Indentation level is determined by class attribute
+     */
+    private void appendLine(String text) {
+        if (this.indentationLevel < 0) {
+            throw new IllegalArgumentException("indentationLevel can't be smaller than 0");
+        }
+        for (int i = 0; i < this.indentationLevel; i++) {
+            for (int j = 0; j < INDENTATION_SIZE; j++) {
+                this.sb.append(" ");
+            }
+        }
+        this.sb.append(text).append("\n");
+    }
+
+    /**
+     * Creates a style attribute for use in a html tag
+     */
+    private String createStyle(String stylesText) {
+        return "style=\"" + stylesText + "\"";
+    }
+
+    /**
+     * Generates the CSS for detailed feedback indentation levels
+     */
+    private String generateIndentCSS(int indentLevel) {
+        int margin = 20 * indentLevel;
+        String background = switch (indentLevel) {
+            case 0 -> "#b0b0b0";
+            case 1 -> "#c0c0c0";
+            case 2 -> "#d0d0d0";
+            case 3 -> "#e0e0e0";
+            case 4 -> "#f0f0f0";
+            default -> "#f9f9f9";
+        };
+        if (margin > 100) {
+            margin = 100;
+        }
+        return "margin-left: " + margin + "px; background-color: " + background + ";";
+    }
+
+    /**
+     * Escapes common HTML characters to the respective HTML character codes
+     */
+    private String escapeHtml(String text) {
+        if (null == text) {
+            return "";
+        }
+        return  text.replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\"", "&quot;")
+                    .replace("'", "&apos;");
+    }
+
+    /**
+     * Adds HTML Document initializer
+     */
+    private void initializeHtmlDocument() {
+        appendLine("<!DOCTYPE html>");
+        appendLine("<html lang=\"en\">");
+    }
+
+    /**
+     * Adds head-Section to HTML Document
+     */
+    private void addHeadSection() {
+        appendLine("<head>");
+        this.indentationLevel++;
+        appendLine("<meta charset=\"UTF-8\">");
+        appendLine("<title>" + PAGE_TITLE + "</title>");
+        this.indentationLevel--;
+        appendLine("</head>");
+    }
+
+    /**
+     * Adds the opening body tag to the html document.
+     * Also leaves the indentationlevel incremented after call for proper indentation
+     * inside the body section
+     */
+    private void addOpeningBodyTag() {
+        appendLine("<body " + createStyle(CSS_BODY) + ">");
+        this.indentationLevel++;
+    }
+
+    /**
+     * Adds the "Expand All" and "Collapse All" buttons
+     */
+    private void addExpandCollapseAllButtons() {
+        appendLine("<div " + createStyle(CSS_EXPAND_COLLAPSE_BUTTONS) + ">");
+        this.indentationLevel++;
+        appendLine("<button " + createStyle(CSS_EXPAND_COLLAPSE_BUTTON) + ">" + TEXT_EXPAND_ALL + "</button>");
+        appendLine("<button " + createStyle(CSS_EXPAND_COLLAPSE_BUTTON) + ">" + TEXT_COLLAPSE_ALL + "</button>");
+        this.indentationLevel--;
+        appendLine("</div>");
+    }
+
+    /**
+     * Adds collapsible "Summarized Feedback" section
+     */
+    private void addSummarizedFeedbackSection() {
+        addCollapsibleTopButton(FEEDBACK_TITLE_SUMMARIZED);
+        appendLine("<div " + createStyle(CSS_CONTENT) + ">");
+        this.indentationLevel++;
+        addStudentFeedbackList();
+        if (this.includeTeacherFeedback) {
+            addTeacherFeedbackList();
+        }
+        this.indentationLevel--;
+        appendLine("</div>");
+    }
+
+    /**
+     * Adds button for expanding/collapsing when clicking section titles
+     */
+    private void addCollapsibleTopButton(String title) {
+        appendLine("<button " + createStyle(CSS_COLLAPSIBLE) + ">");
+        this.indentationLevel++;
+        appendLine("<h1 " + createStyle(CSS_H1_H2) + ">" + title + "</h1>");
+        this.indentationLevel--;
+        appendLine("</button>");
+    }
+
+    /**
+     * Adds Student feedback list to summarized feedback
+     */
+    private void addStudentFeedbackList() {
+        appendLine("<h2 " + createStyle(CSS_H1_H2) + ">" + FEEDBACK_TITLE_STUDENT + "</h2>");
+        appendLine("<div " + createStyle(CSS_FEEDBACK_LIST) + ">");
+        this.indentationLevel++;
+
+        List<String> feedbackStrings = new ArrayList<>();
+        this.separateFeedback.getSubmissionFeedbackList().getStudentFeedback().forEach(feedbackType -> {
+            feedbackStrings.add(feedbackType.getContent().getValue());
+        });
+        addFeedbackList(feedbackStrings);
+        this.indentationLevel--;
+        appendLine("</div>");
+    }
+
+    /**
+     * Adds teacher feedback list to summarized feedback
+     */
+    private void addTeacherFeedbackList() {
+        appendLine("<h2 " + createStyle(CSS_H1_H2) + ">" + FEEDBACK_TITLE_TEACHER + "</h2>");
+        appendLine("<div " + createStyle(CSS_FEEDBACK_LIST) + ">");
+        this.indentationLevel++;
+
+        List<String> feebackStrings = new ArrayList<>();
+        this.separateFeedback.getSubmissionFeedbackList().getTeacherFeedback().forEach(feedbackType -> {
+            feebackStrings.add(feedbackType.getContent().getValue());
+        });
+        addFeedbackList(feebackStrings);
+        this.indentationLevel--;
+        appendLine("</div>");
+    }
+
+    /**
+     * Adds feedback line-by-line to HTML document
+     * Can be reused
+     */
+    private void addFeedbackList(List<String> feedbackList) {
+        if (null == feedbackList || feedbackList.isEmpty()) {
+            appendLine("<p><i>" + NO_FEEDBACK_MSG + "</i></p>");
+            return;
+        }
+        for (String feedback : feedbackList) {
+            feedback.lines().forEach(line -> {
+                appendLine(line);
+            });
+        }
+    }
+
+    /**
+     * Adds collapsible "Detailed Feedback" section
+     */
+    private void addDetailedFeedbackSection() {
+        addCollapsibleTopButton(FEEDBACK_TITLE_DETAILED);
+        appendLine("<div " + createStyle(CSS_CONTENT) + ">");
+        this.indentationLevel++;
+        
+        addNodesRecursive(this.rootNode);
+
+        this.indentationLevel--;
+        appendLine("</div>");
+    }
+
+    /**
+     * Adds a CombineNode to the HTML Document
+     * This method will be called recursively if the given node
+     * also contains CombineNode(s) as children
+     */
+    private void addNodesRecursive(CombineNode node) {
+        addCombineNodeStart(node); // leaves indentationLevel incremented after call
+        addCombineNodeInfo(node);
+        
+        for (GradingNode child: node.getChildren()) {
+            if (child instanceof TestNode testChild) {
+                addTestNode(testChild);
+            } else if (child instanceof CombineNode combineChild) {
+                addNodesRecursive(combineChild);
+            }
+        }
+
+        this.indentationLevel--;
+        appendLine("</div>"); // combine node start div
+    }
+
+    /**
+     * Adds starting components for a combine node
+     * Also leaves indentationLevel incremented after call
+     */
+    private void addCombineNodeStart(CombineNode node) {
+        appendLine("<div " + createStyle(CSS_GRADING_NODE + " " + generateIndentCSS(node.getIndentLevel())) + ">");
+        this.indentationLevel++;
+        appendLine("<div " + createStyle(CSS_TITLE_CONTAINER + " padding-bottom: 5px;") + ">");
+        this.indentationLevel++;
+        String title = node.getRefId().equals("root") ? ROOT_NODE_TITLE : escapeHtml(node.getTitle());
+        String titleText = String.format("%s [max. %.2f]", title, node.getMaxScore());
+        appendLine("<p " + createStyle(CSS_TITLE_CONTAINER_P_H3) +  ">" + titleText + "</p>");
+        appendLine("<span " + createStyle(CSS_TITLE_RESULT) + ">" + String.format("[%s %.2f]", TEST_ACTUAL_SCORE, node.getActualScore()) + "</span>");
+        appendLine("<button " + createStyle(CSS_INNER_COLLAPSIBLE) + ">" + TEXT_DETAILS + "</button>");
+        this.indentationLevel--;
+        appendLine("</div>");
+    }
+
+    /**
+     * Adds info about combine node
+     */
+    private void addCombineNodeInfo(CombineNode node) {
+        appendLine("<div " + createStyle(CSS_INNER_CONTENT) + ">");
+        this.indentationLevel++;
+        if (node.isNullified()) {
+            addNullificationInfo(node.getNullifyReason());
+        }
+        addDescription(node.getDescription(), this.includeTeacherFeedback ? node.getInternalDescription() : null);
+        addScoreCalculationInfo(node.getFunction());
+        this.indentationLevel--;
+        appendLine("</div>");
+    }
+
+    /**
+     * Adds info about the nullification reason to combine node
+     */
+    private void addNullificationInfo(String reason) {
+        if (null != reason && !reason.isEmpty()) {
+            appendLine("<div " + createStyle(CSS_NULLIFY_REASON) + ">");
+            this.indentationLevel++;
+            appendLine(NULLIFIED_REASON_PREFIX + " " + escapeHtml(reason));
+            this.indentationLevel--;
+            appendLine("</div>");
+        }
+    }
+
+    /**
+     * Adds Description to node
+     */
+    private void addDescription(String description, String internalDescription) {
+        if (null != description && !description.isEmpty()) {
+            appendLine("<p>" + escapeHtml(description) + "</p>");
+        }
+        if (null != internalDescription && !internalDescription.isEmpty()) {
+            appendLine("<p><i>" + INTERNAL_FEEDBACK_PREFIX + " " + escapeHtml(internalDescription) + "</i></p>");
+        }
+    }
+
+    /**
+     * Adds calculation info to combine node
+     */
+    private void addScoreCalculationInfo(String function) {
+        if (null != function && !function.isEmpty()) {
+            String calculationText = SCORE_CALC_PREFIX + " " + escapeHtml(function) + " " + SCORE_CALC_POSTFIX;
+            appendLine("<p><em>" + calculationText + "</em></p>");
+        }
+    }
+
+    /**
+     * Adds Test Node with all information
+     */
+    private void addTestNode(TestNode node) {
+        double actualScore = node.isNullified() ? 0 : node.getActualScore();
+        addTestNodeStart(node, actualScore); // leaves indentationLevel incremented after call
+
+        appendLine("<div " + createStyle(CSS_INNER_CONTENT) + ">");
+        this.indentationLevel++;
+        if (node.isNullified() && node.getRawScore() != 0) {
+            addNullificationInfo(node.getNullifyReason());
+        }
+        addDescription(node.getDescription(), node.getInternalDescription());
+
+        List<String> studentFeedback = node.getStudentFeedback();
+        appendLine("<h4>" + FEEDBACK_TITLE_STUDENT + "</h4>");
+        appendLine("<div " + createStyle(CSS_FEEDBACK_CONTENT) + ">");
+        this.indentationLevel++;
+        addFeedbackList(studentFeedback);
+        this.indentationLevel--;
+        appendLine("</div>");
+
+        if (this.includeTeacherFeedback) {
+            List<String> teacherFeedback = node.getTeacherFeedback();
+            appendLine("<h4>" + FEEDBACK_TITLE_TEACHER + "</h4>");
+            appendLine("<div " + createStyle(CSS_FEEDBACK_CONTENT) + ">");
+            this.indentationLevel++;
+            addFeedbackList(teacherFeedback);
+            this.indentationLevel--;
+            appendLine("</div>");
+        }
+
+        this.indentationLevel--;
+        appendLine("</div>"); // inner content div
+        this.indentationLevel--;
+        appendLine("</div>"); // test node start div
+    }
+
+    /**
+     * Adds all starting components for a test node
+     * Also leaves indentation level incremented after call
+     */
+    private void addTestNodeStart(TestNode node, double actualScore) {
+        appendLine("<div " + createStyle(CSS_TEST_REF + " " + generateIndentCSS(node.getIndentLevel())) + ">");
+        this.indentationLevel++;
+        appendLine("<div " + createStyle(CSS_TITLE_CONTAINER) + ">");
+        this.indentationLevel++;
+        String titleText = String.format("%s [max. %.2f]", node.getTitle(), node.getMaxScore());
+        appendLine("<p " + createStyle(CSS_TITLE_CONTAINER_P_H3) + ">" + escapeHtml(titleText) + "</p>");
+
+        StringBuilder resultText = new StringBuilder();
+        resultText.append(String.format("[%s %.2f]", TEST_RAW_SCORE, node.getRawScore()))
+            .append(String.format("[%s %.2f]", TEST_ACTUAL_SCORE, actualScore))
+            .append(" - ").append(node.getRawScore() != 0 ? TEST_RESULT_CORRECT : TEST_RESULT_WRONG);
+        if (node.getRawScore() != 0 && node.isNullified()) {
+            resultText.append(NULLIFIED_SUFFIX);
+        }
+
+        appendLine("<span " + createStyle(CSS_TITLE_RESULT) + ">" + resultText.toString() + "</span>");
+        appendLine("<button " + createStyle(CSS_INNER_COLLAPSIBLE) + ">" + TEXT_DETAILS_FEEDBACK + "</button>");
+        this.indentationLevel--;
+        appendLine("</div>");
+    }
+
+    /**
+     * Add JavaScript for interactivity
+     */
+    private void addCommonJavaScript() {
+        appendLine("<script>");
+        this.indentationLevel++;
+
+        String js = ""; // TODO: Implement JavaScript here
+
+        js.lines().forEach(line -> {
+            appendLine(line);
+        });
+
+        this.indentationLevel--;
+        appendLine("</script>");
+    }
+
+    /**
+     * Adds the closing body tag to the html document.
+     * Also leaves the indentationlevel decremented after call for proper indentation
+     * after the body section
+     */
+    private void addClosingBodyTag() {
+        this.indentationLevel--;
+        appendLine("</body>");
+    }
+
+    /**
+     * Adds final closing html tag
+     */
+    private void finalizeHtmlDocument() {
+        appendLine("</html>");
+    }
+}
