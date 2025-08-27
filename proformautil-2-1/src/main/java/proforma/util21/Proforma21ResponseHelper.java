@@ -311,8 +311,8 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
         TaskType task = taskLive.getTask();
 
         Proforma21HtmlFeedbackGenerator generator = new Proforma21HtmlFeedbackGenerator(separateFeedback, task);
-        String studentHtml = generator.buildFeedbackHtml(false, false);
-        String teacherHtml = generator.buildFeedbackHtml(true, false);
+        String studentHtml = generator.buildFeedbackHtml(false, false, false);
+        String teacherHtml = generator.buildFeedbackHtml(true, false, false);
 
         OverallResultType overallResult = new OverallResultType();
         overallResult.setScore(generator.getScore());

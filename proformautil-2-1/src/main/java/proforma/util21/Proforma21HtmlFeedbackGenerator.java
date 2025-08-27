@@ -3,6 +3,7 @@ package proforma.util21;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import proforma.util21.format.CombineNode;
 import proforma.util21.format.GradingNode;
@@ -21,18 +22,19 @@ public class Proforma21HtmlFeedbackGenerator {
     private static final int INDENTATION_SIZE = 4; // Spaces to be used for nested HTML
 
     private static final String CSS_BODY = "max-width: 1300px; margin: 20px auto; border: 1px solid #ccc; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); padding: 10px;";
+    private static final String CSS_BLACK = "color: black;";
     private static final String CSS_H1_H2 = "color: navy; margin-bottom: 0;";
     private static final String CSS_EXPAND_COLLAPSE_BUTTONS = "display: flex; gap: 10px; margin: 10px 0; padding: 10px; justify-content: flex-end;";
     private static final String CSS_EXPAND_COLLAPSE_BUTTON = "padding: 5px 10px; background-color:navy; color: white; border: none; border-radius: 4px; cursor: pointer;";
-    private static final String CSS_COLLAPSIBLE = "cursor: pointer; padding: 10px; width: 100%; border: none; text-align: left; outline: none; font-size: 15px; background-color: #eee; margin-top: 5px;";
-    private static final String CSS_INNER_COLLAPSIBLE = "cursor: pointer; padding: 5px 10px; width: auto; border: 1px solid #ccc; text-align: left; outline: none; font-size: 12px; background-color: #f0f0f0; margin-top: 3px; display: inline-block;";
-    private static final String CSS_CONTENT = "padding: 0; overflow: hidden; transition: max-height 0.2s ease-out; background-color: inherit; max-height: none;";
-    private static final String CSS_INNER_CONTENT = "padding: 5px 10px; border-top: 1px dashed #ccc; overflow: hidden; transition: max-height 0.2s ease-out; background-color: inherit;";
+    private static final String CSS_COLLAPSIBLE = "cursor: pointer; padding: 10px; width: 100%; border: none; text-align: left; outline: none; font-size: 15px; background-color: #f0f0f0; margin-top: 5px;";
+    private static final String CSS_INNER_COLLAPSIBLE = "cursor: pointer; padding: 5px 10px; width: auto; border: 1px solid #ccc; text-align: left; outline: none; font-size: 12px; background-color: white; margin-top: 3px; display: inline-block;";
+    private static final String CSS_CONTENT = "overflow: hidden; background-color: inherit; max-height: none;";
+    private static final String CSS_INNER_CONTENT = "padding: 5px 10px; border-top: 1px dashed #ccc; overflow: hidden; background-color: inherit;";
     private static final String CSS_FEEDBACK_LIST = "margin-bottom: 5px;";
     private static final String CSS_FEEDBACK_CONTENT = "margin-bottom: 5px;";
     private static final String CSS_GRADING_NODE = "padding: 5px; margin-bottom: 0; border-bottom: 1px solid #ddd;";
-    private static final String CSS_TITLE_CONTAINER = "display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;";
-    private static final String CSS_TITLE_CONTAINER_P_H3 = "margin: 0; flex-grow: 1;";
+    private static final String CSS_TITLE_CONTAINER = "display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding-bottom: 5px;";
+    private static final String CSS_TITLE_CONTAINER_P_H3 = "color: black; margin: 0; flex-grow: 1;";
     private static final String CSS_TITLE_RESULT = "margin-left: auto; padding-left: 10px; white-space: normal; font-style: italic; font-size: 1.0em;";
     private static final String CSS_NULLIFY_REASON = "color: red; font-style: italic; font-weight: bold; margin-top: 10px;";
     private static final String CSS_TEST_REF = "padding: 5px; margin-bottom: 0; border-bottom: 1px solid #ddd;";
@@ -59,16 +61,25 @@ public class Proforma21HtmlFeedbackGenerator {
     private static final String TEST_ACTUAL_SCORE = "actual score.";
     private static final String TEST_RAW_SCORE = "raw test score.";
 
+    private static String CLASS_COLLAPSIBLE = "collapsible";
+    private static String CLASS_INNER_COLLAPSIBLE = "inner-collapsible";
+    private static String ID_EXPAND_ALL = "expand-all";
+    private static String ID_COLLAPSE_ALL = "collapse-all";
+
     private final SeparateTestFeedbackType separateFeedback;
     private final TaskType task;
     private final CombineNode rootNode;
+    private final Random random;
     private StringBuilder sb;
-    private boolean includeTeacherFeedback = false;
+    private boolean includeTeacherFeedback;
+    private boolean includeJavaScript;
     private int indentationLevel;
     
     public Proforma21HtmlFeedbackGenerator(SeparateTestFeedbackType separateFeedback, TaskType task) {
         this.separateFeedback = separateFeedback;
         this.task = task;
+        this.random = new Random();
+        randomizeHTMLIdentifiers();
         
         ResponseFormatter formatter = new ResponseFormatter(this.separateFeedback, this.task);
         this.rootNode = formatter.generateGradingStructure();
@@ -80,9 +91,10 @@ public class Proforma21HtmlFeedbackGenerator {
      * @param includeTeacherFeedback should teacher feedback be included in HTML?
      * @param generateWholeHtmlDocument should the document also contain &lt;!DOCTYPE html&gt;, &lt;html&gt;, &lt;head&gt; and &lt;body&gt; tags?
      */
-    public String buildFeedbackHtml(boolean includeTeacherFeedback, boolean generateWholeHtmlDocument) {
+    public String buildFeedbackHtml(boolean includeTeacherFeedback, boolean generateWholeHtmlDocument, boolean includeJavaScript) {
         this.sb = new StringBuilder();
         this.includeTeacherFeedback = includeTeacherFeedback;
+        this.includeJavaScript = includeJavaScript;
         this.indentationLevel = 0;
 
         if (generateWholeHtmlDocument) {
@@ -91,10 +103,15 @@ public class Proforma21HtmlFeedbackGenerator {
             addOpeningBodyTag(); // leaves indentationLevel incremented after call
         }
 
-        addExpandCollapseAllButtons();
+        if (this.includeJavaScript) {
+            addExpandCollapseAllButtons();
+        }
         addSummarizedFeedbackSection();
         addDetailedFeedbackSection();
-        addCommonJavaScript();
+        
+        if (this.includeJavaScript) {
+            addCommonJavaScript();
+        }
 
         if (generateWholeHtmlDocument) {
             addClosingBodyTag(); // leaves indentationLevel decremented after call
@@ -109,6 +126,18 @@ public class Proforma21HtmlFeedbackGenerator {
      */
     public BigDecimal getScore() {
         return new BigDecimal(this.rootNode.getActualScore());
+    }
+
+    private void randomizeHTMLIdentifiers() {
+        CLASS_COLLAPSIBLE = CLASS_COLLAPSIBLE + generateRandomHexString();
+        CLASS_INNER_COLLAPSIBLE = CLASS_INNER_COLLAPSIBLE + generateRandomHexString();
+        ID_EXPAND_ALL = ID_EXPAND_ALL + generateRandomHexString();
+        ID_COLLAPSE_ALL = ID_COLLAPSE_ALL + generateRandomHexString();
+    }
+
+    private String generateRandomHexString() {
+        int randomInt = random.nextInt();
+        return Integer.toHexString(randomInt);
     }
 
     /**
@@ -140,12 +169,12 @@ public class Proforma21HtmlFeedbackGenerator {
     private String generateIndentCSS(int indentLevel) {
         int margin = 20 * indentLevel;
         String background = switch (indentLevel) {
-            case 0 -> "#b0b0b0";
-            case 1 -> "#c0c0c0";
-            case 2 -> "#d0d0d0";
-            case 3 -> "#e0e0e0";
-            case 4 -> "#f0f0f0";
-            default -> "#f9f9f9";
+            case 0 -> "#ffffff";
+            case 1 -> "#efefef";
+            case 2 -> "#dfdfdf";
+            case 3 -> "#cfcfcf";
+            case 4 -> "#bfbfbf";
+            default -> "#afafaf";
         };
         if (margin > 100) {
             margin = 100;
@@ -203,8 +232,8 @@ public class Proforma21HtmlFeedbackGenerator {
     private void addExpandCollapseAllButtons() {
         appendLine("<div " + createStyle(CSS_EXPAND_COLLAPSE_BUTTONS) + ">");
         this.indentationLevel++;
-        appendLine("<button " + createStyle(CSS_EXPAND_COLLAPSE_BUTTON) + ">" + TEXT_EXPAND_ALL + "</button>");
-        appendLine("<button " + createStyle(CSS_EXPAND_COLLAPSE_BUTTON) + ">" + TEXT_COLLAPSE_ALL + "</button>");
+        appendLine("<button " + createStyle(CSS_EXPAND_COLLAPSE_BUTTON) + " id=\"" + ID_EXPAND_ALL + "\">" + TEXT_EXPAND_ALL + "</button>");
+        appendLine("<button " + createStyle(CSS_EXPAND_COLLAPSE_BUTTON) + " id=\"" + ID_COLLAPSE_ALL + "\">" + TEXT_COLLAPSE_ALL + "</button>");
         this.indentationLevel--;
         appendLine("</div>");
     }
@@ -214,7 +243,7 @@ public class Proforma21HtmlFeedbackGenerator {
      */
     private void addSummarizedFeedbackSection() {
         addCollapsibleTopButton(FEEDBACK_TITLE_SUMMARIZED);
-        appendLine("<div " + createStyle(CSS_CONTENT) + ">");
+        appendLine("<div " + createStyle(CSS_CONTENT + " background-color: white; padding: 5px 10px;") + ">");
         this.indentationLevel++;
         addStudentFeedbackList();
         if (this.includeTeacherFeedback) {
@@ -228,7 +257,7 @@ public class Proforma21HtmlFeedbackGenerator {
      * Adds button for expanding/collapsing when clicking section titles
      */
     private void addCollapsibleTopButton(String title) {
-        appendLine("<button " + createStyle(CSS_COLLAPSIBLE) + ">");
+        appendLine("<button " + createStyle(CSS_COLLAPSIBLE) + " class=\"" + CLASS_COLLAPSIBLE + "\">");
         this.indentationLevel++;
         appendLine("<h1 " + createStyle(CSS_H1_H2) + ">" + title + "</h1>");
         this.indentationLevel--;
@@ -240,7 +269,7 @@ public class Proforma21HtmlFeedbackGenerator {
      */
     private void addStudentFeedbackList() {
         appendLine("<h2 " + createStyle(CSS_H1_H2) + ">" + FEEDBACK_TITLE_STUDENT + "</h2>");
-        appendLine("<div " + createStyle(CSS_FEEDBACK_LIST) + ">");
+        appendLine("<div " + createStyle(CSS_FEEDBACK_LIST + " " + CSS_BLACK) + ">");
         this.indentationLevel++;
 
         List<String> feedbackStrings = new ArrayList<>();
@@ -257,7 +286,7 @@ public class Proforma21HtmlFeedbackGenerator {
      */
     private void addTeacherFeedbackList() {
         appendLine("<h2 " + createStyle(CSS_H1_H2) + ">" + FEEDBACK_TITLE_TEACHER + "</h2>");
-        appendLine("<div " + createStyle(CSS_FEEDBACK_LIST) + ">");
+        appendLine("<div " + createStyle(CSS_FEEDBACK_LIST + " " + CSS_BLACK) + ">");
         this.indentationLevel++;
 
         List<String> feebackStrings = new ArrayList<>();
@@ -275,7 +304,7 @@ public class Proforma21HtmlFeedbackGenerator {
      */
     private void addFeedbackList(List<String> feedbackList) {
         if (null == feedbackList || feedbackList.isEmpty()) {
-            appendLine("<p><i>" + NO_FEEDBACK_MSG + "</i></p>");
+            appendLine("<p " + createStyle(CSS_BLACK) + "><i>" + NO_FEEDBACK_MSG + "</i></p>");
             return;
         }
         for (String feedback : feedbackList) {
@@ -327,13 +356,15 @@ public class Proforma21HtmlFeedbackGenerator {
     private void addCombineNodeStart(CombineNode node) {
         appendLine("<div " + createStyle(CSS_GRADING_NODE + " " + generateIndentCSS(node.getIndentLevel())) + ">");
         this.indentationLevel++;
-        appendLine("<div " + createStyle(CSS_TITLE_CONTAINER + " padding-bottom: 5px;") + ">");
+        appendLine("<div " + createStyle(CSS_TITLE_CONTAINER) + ">");
         this.indentationLevel++;
         String title = node.getRefId().equals("root") ? ROOT_NODE_TITLE : escapeHtml(node.getTitle());
         String titleText = String.format("%s [max. %.2f]", title, node.getMaxScore());
         appendLine("<p " + createStyle(CSS_TITLE_CONTAINER_P_H3) +  ">" + titleText + "</p>");
-        appendLine("<span " + createStyle(CSS_TITLE_RESULT) + ">" + String.format("[%s %.2f]", TEST_ACTUAL_SCORE, node.getActualScore()) + "</span>");
-        appendLine("<button " + createStyle(CSS_INNER_COLLAPSIBLE) + ">" + TEXT_DETAILS + "</button>");
+        appendLine("<span " + createStyle(CSS_TITLE_RESULT + " " + CSS_BLACK) + ">" + String.format("[%s %.2f]", TEST_ACTUAL_SCORE, node.getActualScore()) + "</span>");
+        if (this.includeJavaScript) {
+            appendLine("<button " + createStyle(CSS_INNER_COLLAPSIBLE) + " class=\"" + CLASS_COLLAPSIBLE + " " + CLASS_INNER_COLLAPSIBLE + "\">" + TEXT_DETAILS + "</button>");
+        }
         this.indentationLevel--;
         appendLine("</div>");
     }
@@ -371,10 +402,10 @@ public class Proforma21HtmlFeedbackGenerator {
      */
     private void addDescription(String description, String internalDescription) {
         if (null != description && !description.isEmpty()) {
-            appendLine("<p>" + escapeHtml(description) + "</p>");
+            appendLine("<p " + createStyle(CSS_BLACK) + ">" + escapeHtml(description) + "</p>");
         }
         if (null != internalDescription && !internalDescription.isEmpty()) {
-            appendLine("<p><i>" + INTERNAL_FEEDBACK_PREFIX + " " + escapeHtml(internalDescription) + "</i></p>");
+            appendLine("<p " + createStyle(CSS_BLACK) + "><i>" + INTERNAL_FEEDBACK_PREFIX + " " + escapeHtml(internalDescription) + "</i></p>");
         }
     }
 
@@ -384,7 +415,7 @@ public class Proforma21HtmlFeedbackGenerator {
     private void addScoreCalculationInfo(String function) {
         if (null != function && !function.isEmpty()) {
             String calculationText = SCORE_CALC_PREFIX + " " + escapeHtml(function) + " " + SCORE_CALC_POSTFIX;
-            appendLine("<p><em>" + calculationText + "</em></p>");
+            appendLine("<p " + createStyle(CSS_BLACK) + "><em " + createStyle(CSS_BLACK) + ">" + calculationText + "</em></p>");
         }
     }
 
@@ -403,8 +434,8 @@ public class Proforma21HtmlFeedbackGenerator {
         addDescription(node.getDescription(), node.getInternalDescription());
 
         List<String> studentFeedback = node.getStudentFeedback();
-        appendLine("<h4>" + FEEDBACK_TITLE_STUDENT + "</h4>");
-        appendLine("<div " + createStyle(CSS_FEEDBACK_CONTENT) + ">");
+        appendLine("<h4 " + createStyle(CSS_BLACK) + ">" + FEEDBACK_TITLE_STUDENT + "</h4>");
+        appendLine("<div " + createStyle(CSS_FEEDBACK_CONTENT + " " + CSS_BLACK) + ">");
         this.indentationLevel++;
         addFeedbackList(studentFeedback);
         this.indentationLevel--;
@@ -412,8 +443,8 @@ public class Proforma21HtmlFeedbackGenerator {
 
         if (this.includeTeacherFeedback) {
             List<String> teacherFeedback = node.getTeacherFeedback();
-            appendLine("<h4>" + FEEDBACK_TITLE_TEACHER + "</h4>");
-            appendLine("<div " + createStyle(CSS_FEEDBACK_CONTENT) + ">");
+            appendLine("<h4 " + createStyle(CSS_BLACK) + ">" + FEEDBACK_TITLE_TEACHER + "</h4>");
+            appendLine("<div " + createStyle(CSS_FEEDBACK_CONTENT + " " + CSS_BLACK) + ">");
             this.indentationLevel++;
             addFeedbackList(teacherFeedback);
             this.indentationLevel--;
@@ -440,14 +471,17 @@ public class Proforma21HtmlFeedbackGenerator {
 
         StringBuilder resultText = new StringBuilder();
         resultText.append(String.format("[%s %.2f]", TEST_RAW_SCORE, node.getRawScore()))
+            .append(" ")
             .append(String.format("[%s %.2f]", TEST_ACTUAL_SCORE, actualScore))
             .append(" - ").append(node.getRawScore() != 0 ? TEST_RESULT_CORRECT : TEST_RESULT_WRONG);
         if (node.getRawScore() != 0 && node.isNullified()) {
             resultText.append(NULLIFIED_SUFFIX);
         }
 
-        appendLine("<span " + createStyle(CSS_TITLE_RESULT) + ">" + resultText.toString() + "</span>");
-        appendLine("<button " + createStyle(CSS_INNER_COLLAPSIBLE) + ">" + TEXT_DETAILS_FEEDBACK + "</button>");
+        appendLine("<span " + createStyle(CSS_TITLE_RESULT + " " + CSS_BLACK) + ">" + resultText.toString() + "</span>");
+        if (this.includeJavaScript) {
+            appendLine("<button " + createStyle(CSS_INNER_COLLAPSIBLE) + " class=\"" + CLASS_COLLAPSIBLE + " " + CLASS_INNER_COLLAPSIBLE + "\">" + TEXT_DETAILS_FEEDBACK + "</button>");
+        }
         this.indentationLevel--;
         appendLine("</div>");
     }
@@ -459,7 +493,88 @@ public class Proforma21HtmlFeedbackGenerator {
         appendLine("<script>");
         this.indentationLevel++;
 
-        String js = ""; // TODO: Implement JavaScript here
+        String js = """
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const collapsibles = document.getElementsByClassName('%s');
+            for (const button of collapsibles) {
+                let content;
+                if (button.classList.contains('%s')) {
+                    content = button.parentElement.nextElementSibling;
+                } else {
+                    content = button.nextElementSibling;
+                }
+
+                if (content) {
+                    content.style.maxHeight = '0px';
+                }
+
+                button.addEventListener('click', () => {
+                    let currentContent;
+                    if (button.classList.contains('%s')) {
+                        currentContent = button.parentElement.nextElementSibling;
+                    } else {
+                        currentContent = button.nextElementSibling;
+                    }
+
+                    if (!currentContent) return;
+
+                    if (currentContent.style.maxHeight && currentContent.style.maxHeight !== '0px') {
+                        currentContent.style.maxHeight = '0px';
+                    } else {
+                        currentContent.style.maxHeight = 'none';
+                    }
+                });
+            }
+
+            const expandAllBtn = document.getElementById('%s');
+            const collapseAllBtn = document.getElementById('%s');
+
+            if (expandAllBtn) {
+                expandAllBtn.addEventListener('click', () => {
+                    const collapsibles = document.getElementsByClassName('%s');
+                    for (const button of collapsibles) {
+                        let content;
+                        if (button.classList.contains('%s')) {
+                            content = button.parentElement.nextElementSibling;
+                        } else {
+                            content = button.nextElementSibling;
+                        }
+                        if (content && content.style.maxHeight === '0px') {
+                            button.click();
+                        }
+                    }
+                });
+            }
+
+            if (collapseAllBtn) {
+                collapseAllBtn.addEventListener('click', () => {
+                    const collapsibles = document.getElementsByClassName('%s');
+                    for (const button of collapsibles) {
+                        let content;
+                        if (button.classList.contains('%s')) {
+                            content = button.parentElement.nextElementSibling;
+                        } else {
+                            content = button.nextElementSibling;
+                        }
+                        if (content && content.style.maxHeight !== '0px') {
+                            button.click();
+                        }
+                    }
+                });
+            }
+        });
+
+        """.formatted(CLASS_COLLAPSIBLE,
+            CLASS_INNER_COLLAPSIBLE,
+            CLASS_INNER_COLLAPSIBLE,
+            ID_EXPAND_ALL,
+            ID_COLLAPSE_ALL,
+            CLASS_COLLAPSIBLE,
+            CLASS_INNER_COLLAPSIBLE,
+            CLASS_COLLAPSIBLE,
+            CLASS_INNER_COLLAPSIBLE
+        );
 
         js.lines().forEach(line -> {
             appendLine(line);
