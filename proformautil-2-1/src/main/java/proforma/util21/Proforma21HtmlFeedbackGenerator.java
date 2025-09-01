@@ -2,6 +2,7 @@ package proforma.util21;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
@@ -9,6 +10,13 @@ import proforma.util21.format.CombineNode;
 import proforma.util21.format.GradingNode;
 import proforma.util21.format.ResponseFormatter;
 import proforma.util21.format.TestNode;
+
+import proforma.xml21.EmbeddedTxtFileType;
+import proforma.xml21.FeedbackType;
+import proforma.xml21.FilerefType;
+import proforma.xml21.FilerefsType;
+import proforma.xml21.ResponseFileType;
+import proforma.xml21.ResponseFilesType;
 import proforma.xml21.SeparateTestFeedbackType;
 import proforma.xml21.TaskType;
 
@@ -23,6 +31,7 @@ public class Proforma21HtmlFeedbackGenerator {
 
     private static final String CSS_BODY = "max-width: 1300px; margin: 20px auto; border: 1px solid #ccc; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); padding: 10px;";
     private static final String CSS_BLACK = "color: black;";
+    private static final String CSS_RED = "color: red;";
     private static final String CSS_H1_H2 = "color: navy; margin-bottom: 0;";
     private static final String CSS_EXPAND_COLLAPSE_BUTTONS = "display: flex; gap: 10px; margin: 10px 0; padding: 10px; justify-content: flex-end;";
     private static final String CSS_EXPAND_COLLAPSE_BUTTON = "padding: 5px 10px; background-color:navy; color: white; border: none; border-radius: 4px; cursor: pointer;";
@@ -38,11 +47,13 @@ public class Proforma21HtmlFeedbackGenerator {
     private static final String CSS_TITLE_RESULT = "margin-left: auto; padding-left: 10px; white-space: normal; font-style: italic; font-size: 1.0em;";
     private static final String CSS_NULLIFY_REASON = "color: red; font-style: italic; font-weight: bold; margin-top: 10px;";
     private static final String CSS_TEST_REF = "padding: 5px; margin-bottom: 0; border-bottom: 1px solid #ddd;";
+    private static final String CSS_FILE_DOWNLOAD_LINK = "padding: 20px 0 0 20px; display: block; color: blue;";
 
     private static final String TEXT_EXPAND_ALL = "Expand All";
     private static final String TEXT_COLLAPSE_ALL = "Collapse All";
     private static final String TEXT_DETAILS = "Details";
     private static final String TEXT_DETAILS_FEEDBACK = "Details & Feedback";
+    private static final String TEXT_EMBEDDED_TXT_FILE_NOT_FOUND = "Error: File Ref found in Feedback but response file does not contain a embedded txt file";
 
     private static final String PAGE_TITLE = "Evaluation Report";
     private static final String FEEDBACK_TITLE_SUMMARIZED = "Summarized Feedback";
@@ -68,6 +79,7 @@ public class Proforma21HtmlFeedbackGenerator {
 
     private final SeparateTestFeedbackType separateFeedback;
     private final TaskType task;
+    private final ResponseFilesType responseFiles;
     private final CombineNode rootNode;
     private final Random random;
     private StringBuilder sb;
@@ -75,9 +87,10 @@ public class Proforma21HtmlFeedbackGenerator {
     private boolean includeJavaScript;
     private int indentationLevel;
     
-    public Proforma21HtmlFeedbackGenerator(SeparateTestFeedbackType separateFeedback, TaskType task) {
+    public Proforma21HtmlFeedbackGenerator(SeparateTestFeedbackType separateFeedback, TaskType task, ResponseFilesType responseFiles) {
         this.separateFeedback = separateFeedback;
         this.task = task;
+        this.responseFiles = responseFiles;
         this.random = new Random();
         randomizeHTMLIdentifiers();
         
@@ -277,6 +290,10 @@ public class Proforma21HtmlFeedbackGenerator {
             feedbackStrings.add(feedbackType.getContent().getValue());
         });
         addFeedbackList(feedbackStrings);
+        
+        List<FilerefType> fileRefs = extractFileRefsFromFeedbackList(this.separateFeedback.getSubmissionFeedbackList().getStudentFeedback());
+        addFileRefDownloadLinks(fileRefs);
+
         this.indentationLevel--;
         appendLine("</div>");
     }
@@ -294,6 +311,10 @@ public class Proforma21HtmlFeedbackGenerator {
             feebackStrings.add(feedbackType.getContent().getValue());
         });
         addFeedbackList(feebackStrings);
+
+        List<FilerefType> fileRefs = extractFileRefsFromFeedbackList(this.separateFeedback.getSubmissionFeedbackList().getTeacherFeedback());
+        addFileRefDownloadLinks(fileRefs);
+
         this.indentationLevel--;
         appendLine("</div>");
     }
@@ -312,6 +333,61 @@ public class Proforma21HtmlFeedbackGenerator {
                 appendLine(line);
             });
         }
+    }
+
+    /**
+     * Adds Download links for each file ref to the HTML document
+     * Files get embedded as base64 right into the document
+     */
+    private void addFileRefDownloadLinks(List<FilerefType> fileRefs) {
+        for (FilerefType fileRef : fileRefs) {
+            String refId = fileRef.getRefid();
+            EmbeddedTxtFileType embeddedTxtFile = getEmbeddedTxtFileByFileRefId(refId);
+            if (null == embeddedTxtFile) {
+                appendLine("<p " + createStyle(CSS_RED) + ">" + TEXT_EMBEDDED_TXT_FILE_NOT_FOUND + "</p>");
+                continue;
+            }
+            
+            String embeddedTxtContent = embeddedTxtFile.getValue();
+            String base64Content = Base64.getEncoder().encodeToString(embeddedTxtContent.getBytes());
+
+            String linkHtml =
+                "<a " + createStyle(CSS_FILE_DOWNLOAD_LINK) + " href=\"data:text/plain;base64," +
+                base64Content + "\" download=\"" + embeddedTxtFile.getFilename() + "\">" + embeddedTxtFile.getFilename() + "</a>";
+            appendLine(linkHtml);
+        }
+        if (!fileRefs.isEmpty()) {
+            appendLine("<br>");
+        }
+    }
+
+    /**
+     * Returns the embedded txt file type for a given file ref id
+     * Returns null if response file does not exist or if it does not
+     * contain an embedded txt file
+     */
+    private EmbeddedTxtFileType getEmbeddedTxtFileByFileRefId(String refId) {
+        for (ResponseFileType responseFile : this.responseFiles.getFile()) {
+            if (responseFile.getId().equals(refId) && responseFile.getEmbeddedTxtFile() != null) {
+                return responseFile.getEmbeddedTxtFile();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Extracts FileRefs from a given Feedback List and packs them into one List
+     */
+    private List<FilerefType> extractFileRefsFromFeedbackList(List<FeedbackType> feedbackList) {
+        List<FilerefType> fileRefs = new ArrayList<>();
+        feedbackList.forEach(feedback -> {
+            FilerefsType feedbackFileRefs = feedback.getFilerefs();
+            if (null != feedbackFileRefs) {
+                fileRefs.addAll(feedbackFileRefs.getFileref());
+                fileRefs.addAll(feedbackFileRefs.getFileref());
+            }
+        });
+        return fileRefs;
     }
 
     /**
