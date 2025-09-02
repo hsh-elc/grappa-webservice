@@ -11,11 +11,14 @@ import de.hsh.grappa.exceptions.AuthenticationException;
 import de.hsh.grappa.util.ClassPathClassLoader;
 import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
 import de.hsh.grappa.util.DebugUtils;
+
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import proforma.util.ProformaResponseHelper.Audience;
+import proforma.util.ProformaResponseHelper;
 import proforma.util.ProformaSubmissionHelper;
 import proforma.util.ProformaSubmissionRestrictionsChecker;
 import proforma.util.ProformaSubmissionRestrictionViolations;
@@ -254,10 +257,10 @@ public class GraderPool {
             SubmissionLive sl = new SubmissionLive(subm.getSubmission());
             AbstractSubmissionType as = sl.getSubmission();
             ProformaVersion pv = ProformaVersion.getInstanceByVersionNumber(as.proFormAVersionNumber());
-            ProformaSubmissionHelper helper = pv.getSubmissionHelper();
+            ProformaSubmissionHelper submHelper = pv.getSubmissionHelper();
 
             if (this.graderConfig.getGrappa_submission_restriction_checks()) {
-                ProformaSubmissionRestrictionsChecker restrictionsChecker = helper.getSubmissionRestrictionsChecker(sl);
+                ProformaSubmissionRestrictionsChecker restrictionsChecker = submHelper.getSubmissionRestrictionsChecker(sl);
 
                 log.info("Checking Proforma Submission Restrictions.....");
                 ProformaSubmissionRestrictionViolations restrictionViolations = restrictionsChecker.checkSubmissionRestrictions();
@@ -289,7 +292,7 @@ public class GraderPool {
                 if (null != resp) {
                     //get all information for conversion
                     MimeType respType = resp.getMimeType();
-                    String requestedFormat = helper.getResultSpecFormat(as);
+                    String requestedFormat = submHelper.getResultSpecFormat(as);
                     //if needed convert xml to zip
                     log.debug("[GraderId: '{}', GradeProcessId: '{}']: Response Format is '{}' and requested Format is '{}'. Response will be converted.",
                     graderConfig.getId(), subm.getGradeProcId(), respType.toString(), requestedFormat);
@@ -315,6 +318,9 @@ public class GraderPool {
                     // set the average grading duration only for grading processes that actually produced
                     // a valid proforma response. Anything else (such as errors) will skew the average duration.
                     setAverageGradingDuration(durationSeconds, subm.getGradeProcId());
+
+                    ProformaResponseHelper respHelper = pv.getResponseHelper();
+                    resp = respHelper.generateMergedFeedbackIfRequested(resp, subm.getSubmission(), boundary);
                     return resp;
                 }
                 throw new NoResultGraderExecption("Grader did not supply a proforma response.");

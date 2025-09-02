@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * This class creates a proforma response with the is-internal-error
  * flag set to true.
@@ -282,6 +283,49 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
             merged = createSubmissionRestrictionViolationMergedTestFeedback(violations);
 
         ResponseType resp = createUnknownGraderEngineResponse(merged, separate);
+        return new ResponseLive(resp, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA)).getResource();
+    }
+
+    @Override
+    public ResponseResource generateMergedFeedbackIfRequested(ResponseResource responseResource, SubmissionResource subm, TaskBoundary tb) throws Exception {
+        ResponseLive responseLive = new ResponseLive(responseResource);
+        ResponseType response = responseLive.getResponse();
+
+        if (null != response.getMergedTestFeedback()) {
+            return responseResource; // If response already contains merged feedback, just return it
+        }
+
+        SeparateTestFeedbackType separateFeedback = response.getSeparateTestFeedback();
+        if (null == separateFeedback) {
+            throw new IllegalStateException("Response does not contain any merged or separate feedback");
+        }
+
+        SubmissionLive submLive = new SubmissionLive(subm);
+        SubmissionType submType = submLive.getSubmission();
+
+        if (!submType.getResultSpec().getStructure().equals("merged-test-feedback")) {
+            return responseResource; // Merged Test Feedback is not requestet, just return the Response containing the Separate Test Feedback
+        }
+
+        TaskLive taskLive = submLive.getTask(tb);
+        TaskType task = taskLive.getTask();
+
+        ResponseFilesType responseFiles = response.getFiles();
+
+        Proforma21HtmlFeedbackGenerator generator = new Proforma21HtmlFeedbackGenerator(separateFeedback, task, responseFiles);
+        String studentHtml = generator.buildFeedbackHtml(false, false, false);
+        String teacherHtml = generator.buildFeedbackHtml(true, false, false);
+
+        OverallResultType overallResult = new OverallResultType();
+        overallResult.setScore(generator.getScore());
+        overallResult.setIsInternalError(false);
+
+        MergedTestFeedbackType mergedFeedback = new MergedTestFeedbackType();
+        mergedFeedback.setOverallResult(overallResult);
+        mergedFeedback.setStudentFeedback(studentHtml);
+        mergedFeedback.setTeacherFeedback(teacherHtml);
+
+        ResponseType resp = createUnknownGraderEngineResponse(mergedFeedback, null);
         return new ResponseLive(resp, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA)).getResource();
     }
 
