@@ -188,7 +188,7 @@ graders:
 docker_proxy:
     # docker host uri (including port)
     # Mandatory
-    host: "tcp://localhost:2375"
+    host: "unix:///var/run/docker.sock"
 
 # Storage part
 # Redis is used as a cache storage

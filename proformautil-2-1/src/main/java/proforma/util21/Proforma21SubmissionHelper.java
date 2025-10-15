@@ -35,6 +35,11 @@ public class Proforma21SubmissionHelper extends ProformaSubmissionHelper {
         return new Proforma21SubmissionSubmissionHandle(submission, sb);
     }
 
+    @Override
+    public ProformaSubmissionRestrictionsChecker getSubmissionRestrictionsChecker(SubmissionLive submission) {
+        return new Proforma21SubmissionRestrictionsChecker(submission);
+    }
+
 
     @Override
     public String getSubmissionId(AbstractSubmissionType submission) {

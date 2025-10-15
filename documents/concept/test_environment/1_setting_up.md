@@ -29,7 +29,7 @@ of all of the placeholders:
 
 ## Xampp and Moodle
 
-See [`1-2_xampp_moolde.md`](1-2_xampp_moolde.md)
+See [`1-2_xampp_moodle.md`](1-2_xampp_moodle.md)
 
 ## MooPT
 

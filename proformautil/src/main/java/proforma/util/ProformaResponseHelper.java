@@ -24,6 +24,10 @@ public abstract class ProformaResponseHelper extends ProformaHelper {
 
     public abstract ResponseResource createInternalErrorResponse(String errorMessage, SubmissionResource subm, TaskBoundary tb, Audience audience) throws Exception;
 
+    public abstract ResponseResource createSubmissionRestrictionViolationResponse(ProformaSubmissionRestrictionViolations violations, SubmissionResource subm, TaskBoundary tb) throws Exception;
+
+    public abstract ResponseResource generateMergedFeedbackIfRequested(ResponseResource responseResource, SubmissionResource subm, TaskBoundary tb) throws Exception;
+    
 
     @Deprecated
     public abstract ResponseResource createInternalErrorResponse(String errorMessage, SubmissionResource subm, TaskBoundary tb, Audience audience, @Deprecated boolean isExpectedInternalErrorTypeAlwaysMergedTestFeedback) throws Exception;

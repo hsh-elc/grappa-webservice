@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * This class creates a proforma response with the is-internal-error
  * flag set to true.
@@ -104,12 +105,30 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
         return feedbackList;
     }
 
+    private FeedbackType createSubmissionRestrictionViolationFeedback(String htmlError) {
+        FeedbackType feedback = new FeedbackType();
+        feedback.setTitle("Submission Restriction Violation");
+        feedback.setLevel(FeedbackLevelType.ERROR);
+        Content content = new Content();
+        content.setFormat("html");
+        content.setValue(htmlError);
+        feedback.setContent(content);
+        return feedback;
+    }
+
+    private FeedbackListType createSubmissionRestrictionViolationFeedbackList(ProformaSubmissionRestrictionViolations violations) {
+        FeedbackListType feedbackList = new FeedbackListType();
+        String html = buildSubmissionRestrictionViolationHtml(violations);
+        feedbackList.getTeacherFeedback().add(createSubmissionRestrictionViolationFeedback(html));
+        feedbackList.getStudentFeedback().add(createSubmissionRestrictionViolationFeedback(html));
+        return feedbackList;
+    }
+
     /**
      * This currently only works for ProFormA 2.1 submissions.
      * Otherwise null is returned.
      */
-    private SeparateTestFeedbackType tryCreateInternalErrorSeparateTestFeedback(String errorMessage, SubmissionResource subm, TaskBoundary tb, Audience audience) {
-        SeparateTestFeedbackType separate = null;
+    private SeparateTestFeedbackType tryCreateSeparateTestFeedbackFromFeedbackList(FeedbackListType feedbackList, SubmissionResource subm, TaskBoundary tb, boolean isInternalError) {
         try {
             SubmissionLive sw = new SubmissionLive(subm);
             SubmissionType submPojo = sw.getSubmission();
@@ -122,16 +141,16 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
                     TestResponseType testResponse = new TestResponseType();
                     testResponse.setId(test.getId());
                     TestResultType testResult = new TestResultType();
-                    testResult.setFeedbackList(createInternalErrorFeedbackList(errorMessage, audience));
+                    testResult.setFeedbackList(feedbackList);
                     ResultType result = new ResultType();
-                    result.setIsInternalError(true);
+                    result.setIsInternalError(isInternalError);
                     result.setScore(BigDecimal.ZERO);
                     testResult.setResult(result);
                     testResponse.setTestResult(testResult);
                     testsResponse.getTestResponse().add(testResponse);
                 }
-                separate = new SeparateTestFeedbackType();
-                separate.setSubmissionFeedbackList(createInternalErrorFeedbackList(errorMessage, audience));
+                SeparateTestFeedbackType separate = new SeparateTestFeedbackType();
+                separate.setSubmissionFeedbackList(feedbackList);
                 separate.setTestsResponse(testsResponse);
                 return separate;
             }
@@ -161,6 +180,76 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
         return merged;
     }
 
+    private MergedTestFeedbackType createSubmissionRestrictionViolationMergedTestFeedback(ProformaSubmissionRestrictionViolations violations) {
+        OverallResultType result = new OverallResultType();
+        result.setIsInternalError(false);
+        result.setScore(BigDecimal.ZERO);
+        result.setValidity(BigDecimal.ZERO);
+
+        MergedTestFeedbackType merged = new MergedTestFeedbackType();
+        merged.setOverallResult(result);
+
+        String html = "<p><strong>Submission Restriction Violation</strong></p>" + buildSubmissionRestrictionViolationHtml(violations);
+        merged.setStudentFeedback(html);
+        merged.setTeacherFeedback(html);
+        return merged;
+    }
+
+    /**
+     * Builds a html string from a List of Submission Restriction Violations for display in LMS
+     */
+    private String buildSubmissionRestrictionViolationHtml(ProformaSubmissionRestrictionViolations violations) {
+        List<ProformaSubmissionRestrictionViolation> groupedViolations = regroupSubmissionRestrictionViolations(violations.getViolations());
+
+        StringBuilder html = new StringBuilder();
+        for (ProformaSubmissionRestrictionViolation violation : groupedViolations) {
+            String feedbackHtml = violation.buildFeedbackHtml();
+            if (null != feedbackHtml) {
+                html.append(feedbackHtml);
+            }
+        }
+        String descriptionHtml = violations.buildRestrictionsDescriptionHtml();
+        if (null != descriptionHtml) {
+            html.append(descriptionHtml);
+        }
+        return html.toString();
+    }
+
+    /**
+     * Groups Submission Restriction Violations together by variant
+     * Creates a copy of original violations List and treats parameter "violations" read-only
+     */
+    private List<ProformaSubmissionRestrictionViolation> regroupSubmissionRestrictionViolations(List<ProformaSubmissionRestrictionViolation> violations) {
+        List<ProformaSubmissionRestrictionViolation> copy = new ArrayList<>();
+        violations.forEach((violation) -> copy.add(violation));
+
+        List<ProformaSubmissionRestrictionViolation> newList = new ArrayList<>();
+        String currentVairant = null;
+        while (!copy.isEmpty()) {
+            ProformaSubmissionRestrictionViolation violation = getSubmissionRestrictionViolationByVariant(currentVairant, copy);
+            if (null == violation) {
+                violation = copy.get(0);
+                currentVairant = violation.getVariant();
+            }
+            newList.add(violation);
+            copy.remove(violation);
+        }
+        return newList;
+    }
+
+    /**
+     * Searches a Submission Restriction Violation inside a respective List by variant
+     * Returns null if variant does not exist in List
+     */
+    private ProformaSubmissionRestrictionViolation getSubmissionRestrictionViolationByVariant(String vairant, List<ProformaSubmissionRestrictionViolation> violations) {
+        for (ProformaSubmissionRestrictionViolation violation : violations) {
+            if (violation.getVariant().equals(vairant)) {
+                return violation;
+            }
+        }
+        return null;
+    }
+
     @Override
     public ResponseResource createInternalErrorResponse(String errorMessage, SubmissionResource subm, TaskBoundary tb, Audience audience) throws Exception {
         return createInternalErrorResponse(errorMessage, subm, tb, audience, false);
@@ -173,13 +262,70 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
 
         SeparateTestFeedbackType separate = null;
         if (!isExpectedInternalErrorTypeAlwaysMergedTestFeedback) {
-            separate = tryCreateInternalErrorSeparateTestFeedback(finalMsg, subm, tb, audience);
+            FeedbackListType internalErrorFeedbackList = createInternalErrorFeedbackList(errorMessage, audience);
+            separate = tryCreateSeparateTestFeedbackFromFeedbackList(internalErrorFeedbackList, subm, tb, true);
         }
         MergedTestFeedbackType merged = null;
         if (separate == null) merged = createInternalErrorMergedTestFeedback(finalMsg, audience);
 
         ResponseType resp = createUnknownGraderEngineResponse(merged, separate);
 
+        return new ResponseLive(resp, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA)).getResource();
+    }
+
+    @Override
+    public ResponseResource createSubmissionRestrictionViolationResponse(ProformaSubmissionRestrictionViolations violations, SubmissionResource subm, TaskBoundary tb) throws Exception {
+        FeedbackListType submissionRestrictionViolationFeedbackList = createSubmissionRestrictionViolationFeedbackList(violations);
+        SeparateTestFeedbackType separate = tryCreateSeparateTestFeedbackFromFeedbackList(submissionRestrictionViolationFeedbackList, subm, tb, false);
+
+        MergedTestFeedbackType merged = null;
+        if (separate == null) 
+            merged = createSubmissionRestrictionViolationMergedTestFeedback(violations);
+
+        ResponseType resp = createUnknownGraderEngineResponse(merged, separate);
+        return new ResponseLive(resp, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA)).getResource();
+    }
+
+    @Override
+    public ResponseResource generateMergedFeedbackIfRequested(ResponseResource responseResource, SubmissionResource subm, TaskBoundary tb) throws Exception {
+        ResponseLive responseLive = new ResponseLive(responseResource);
+        ResponseType response = responseLive.getResponse();
+
+        if (null != response.getMergedTestFeedback()) {
+            return responseResource; // If response already contains merged feedback, just return it
+        }
+
+        SeparateTestFeedbackType separateFeedback = response.getSeparateTestFeedback();
+        if (null == separateFeedback) {
+            throw new IllegalStateException("Response does not contain any merged or separate feedback");
+        }
+
+        SubmissionLive submLive = new SubmissionLive(subm);
+        SubmissionType submType = submLive.getSubmission();
+
+        if (!submType.getResultSpec().getStructure().equals("merged-test-feedback")) {
+            return responseResource; // Merged Test Feedback is not requestet, just return the Response containing the Separate Test Feedback
+        }
+
+        TaskLive taskLive = submLive.getTask(tb);
+        TaskType task = taskLive.getTask();
+
+        ResponseFilesType responseFiles = response.getFiles();
+
+        Proforma21HtmlFeedbackGenerator generator = new Proforma21HtmlFeedbackGenerator(separateFeedback, task, responseFiles);
+        String studentHtml = generator.buildFeedbackHtml(false, false, false);
+        String teacherHtml = generator.buildFeedbackHtml(true, false, false);
+
+        OverallResultType overallResult = new OverallResultType();
+        overallResult.setScore(generator.getScore());
+        overallResult.setIsInternalError(false);
+
+        MergedTestFeedbackType mergedFeedback = new MergedTestFeedbackType();
+        mergedFeedback.setOverallResult(overallResult);
+        mergedFeedback.setStudentFeedback(studentHtml);
+        mergedFeedback.setTeacherFeedback(teacherHtml);
+
+        ResponseType resp = createUnknownGraderEngineResponse(mergedFeedback, null);
         return new ResponseLive(resp, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA)).getResource();
     }
 

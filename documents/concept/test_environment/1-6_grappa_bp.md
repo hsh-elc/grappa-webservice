@@ -12,7 +12,7 @@ The following description references individual settings described [here](1_sett
 At first, the entries for the different graders are added to the Grappa Config.
 
 ### DummyGrader
-Add the following lines into ```C:\etc\grappa\grappa-config.yaml``` below the ```graders: ``` section, so it looks like this: 
+Add the following lines into ```/etc/grappa/grappa-config.yaml``` below the ```graders: ``` section, so it looks like this: 
 ```
 graders:
   - id:
@@ -105,7 +105,7 @@ Run the following bash script inside the wsl:
 ```
 #!/bin/bash
 
-file="/mnt/c/etc/grappa/grappa-config.yaml"
+file="/etc/grappa/grappa-config.yaml"
 
 if [ ! -f $file ]; then
 	echo "Error: The file $file does not exist"

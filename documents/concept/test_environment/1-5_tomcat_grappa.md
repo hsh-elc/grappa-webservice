@@ -9,11 +9,15 @@ The following description references individual settings described [here](1_sett
 
 ## Tomcat
 
-Tomcat comes with the xampp installation. See [`1-2_xampp_moolde.md#Xampp`](1-2_xampp_moolde.md#Xampp)
+In WSL type `sudo apt install tomcat9 tomcat9-admin` to install tomcat.
 
 ### Configure
 
-Edit the configuration file `tomcat-users.xml` via the xampp control panel:
+Oddly enough, the directories `conf` and `webapps` are missing in `/usr/share/tomcat9`. Fix this with: 
+- `sudo ln -s /etc/tomcat9/ /usr/share/tomcat9/conf` 
+- `sudo ln -s /var/lib/tomcat9/webapps/ /usr/share/tomcat9/webapps`
+
+Edit the configuration file `/etc/tomcat9/tomcat-users.xml`:
 
 ```
 <role rolename="admin"/>
@@ -22,51 +26,15 @@ Edit the configuration file `tomcat-users.xml` via the xampp control panel:
 <user username="admin" password="{tomcat.adminpassword}" roles="admin,manager,manager-gui"/>
 ```
 
-Then edit the file `C:\xampp\tomcat\webapps\manager\META-INF\context.xml` and comment the following line out
-using `<!-- ... -->`:
-
-```
-  <!--<Valve className="org.apache.catalina.valves.RemoteAddrValve"
-         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" />-->
-```
-
 ### Use it
 
-Start Tomcat via xampp control panel on port {tomcat.port}. We currently user tomcat version 8.5.66.
+Start Tomcat: `sudo /usr/share/tomcat9/bin/catalina.sh run`
 
-Check in a web browser the address `http://{localip}:{tomcat.port}`
+Check in a web browser the address `http://{wslip}:{tomcat.port}` while Tomcat is running.
 
-Navigate to `http://{localip}:{tomcat.port}/manager/html`.
+You can find out `{wslip}` with: `ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1`.
 
-### Optional but useful: Eclipse Webtools plugin
-
-Start Eclipse and choose a workspace.
-
-Install the Eclipse WTP Plugin from `https://marketplace.eclipse.org/content/eclipse-java-ee-developer-tools-0`.
-
-Select Window > Preferences > Server > Runtime Environments > Add
-
-* Apache Tomcat 8.5
-* Tomcat installation directory: {xampp.home}\tomcat
-* JRE: choose a jdk 10
-
-Select File > New > Others > Server
-
-Then
-
-* Select Apache > Tomcat 8.5
-* Server's hostname: {localip}
-
-Go to Window > Show View > Other > Server > Servers
-
-* Double click on the new server
-* Choose Server Locations: Use Tomcat installation (takes control of Tomcat installation)
-* Deploy path: {xampp.home}\tomcat\webapps
-* Timeouts:
-    - Start: 120
-    - Stop: 30
-
-In the Servers view you can start and stop the server from eclipse. The console log will show the Tomcat log.
+Navigate to `http://{wslip}:{tomcat.port}/manager/html`.
 
 ## Grappa
 
@@ -122,10 +90,10 @@ In a WSL terminal:
 
 ```
 cd `wslpath "{workspace.path}"`/github_hsh-elc_grappa-webservice
-cp grappa-webservice/target/grappa-webservice-2.3.0.war `wslpath "{xampp.home}"`/tomcat/webapps/grappa-webservice-2.war
+sudo cp grappa-webservice/target/grappa-webservice-2.5.0.war `/var/lib/tomcat9/webapps/grappa-webservice-2.war
 ```
 
-Check in Tomcat Manager if the Grappa webapp has been reconized by Tomcat: `http://{localip}:{tomcat.port}/manager/html`
+Check in Tomcat Manager if the Grappa webapp has been reconized by Tomcat: `http://{wslip}:{tomcat.port}/manager/html`
 .
 
 ### Configure
@@ -133,12 +101,12 @@ Check in Tomcat Manager if the Grappa webapp has been reconized by Tomcat: `http
 In a WSL terminal type:
 
 ```
-mkdir -p /mnt/c/etc/grappa/
+sudo mkdir /etc/grappa/
 cd `wslpath "{workspace.path}"`/github_hsh-elc_grappa-webservice
-cp grappa-webservice/src/main/resources/grappa-config.yaml.example  /mnt/c/etc/grappa/grappa-config.yaml
+cp grappa-webservice/src/main/resources/grappa-config.yaml.example  /etc/grappa/grappa-config.yaml
 ```
 
-Now edit the file `C:\etc\grappa\grappa-config.yaml` below the `cache:` section:
+Now edit the file `/etc/grappa/grappa-config.yaml` below the `cache:` section:
 
 ```
 cache:
@@ -160,13 +128,16 @@ INFO  d.h.g.a.GrappaServlet - Redis connection established
 In addition, as expected, there is an error that the DummyGrader could not be loaded because we have not yet configured
 the grader properly. We'll do that later.
 
+### MooPT
+Now that Tomcat and Grappa are installed, MooPT must be configured accordingly. On the Moodle web interface, go to: Site Administration -> Plugins -> Question Types -> MooPT and enter the following value for the service URL: `http://{wslip}:{tomcat.port}/grappa-webservice-2/rest`
+
+
 ### Test
 
 Try a connection to the Grappa webapp:
 
-- In a WSL shell type: `cat /etc/resolv.conf` . You should see something like: `nameserver 192.168.160.1`
-- With that IP in mind type
+- In a WSL shell type: 
   ```
-  curl -v --user test:test http://{ip-from-previous-step}:{tomcat.port}/grappa-webservice-2/rest
+  curl -v --user test:test http://127.0.0.1:{tomcat.port}/grappa-webservice-2/rest
   ```
 
