@@ -7,6 +7,7 @@ import de.hsh.grappa.util.ClassPathClassLoader.Classpath;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import proforma.util.ProformaSubmissionTaskConverter;
 import proforma.util.div.IOUtils;
 import proforma.util.div.Strings;
 import proforma.util.div.XmlUtils;
@@ -113,6 +114,15 @@ public class GraderBackendStarter {
                 graderConfig.load(input);
             } catch (Exception e) {
                 log.error("Failed to load grader config file: {}", graderConfigPath);
+                log.error(ExceptionUtils.getStackTrace(e));
+                System.exit(-1);
+            }
+
+            try {
+                log.info("Convert task format if necessary.");
+                submissionResource = ProformaSubmissionTaskConverter.convertTaskFormat(submissionResource, bp.requiredTaskFormat(), new BackendStarterBoundaryImpl());
+            } catch (Exception e) {
+                log.error("Failed to convert task format.");
                 log.error(ExceptionUtils.getStackTrace(e));
                 System.exit(-1);
             }

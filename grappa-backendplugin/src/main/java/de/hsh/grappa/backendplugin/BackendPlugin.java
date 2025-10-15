@@ -1,6 +1,7 @@
 package de.hsh.grappa.backendplugin;
 
 import proforma.util.boundary.Boundary;
+import proforma.util.resource.MimeType;
 import proforma.util.resource.ResponseResource;
 import proforma.util.resource.SubmissionResource;
 
@@ -88,5 +89,21 @@ public abstract class BackendPlugin {
     protected String getUserCountry() {
         if (userCountry == null || userCountry.equals("")) return Locale.getDefault().getCountry();
         return userCountry;
+    }
+
+    /**
+     * Specifies the required task format for this backendplugin.
+     * The task will be converted to the returned format if necessary.
+     *
+     * @return The format of the task (contained within a submission) that will be passed to the specific backendplugin.
+     *         Possible values:
+     *         <ul>
+     *         <li> MimeType.XML: task will be converted to XML format if necessary </li>
+     *         <li> MimeType.ZIP: task will be converted to ZIP format if necessary </li>
+     *         <li> null: task will be passed in its original format without conversion </li>
+     *         </ul>
+     */
+    public MimeType requiredTaskFormat() {
+        return null;
     }
 }

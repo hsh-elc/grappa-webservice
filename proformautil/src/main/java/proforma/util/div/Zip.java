@@ -273,4 +273,21 @@ public class Zip {
             return null;
         }
     }
+
+    /**
+     * Wrap a single file into a zip file containing only that file
+     * @param content The file content to pack into the zip
+     * @param filename The name of the file to put into the zip
+     * @return The zip as byte array
+     * @throws IOException
+     */
+    public static byte[] wrapSingleFileIntoZip(byte[] content, String filename) throws IOException {
+        Zip.ZipContent zip = new Zip.ZipContent();
+        zip.put(filename, new Zip.ZipContentElement(filename, content, System.currentTimeMillis()));
+
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Zip.writeMapToZipFile(zip, out);
+            return out.toByteArray();
+        }
+    }
 }

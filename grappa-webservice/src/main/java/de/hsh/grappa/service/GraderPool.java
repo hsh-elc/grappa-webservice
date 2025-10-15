@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import proforma.util.ProformaResponseHelper.Audience;
 import proforma.util.ProformaSubmissionHelper;
+import proforma.util.ProformaSubmissionTaskConverter;
 import proforma.util.ProformaVersion;
 import proforma.util.SubmissionLive;
 import proforma.util.boundary.Boundary;
@@ -258,10 +259,18 @@ public class GraderPool {
             }
 
             BackendPlugin bp = loadAndInitBackendPlugin(subm.getGradeProcId());
+            final proforma.util.resource.SubmissionResource submission;
+            if (graderConfig.getOperating_mode().equals(OP_MODE_LOCAL_VM)) {
+                log.info("[GraderId: '{}', GradeProcessId: '{}']: Convert task format if necessary.", graderConfig.getId(), subm.getGradeProcId());
+                submission = ProformaSubmissionTaskConverter.convertTaskFormat(subm.getSubmission(), bp.requiredTaskFormat(), bp.getBoundary());
+            } else {
+                submission = subm.getSubmission();
+            }
+
             int timeoutSeconds = graderConfig.getTimeout_seconds();
             try {
                 gradeProc.response = new FutureTask<ResponseResource>(() -> {
-                    return bp.grade(subm.getSubmission());
+                    return bp.grade(submission);
                 });
                 gpMap.put(subm.getGradeProcId(), gradeProc);
                 new Thread(gradeProc.response).start();
