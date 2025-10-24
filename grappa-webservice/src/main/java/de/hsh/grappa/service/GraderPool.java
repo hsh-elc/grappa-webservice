@@ -17,23 +17,26 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import proforma.util.ProformaResponseFileHandle;
 import proforma.util.ProformaResponseHelper.Audience;
 import proforma.util.ProformaResponseHelper;
+import proforma.util.ProformaResponseZipPathes;
 import proforma.util.ProformaSubmissionHelper;
 import proforma.util.ProformaSubmissionRestrictionsChecker;
 import proforma.util.ProformaSubmissionRestrictionViolations;
 import proforma.util.ProformaSubmissionTaskConverter;
 import proforma.util.ProformaVersion;
+import proforma.util.ResponseLive;
 import proforma.util.SubmissionLive;
 import proforma.util.boundary.Boundary;
 import proforma.util.div.Strings;
 import proforma.util.div.XmlUtils;
+import proforma.util.div.Zip;
 import proforma.util.exception.NotFoundException;
 import proforma.util.resource.ResponseResource;
 import proforma.xml.AbstractSubmissionType;
 import proforma.util.resource.MimeType;
 
-import java.io.ByteArrayOutputStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -41,8 +44,6 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 
 /**
@@ -305,19 +306,20 @@ public class GraderPool {
                     log.debug("[GraderId: '{}', GradeProcessId: '{}']: Response Format is '{}' and requested Format is '{}'. Response will be converted.",
                     graderConfig.getId(), subm.getGradeProcId(), respType.toString(), requestedResponseFormat);
                     if(respType == MimeType.XML && requestedResponseFormat.equals("zip")) {
-                        byte[] content = resp.getContent();
-                        try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            ZipOutputStream zos = new ZipOutputStream(baos)) {
-                                ZipEntry entry = new ZipEntry("response.xml");
-                                entry.setSize(content.length);
-                                zos.putNextEntry(entry);
-                                zos.write(content);
-                                zos.closeEntry();
-                                zos.close();
+                        resp.setContent(Zip.wrapSingleFileIntoZip(resp.getContent(), ProformaResponseZipPathes.RESPONSE_XML_FILE_NAME));
+                        resp.setMimeType(MimeType.ZIP);
+                    } else if (respType.equals(MimeType.ZIP) && requestedResponseFormat.equals("xml")) {
+                        ResponseLive responseLive = new ResponseLive(resp);
 
-                                resp.setContent(baos.toByteArray());
-                                resp.setMimeType(MimeType.ZIP);
-                            }
+                        //Convert all attached files to embedded files
+                        for (ProformaResponseFileHandle prfh : responseLive.getResponseFileHandles()) {
+                            prfh.convertResponseFileToEmbedded(false, false);
+                        }
+                        responseLive.markPojoChanged(XmlUtils.MarshalOption.of(XmlUtils.MarshalOption.CDATA));
+
+                        //Convert response.zip -> response.xml (just retrieve the now converted response.xml from responseLive)
+                        resp.setContent(responseLive.getZipContent().get(ProformaResponseZipPathes.RESPONSE_XML_FILE_NAME).getBytes());
+                        resp.setMimeType(MimeType.XML);
                     }
                     totalGradingProcessesSucceeded.incrementAndGet();
                     long durationSeconds = Duration.between(gradeProc.startTime, LocalDateTime.now()).getSeconds();

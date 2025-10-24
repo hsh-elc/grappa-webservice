@@ -6,6 +6,8 @@ import proforma.util.resource.MimeType;
 import proforma.util.resource.ResponseResource;
 import proforma.xml.AbstractResponseType;
 
+import java.util.List;
+
 /**
  * <p>Helper class to represent a ProFormA response in memory. This could be either a representation of
  * a XML or a ZIP file. </p>
@@ -72,5 +74,15 @@ public class ResponseLive extends ProformaLiveObject<ResponseResource, AbstractR
         return ProformaResponseZipPathes.RESPONSE_XML_FILE_NAME;
     }
 
-
+    /**
+     * @return a list of handles allowing access to embedded and attached files.
+     * @throws Exception
+     */
+    public List<? extends ProformaResponseFileHandle> getResponseFileHandles() throws Exception {
+        ZipContent zc = null;
+        if (MimeType.ZIP.equals(getMimeType())) {
+            zc = getZipContent();
+        }
+        return getProformaVersion().getResponseHelper().getResponseFileHandles(getResponse(), zc);
+    }
 }
