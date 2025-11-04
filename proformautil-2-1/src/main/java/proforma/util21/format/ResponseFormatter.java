@@ -36,12 +36,16 @@ public class ResponseFormatter {
     private final GradingHintsType taskGradingHintsElem;
     private final TestsType taskTestElem;
     private final GradingHintsHelper gradingHintsHelper;
+    private final Double maxScoreLMS;
+    
+    private boolean hasInternalError = false;
 
-    public ResponseFormatter(SeparateTestFeedbackType separateFeedback, TaskType task) {
+    public ResponseFormatter(SeparateTestFeedbackType separateFeedback, TaskType task, Double maxScoreLMS) {
         this.separateFeedbackElem = separateFeedback;
         this.taskGradingHintsElem = task.getGradingHints();
         this.taskTestElem = task.getTests();
         this.gradingHintsHelper = new GradingHintsHelper(taskGradingHintsElem, taskTestElem);
+        this.maxScoreLMS = maxScoreLMS;
     }
 
     public CombineNode generateGradingStructure() {
@@ -51,6 +55,21 @@ public class ResponseFormatter {
         processNullifyConditions(taskGradingHintsElem.getRoot(), gradingStructure);
 
         return gradingStructure;
+    }
+
+    public double calculateScaleFactor() {
+        double scaleFactor = 1.0;
+        if (null != this.maxScoreLMS && !this.gradingHintsHelper.isEmpty()) {
+            double maxScoreGradingHints = gradingHintsHelper.calculateMaxScore();
+            if (Math.abs(maxScoreGradingHints - this.maxScoreLMS) > 1e-5d) {
+                scaleFactor = this.maxScoreLMS / maxScoreGradingHints;
+            }
+        }
+        return scaleFactor;
+    }
+    
+    public boolean getHasInternalError() {
+        return hasInternalError;
     }
 
     /**
@@ -82,6 +101,9 @@ public class ResponseFormatter {
                 if (result != null) {
                     ResultType testResult = result.getResult();
                     if (testResult != null) {
+                        if (testResult.isIsInternalError()) {
+                            hasInternalError = true;
+                        }
                         scoresMap.get(testId).put("", testResult.getScore().doubleValue());
                     }
                 }
@@ -629,56 +651,5 @@ public class ResponseFormatter {
         }
         
         combineNode.setActualScore(sum * combineNode.getWeight());
-    }
-
-
-     // Debugging methods
-     private void debugPrintGradingStructure(CombineNode node, String prefix) {
-        System.out.println("\n=== DEBUG: Grading Structure ===");
-        debugPrintNode(node, "");
-        System.out.println("==============================\n");
-    }
-    
-    private void debugPrintNode(GradingNode node, String indent) {
-        // Basic node information
-        System.out.println(indent + "Node Type: " + node.getType());
-        System.out.println(indent + "ID: " + node.getRefId());
-        System.out.println(indent + "Title: " + node.getTitle());
-        System.out.println(indent + "Indent Level: " + node.getIndentLevel());
-        System.out.println(indent + "Scores:");
-        System.out.println(indent + "  - Raw Score: " + node.getRawScore());
-        System.out.println(indent + "  - Weight: " + node.getWeight());
-        System.out.println(indent + "  - Max Score: " + node.getMaxScore());
-        double finalScore = node.isNullified() ? 0 : node.getActualScore();
-        System.out.println(indent + "  - Actual Score: " + finalScore);
-        
-        // Add nullification information
-        System.out.println(indent + "Nullification:");
-        System.out.println(indent + "  - Is Nullified: " + node.isNullified());
-        if (node.isNullified() && node.getNullifyReason() != null && !node.getNullifyReason().isEmpty()) {
-            System.out.println(indent + "  - Nullify Reason: " + node.getNullifyReason());
-        }
-    
-        if (node instanceof TestNode testNode) {
-            System.out.println(indent + "Test Node Specific:");
-            System.out.println(indent + "  - SubRef ID: " + testNode.getSubRefId());
-            System.out.println(indent + "  - Student Feedback Count: " + testNode.getStudentFeedback().size());
-            System.out.println(indent + "  - Teacher Feedback Count: " + testNode.getTeacherFeedback().size());
-
-        } else if (node instanceof CombineNode combineNode) {
-            System.out.println(indent + "Combine Node Specific:");
-            System.out.println(indent + "  - Function: " + combineNode.getFunction());
-            System.out.println(indent + "  - Children Count: " + combineNode.getChildren().size());
-            System.out.println(indent + "  - Nullification Checked: " + combineNode.isNullificationChecked());
-            
-            if (!combineNode.getChildren().isEmpty()) {
-                System.out.println(indent + "  - Children:");
-                combineNode.getChildren().forEach(child -> {
-                    System.out.println(indent + "    ----");
-                    debugPrintNode(child, indent + "    ");
-                });
-            }
-        }
-        System.out.println(indent + "------------------------");
     }
 }

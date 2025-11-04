@@ -82,20 +82,27 @@ public class Proforma21HtmlFeedbackGenerator {
     private final ResponseFilesType responseFiles;
     private final CombineNode rootNode;
     private final Random random;
+    private final double scaleFactor;
+    private final boolean hasInternalError;
     private StringBuilder sb;
     private boolean includeTeacherFeedback;
     private boolean includeJavaScript;
     private int indentationLevel;
     
-    public Proforma21HtmlFeedbackGenerator(SeparateTestFeedbackType separateFeedback, TaskType task, ResponseFilesType responseFiles) {
+    /**
+     * @param maxScoreLMS determine a maximum score that the used LMS expects for the task to scale each node accordingly. No scaling applied if null.
+     */
+    public Proforma21HtmlFeedbackGenerator(SeparateTestFeedbackType separateFeedback, TaskType task, ResponseFilesType responseFiles, Double maxScoreLMS) {
         this.separateFeedback = separateFeedback;
         this.task = task;
         this.responseFiles = responseFiles;
         this.random = new Random();
         randomizeHTMLIdentifiers();
         
-        ResponseFormatter formatter = new ResponseFormatter(this.separateFeedback, this.task);
+        ResponseFormatter formatter = new ResponseFormatter(this.separateFeedback, this.task, maxScoreLMS);
         this.rootNode = formatter.generateGradingStructure();
+        this.scaleFactor = formatter.calculateScaleFactor();
+        this.hasInternalError = formatter.getHasInternalError();
     }
 
     /**
@@ -139,6 +146,20 @@ public class Proforma21HtmlFeedbackGenerator {
      */
     public BigDecimal getScore() {
         return new BigDecimal(this.rootNode.getActualScore());
+    }
+    
+    /**
+     * Returns the scale factor
+     */
+    public double getScaleFactor() {
+        return this.scaleFactor;
+    }
+    
+    /**
+     * Returns true if the Feedback indicates that an internal error has occured
+     */
+    public boolean getHasInternalError() {
+        return this.hasInternalError;
     }
 
     private void randomizeHTMLIdentifiers() {
@@ -207,6 +228,27 @@ public class Proforma21HtmlFeedbackGenerator {
                     .replace(">", "&gt;")
                     .replace("\"", "&quot;")
                     .replace("'", "&apos;");
+    }
+    
+    /**
+     * Calculates the catual score of a Grading Node based on if it is nullified or not
+     */
+    private double calculateActualScore(GradingNode node) {
+        return node.isNullified() ? 0 : node.getActualScore();
+    }
+    
+    /**
+     * Calculates the scaled max score of a Grading Node based on provided scaling factor
+     */
+    private double calculateScaledMaxScore(GradingNode node) {
+        return Math.round(node.getMaxScore() * this.scaleFactor);
+    }
+    
+    /**
+     * Calculates the scaled actual score of a Grading Node based on the provided scaling factor
+     */
+    private double calculateScaledActualScore(GradingNode node) {
+        return Math.round(calculateActualScore(node) * this.scaleFactor);
     }
 
     /**
@@ -384,7 +426,6 @@ public class Proforma21HtmlFeedbackGenerator {
             FilerefsType feedbackFileRefs = feedback.getFilerefs();
             if (null != feedbackFileRefs) {
                 fileRefs.addAll(feedbackFileRefs.getFileref());
-                fileRefs.addAll(feedbackFileRefs.getFileref());
             }
         });
         return fileRefs;
@@ -430,14 +471,17 @@ public class Proforma21HtmlFeedbackGenerator {
      * Also leaves indentationLevel incremented after call
      */
     private void addCombineNodeStart(CombineNode node) {
+        double actualScore = calculateScaledActualScore(node);
+        double maxScore = calculateScaledMaxScore(node);
+        
         appendLine("<div " + createStyle(CSS_GRADING_NODE + " " + generateIndentCSS(node.getIndentLevel())) + ">");
         this.indentationLevel++;
         appendLine("<div " + createStyle(CSS_TITLE_CONTAINER) + ">");
         this.indentationLevel++;
         String title = node.getRefId().equals("root") ? ROOT_NODE_TITLE : escapeHtml(node.getTitle());
-        String titleText = String.format("%s [max. %.2f]", title, node.getMaxScore());
+        String titleText = String.format("%s [max. %.2f]", title, maxScore);
         appendLine("<p " + createStyle(CSS_TITLE_CONTAINER_P_H3) +  ">" + titleText + "</p>");
-        appendLine("<span " + createStyle(CSS_TITLE_RESULT + " " + CSS_BLACK) + ">" + String.format("[%s %.2f]", TEST_ACTUAL_SCORE, node.getActualScore()) + "</span>");
+        appendLine("<span " + createStyle(CSS_TITLE_RESULT + " " + CSS_BLACK) + ">" + String.format("[%s %.2f]", TEST_ACTUAL_SCORE, actualScore) + "</span>");
         if (this.includeJavaScript) {
             appendLine("<button " + createStyle(CSS_INNER_COLLAPSIBLE) + " class=\"" + CLASS_COLLAPSIBLE + " " + CLASS_INNER_COLLAPSIBLE + "\">" + TEXT_DETAILS + "</button>");
         }
@@ -454,7 +498,7 @@ public class Proforma21HtmlFeedbackGenerator {
         if (node.isNullified()) {
             addNullificationInfo(node.getNullifyReason());
         }
-        addDescription(node.getDescription(), this.includeTeacherFeedback ? node.getInternalDescription() : null);
+        addDescription(node.getDescription(), node.getInternalDescription());
         addScoreCalculationInfo(node.getFunction());
         this.indentationLevel--;
         appendLine("</div>");
@@ -480,7 +524,7 @@ public class Proforma21HtmlFeedbackGenerator {
         if (null != description && !description.isEmpty()) {
             appendLine("<p " + createStyle(CSS_BLACK) + ">" + escapeHtml(description) + "</p>");
         }
-        if (null != internalDescription && !internalDescription.isEmpty()) {
+        if (this.includeTeacherFeedback && null != internalDescription && !internalDescription.isEmpty()) {
             appendLine("<p " + createStyle(CSS_BLACK) + "><i>" + INTERNAL_FEEDBACK_PREFIX + " " + escapeHtml(internalDescription) + "</i></p>");
         }
     }
@@ -499,8 +543,9 @@ public class Proforma21HtmlFeedbackGenerator {
      * Adds Test Node with all information
      */
     private void addTestNode(TestNode node) {
-        double actualScore = node.isNullified() ? 0 : node.getActualScore();
-        addTestNodeStart(node, actualScore); // leaves indentationLevel incremented after call
+        double maxScore = calculateScaledMaxScore(node);
+        double actualScore = calculateScaledActualScore(node);
+        addTestNodeStart(node.getTitle(), actualScore, node.getRawScore(), maxScore, node.getIndentLevel(), node.isNullified()); // leaves indentationLevel incremented after call
 
         appendLine("<div " + createStyle(CSS_INNER_CONTENT) + ">");
         this.indentationLevel++;
@@ -537,20 +582,20 @@ public class Proforma21HtmlFeedbackGenerator {
      * Adds all starting components for a test node
      * Also leaves indentation level incremented after call
      */
-    private void addTestNodeStart(TestNode node, double actualScore) {
-        appendLine("<div " + createStyle(CSS_TEST_REF + " " + generateIndentCSS(node.getIndentLevel())) + ">");
+    private void addTestNodeStart(String title, double actualScore, double rawScore, double maxScore, int indentLevel, boolean isNullified) {
+        appendLine("<div " + createStyle(CSS_TEST_REF + " " + generateIndentCSS(indentLevel)) + ">");
         this.indentationLevel++;
         appendLine("<div " + createStyle(CSS_TITLE_CONTAINER) + ">");
         this.indentationLevel++;
-        String titleText = String.format("%s [max. %.2f]", node.getTitle(), node.getMaxScore());
+        String titleText = String.format("%s [max. %.2f]", title, maxScore);
         appendLine("<p " + createStyle(CSS_TITLE_CONTAINER_P_H3) + ">" + escapeHtml(titleText) + "</p>");
 
         StringBuilder resultText = new StringBuilder();
-        resultText.append(String.format("[%s %.2f]", TEST_RAW_SCORE, node.getRawScore()))
+        resultText.append(String.format("[%s %.2f]", TEST_RAW_SCORE, rawScore))
             .append(" ")
             .append(String.format("[%s %.2f]", TEST_ACTUAL_SCORE, actualScore))
-            .append(" - ").append(node.getRawScore() != 0 ? TEST_RESULT_CORRECT : TEST_RESULT_WRONG);
-        if (node.getRawScore() != 0 && node.isNullified()) {
+            .append(" - ").append(rawScore != 0.0 ? TEST_RESULT_CORRECT : TEST_RESULT_WRONG);
+        if (rawScore != 0.0 && isNullified) {
             resultText.append(NULLIFIED_SUFFIX);
         }
 
