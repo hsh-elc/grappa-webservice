@@ -21,19 +21,23 @@ public class ProformaSubmissionTaskConverter {
      * @throws Exception
      */
     public static SubmissionResource convertTaskFormat(SubmissionResource submissionResource, MimeType targetFormat, TaskBoundary taskBoundary) throws Exception {
-        SubmissionLive submissionLive = new SubmissionLive(submissionResource);
-        ProformaSubmissionTaskHandle proformaSubmissionTaskHandle = submissionLive.getSubmissionTaskHandle(taskBoundary);
-        TaskLive taskLive = proformaSubmissionTaskHandle.getTask();
-        MimeType taskMimeType = taskLive.getMimeType();
+        if (targetFormat != null) {
+            SubmissionLive submissionLive = new SubmissionLive(submissionResource);
+            ProformaSubmissionTaskHandle proformaSubmissionTaskHandle = submissionLive.getSubmissionTaskHandle(taskBoundary);
 
-        if (proformaSubmissionTaskHandle.externalTaskHandle().get() == null && //Dont convert if task is external
-                targetFormat != null && !targetFormat.equals(taskMimeType)) {
-            if (taskMimeType.equals(MimeType.XML) && targetFormat.equals(MimeType.ZIP)) {
-                submissionResource = convertXMLToZIP(submissionLive, taskBoundary).getResource();
-            } else if (taskMimeType.equals(MimeType.ZIP) && targetFormat.equals(MimeType.XML)) {
-                submissionResource = convertZIPToXML(submissionLive, taskBoundary).getResource();
-            } else {
-                throw new IllegalArgumentException("Unsupported task format conversion from " + taskMimeType + " to " + targetFormat);
+            if (proformaSubmissionTaskHandle.externalTaskHandle().get() == null) { //Dont convert if task is external
+                TaskLive taskLive = proformaSubmissionTaskHandle.getTask();
+                MimeType taskMimeType = taskLive.getMimeType();
+
+                if (!targetFormat.equals(taskMimeType)) {
+                    if (taskMimeType.equals(MimeType.XML) && targetFormat.equals(MimeType.ZIP)) {
+                        submissionResource = convertXMLToZIP(submissionLive, taskBoundary).getResource();
+                    } else if (taskMimeType.equals(MimeType.ZIP) && targetFormat.equals(MimeType.XML)) {
+                        submissionResource = convertZIPToXML(submissionLive, taskBoundary).getResource();
+                    } else {
+                        throw new IllegalArgumentException("Unsupported task format conversion from " + taskMimeType + " to " + targetFormat);
+                    }
+                }
             }
         }
         return submissionResource;
@@ -56,16 +60,17 @@ public class ProformaSubmissionTaskConverter {
         ProformaIncludedTaskFileHandle includedTaskFileHandle = getIncludedTaskFileHandle(proformaSubmissionTaskHandle);
         if (includedTaskFileHandle.attachedXmlFileHandle().get() != null) {
             //Edit submission.xml to match the new structure of the submission
+            String taskXmlFileName = includedTaskFileHandle.attachedXmlFileHandle().getPath();
             includedTaskFileHandle.attachedXmlFileHandle().remove();
             includedTaskFileHandle.attachedZipFileHandle().createAndSet().setPath(taskZipFileName);
 
             // Get task.xml and put it into task.zip
             Zip.ZipContent unzippedSubmission = submissionLive.getZipContent();
-            Zip.ZipContentElement taskXml = unzippedSubmission.get(ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + ProformaSubmissionZipPathes.TASK_XML_FILE_NAME);
-            byte[] taskZip = Zip.wrapSingleFileIntoZip(taskXml.getBytes(), ProformaSubmissionZipPathes.TASK_XML_FILE_NAME);
+            Zip.ZipContentElement taskXml = unzippedSubmission.get(ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + taskXmlFileName);
+            byte[] taskZip = Zip.wrapSingleFileIntoZip(taskXml.getBytes(), ProformaTaskZipPathes.TASK_XML_FILE_NAME);
 
             //Remove task.xml and put task.zip in
-            unzippedSubmission.remove(ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + ProformaSubmissionZipPathes.TASK_XML_FILE_NAME);
+            unzippedSubmission.remove(ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + taskXmlFileName);
             unzippedSubmission.put(ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + taskZipFileName, new Zip.ZipContentElement(ProformaSubmissionZipPathes.TASK_DIRECTORY + "/" + taskZipFileName, taskZip, System.currentTimeMillis()));
         } else if (includedTaskFileHandle.embeddedXmlFileHandle().get() != null) {
             //Get task.xml and put it into task.zip
@@ -106,7 +111,7 @@ public class ProformaSubmissionTaskConverter {
 
         //Convert task.zip to task.xml (just get the task.xml from the task containing the converted attached files)
         Zip.ZipContent unzippedTask = taskLive.getZipContent();
-        Zip.ZipContentElement convertedTaskXml = unzippedTask.get(ProformaSubmissionZipPathes.TASK_XML_FILE_NAME);
+        Zip.ZipContentElement convertedTaskXml = unzippedTask.get(ProformaTaskZipPathes.TASK_XML_FILE_NAME);
 
         ProformaIncludedTaskFileHandle includedTaskFileHandle = getIncludedTaskFileHandle(proformaSubmissionTaskHandle);
         if (includedTaskFileHandle.attachedZipFileHandle().get() != null) {
