@@ -4,7 +4,7 @@
 
 # Base is latest grappa-remote-backend-base image
 #FROM grappa-backend-base:latest
-FROM ghcr.io/hsh-elc/grappa-backend-base:1.0.1
+FROM ghcr.io/hsh-elc/grappa-backend-base:1.1.0-develop
 
 
 ### Install additional software
