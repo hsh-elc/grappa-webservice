@@ -399,4 +399,62 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
         return list;
     }
 
+    @Override
+    public void addAttachedTxtFile(AbstractResponseType response, String filepath) {
+        ResponseType r = (ResponseType) response;
+        ResponseFileType file = createResponseFile(r, filepath);
+
+        AttachedTxtFileType attachedTxt = new AttachedTxtFileType();
+        attachedTxt.setValue(filepath);
+        file.setAttachedTxtFile(attachedTxt);
+
+        r.getFiles().getFile().add(file);
+    }
+
+    @Override
+    public void addAttachedBinFile(AbstractResponseType response, String filepath) {
+        ResponseType r = (ResponseType) response;
+        ResponseFileType file = createResponseFile(r, filepath);
+
+        file.setAttachedBinFile(filepath);
+
+        r.getFiles().getFile().add(file);
+    }
+
+    @Override
+    public void addEmbeddedTxtFile(AbstractResponseType response, String filename, String content) {
+        ResponseType r = (ResponseType) response;
+        ResponseFileType file = createResponseFile(r, filename);
+
+        EmbeddedTxtFileType embeddedTxt = new EmbeddedTxtFileType();
+        embeddedTxt.setFilename(filename);
+        embeddedTxt.setValue(content);
+        file.setEmbeddedTxtFile(embeddedTxt);
+
+        r.getFiles().getFile().add(file);
+    }
+
+    @Override
+    public void addEmbeddedBinFile(AbstractResponseType response, String filename, byte[] content) {
+        ResponseType r = (ResponseType) response;
+        ResponseFileType file = createResponseFile(r, filename);
+
+        EmbeddedBinFileType embeddedBin = new EmbeddedBinFileType();
+        embeddedBin.setFilename(filename);
+        embeddedBin.setValue(content);
+        file.setEmbeddedBinFile(embeddedBin);
+
+        r.getFiles().getFile().add(file);
+    }
+
+    private ResponseFileType createResponseFile(ResponseType r, String filepath) {
+        if (r.getFiles() == null) {
+            r.setFiles(new ResponseFilesType());
+        }
+        ResponseFileType file = new ResponseFileType();
+        file.setId("Response-File-" + r.getFiles().getFile().size());
+        file.setTitle(filepath);
+
+        return file;
+    }
 }

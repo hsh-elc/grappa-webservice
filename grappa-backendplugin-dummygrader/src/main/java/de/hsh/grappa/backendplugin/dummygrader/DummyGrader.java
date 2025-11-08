@@ -10,6 +10,7 @@ import proforma.util.div.FilenameUtils;
 import proforma.util.div.StringEscapeUtils;
 import proforma.util.div.Strings;
 import proforma.util.div.XmlUtils.MarshalOption;
+import proforma.util.div.Zip;
 import proforma.util.div.Zip.ZipContent;
 import proforma.util.div.Zip.ZipContentElement;
 import proforma.util.resource.MimeType;
@@ -25,9 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.Properties;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * The dummy grader process the submission and grades a score based on the content of the submitted
@@ -43,6 +42,26 @@ public class DummyGrader extends BackendPlugin {
             Level level = Level.toLevel(lvl);
             ((ch.qos.logback.classic.Logger) log).setLevel(level);
         }
+    }
+
+    private static final String FORMAT_XML = "xml";
+    private static final String FORMAT_ZIP = "zip";
+
+    private static class FilesToAttach {
+        Map<String, String> txt = new HashMap<>();
+        Map<String, byte[]> bin = new HashMap<>();
+    }
+
+    private static class FilesToEmbed {
+        Map<String, String> txt = new HashMap<>();
+        Map<String, byte[]> bin = new HashMap<>();
+    }
+
+    private static class SubmissionProcessingResult {
+        double score = 0.0;
+        String format;
+        FilesToAttach filesToAttach = new FilesToAttach();
+        FilesToEmbed filesToEmbed = new FilesToEmbed();
     }
 
     @Override
@@ -111,7 +130,8 @@ public class DummyGrader extends BackendPlugin {
     }
 
 
-    private void processSubmission(StringBuilder feedback, SubmissionLive submissionLive, double[] inOutScore) throws UnsupportedEncodingException, MalformedURLException, IOException, Exception {
+    private void processSubmission(StringBuilder feedback, SubmissionLive submissionLive, SubmissionProcessingResult submissionProcessingResult)
+            throws UnsupportedEncodingException, MalformedURLException, IOException, Exception {
         ProformaSubmissionSubmissionHandle pssh = submissionLive.getSubmissionSubmissionHandle(getBoundary());
         if (pssh.hasSubmissionFiles()) {
             feedback.append("<p><b>Submission files</b></p>\n");
@@ -123,6 +143,7 @@ public class DummyGrader extends BackendPlugin {
 
                 byte[] binContent = null;
                 String txtContent = null;
+                String filepath = null;
 
                 if (fi.embeddedBinFileHandle().get() != null) {
                     filename = fi.embeddedBinFileHandle().getFilename();
@@ -134,20 +155,20 @@ public class DummyGrader extends BackendPlugin {
                 }
                 if (fi.attachedBinFileHandle().get() != null) {
                     filename = fi.attachedBinFileHandle().getPath();
-                    String path = fi.getPathPrefixInsideZip() + fi.attachedBinFileHandle().getPath();
-                    binContent = readAttachedBin(submissionLive.getZipContent(), path);
+                    filepath = fi.getPathPrefixInsideZip() + fi.attachedBinFileHandle().getPath();
+                    binContent = readAttachedBin(submissionLive.getZipContent(), filepath);
                 }
                 if (fi.attachedTxtFileHandle().get() != null) {
                     filename = fi.attachedTxtFileHandle().getPath();
-                    String path = fi.getPathPrefixInsideZip() + fi.attachedTxtFileHandle().getPath();
-                    txtContent = readAttachedTxt(submissionLive.getZipContent(), path, fi.attachedTxtFileHandle());
+                    filepath = fi.getPathPrefixInsideZip() + fi.attachedTxtFileHandle().getPath();
+                    txtContent = readAttachedTxt(submissionLive.getZipContent(), filepath, fi.attachedTxtFileHandle());
                 }
                 printFile(feedback, binContent, txtContent, filename);
 
                 if ("score".equals(FilenameUtils.getBasename(filename))) {
                     if (txtContent != null) {
                         try {
-                            inOutScore[0] = Double.parseDouble(txtContent);
+                            submissionProcessingResult.score = Double.parseDouble(txtContent);
                         } catch (Exception e) {
                             feedback.append("<b>Parse double error</b><br>\n");
                         }
@@ -155,6 +176,41 @@ public class DummyGrader extends BackendPlugin {
                         feedback.append("<b>Unexpected binary file type when reading score file</b><br>\n");
                     }
                 }
+
+                if ("override-response-format".equals(FilenameUtils.getBasename(filename))) {
+                    if (txtContent != null) {
+                        String format = txtContent.toLowerCase();
+                        if (FORMAT_XML.equals(format) || FORMAT_ZIP.equals(format)) {
+                            submissionProcessingResult.format = format;
+                        } else {
+                            feedback.append("<b>The override-response-format does not contain a valid format</b><br>\n");
+                        }
+                    } else {
+                        feedback.append("<b>Unexpected binary file type when reading override-response-format file</b><br>\n");
+                    }
+                }
+
+                if (FilenameUtils.getBasename(filename).startsWith("to-be-attached-to-response")) {
+                    String key = filepath != null ? filepath : filename;
+                    if (txtContent != null) {
+                        submissionProcessingResult.filesToAttach.txt.put(key, txtContent);
+                    } else if (binContent != null) {
+                        submissionProcessingResult.filesToAttach.bin.put(key, binContent);
+                    } else {
+                        feedback.append("<b>Unexpected file type when reading ").append(filename).append(" file</b><br>\n");
+                    }
+                }
+
+                if (FilenameUtils.getBasename(filename).startsWith("to-be-embedded-into-response")) {
+                    if (txtContent != null) {
+                        submissionProcessingResult.filesToEmbed.txt.put(filename, txtContent);
+                    } else if (binContent != null) {
+                        submissionProcessingResult.filesToEmbed.bin.put(filename, binContent);
+                    } else {
+                        feedback.append("<b>Unexpected file type when reading ").append(filename).append(" file</b><br>\n");
+                    }
+                }
+
                 feedback.append("</li>");
             }
             feedback.append("</ul>");
@@ -201,14 +257,15 @@ public class DummyGrader extends BackendPlugin {
         // As feedback we give a description of the received submission.
         // To test this grader, you could try the task in src/main/resources/task.zip
 
-        double[] score = {0.0}; // the default. Array because of call by reference
+        SubmissionProcessingResult submissionProcessingResult = new SubmissionProcessingResult(); // Object because of call by reference.
+        submissionProcessingResult.format = submissionLive.getProformaVersion().getSubmissionHelper().getResultSpecFormat(submissionLive.getSubmission());
 
-        processSubmission(feedback, submissionLive, score);
+        processSubmission(feedback, submissionLive, submissionProcessingResult);
 
         ProformaSubmissionSubmissionHandle pssh = submissionLive.getSubmissionSubmissionHandle(getBoundary());
         if (pssh.unzipToEmbedded(0)) {
             feedback.append("<p>After unzipping the single submitted zip file, the submission looks like this...</p>\n");
-            processSubmission(feedback, submissionLive, score);
+            processSubmission(feedback, submissionLive, submissionProcessingResult);
         }
 
 
@@ -251,14 +308,37 @@ public class DummyGrader extends BackendPlugin {
         feedback.append("<p><b>Task resource</b></p>\n");
         printZipContent(feedback, taskLive);
 
+        if ((!submissionProcessingResult.filesToAttach.txt.isEmpty() || !submissionProcessingResult.filesToAttach.bin.isEmpty()) &&
+                FORMAT_XML.equals(submissionProcessingResult.format)) {
+            feedback.append("<p><b>The following files have not been attached to the response because the requested response format is xml: </b></p>\n<ul>");
+            for (String filepath : submissionProcessingResult.filesToAttach.txt.keySet()) {
+                feedback.append("<li>").append(filepath).append("</li>\n");
+            }
+            for (String filepath : submissionProcessingResult.filesToAttach.bin.keySet()) {
+                feedback.append("<li>").append(filepath).append("</li>\n");
+            }
+            feedback.append("</ul>\n");
+        }
+
         AbstractResponseType response = submissionLive.getProformaVersion().getResponseHelper()
             .createMergedTestFeedbackResponse(
                 feedback.toString(),
-                BigDecimal.valueOf(score[0]),
+                BigDecimal.valueOf(submissionProcessingResult.score),
                 submissionLive.getSubmissionId(),
                 this.getClass().getName());
 
-        ResponseLive responseLive = new ResponseLive(response, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA));
+        ResponseLive responseLive;
+        if (FORMAT_XML.equals(submissionProcessingResult.format)) {
+            responseLive = new ResponseLive(response, null, MimeType.XML, MarshalOption.of(MarshalOption.CDATA));
+        } else if (FORMAT_ZIP.equals(submissionProcessingResult.format)) {
+            Zip.ZipContent attachedFiles = putAllAttachedFilesIntoZip(submissionProcessingResult.filesToAttach);
+            responseLive = new ResponseLive(response, attachedFiles, MimeType.ZIP, MarshalOption.of(MarshalOption.CDATA));
+        } else {
+            throw new IllegalArgumentException("Illegal response format: " + submissionProcessingResult.format);
+        }
+
+        attachAndEmbedFilesToResponseXML(responseLive, submissionProcessingResult.filesToAttach, submissionProcessingResult.filesToEmbed);
+
         return responseLive.getResource();
     }
 
@@ -286,5 +366,59 @@ public class DummyGrader extends BackendPlugin {
             // TODO
         }
         return false;
+    }
+
+    /**
+     * Put several files into one zip
+     * @param filesToAttach The files to put into the zip
+     * @return The resulting zip content
+     */
+    private Zip.ZipContent putAllAttachedFilesIntoZip(FilesToAttach filesToAttach) {
+        Zip.ZipContent zipContent = new Zip.ZipContent();
+        for (String filepath : filesToAttach.txt.keySet()) {
+            String txtContent = filesToAttach.txt.get(filepath);
+            Zip.ZipContentElement content = new Zip.ZipContentElement(filepath, txtContent.getBytes(), System.currentTimeMillis());
+            zipContent.put(filepath, content);
+        }
+
+        for (String filepath : filesToAttach.bin.keySet()) {
+            byte[] binContent = filesToAttach.bin.get(filepath);
+            Zip.ZipContentElement content = new Zip.ZipContentElement(filepath, binContent, System.currentTimeMillis());
+            zipContent.put(filepath, content);
+        }
+        return zipContent;
+    }
+
+    /**
+     * Embed and attach several file elements into the response.xml.
+     * Attached files will only be added if the response is as a zip resource.
+     *
+     * @param responseLive The response to edit
+     * @param filesToAttach The files to attach if responseLive is a zip resource
+     * @param filesToEmbed The files to embed
+     * @throws Exception
+     */
+    private void attachAndEmbedFilesToResponseXML(ResponseLive responseLive, FilesToAttach filesToAttach, FilesToEmbed filesToEmbed) throws Exception {
+        if (responseLive.getMimeType().equals(MimeType.ZIP)) { //Only attach files if the response is a zip
+            for (String filepath : filesToAttach.txt.keySet()) {
+                responseLive.getProformaVersion().getResponseHelper().addAttachedTxtFile(responseLive.getResponse(), filepath);
+            }
+
+            for (String filepath : filesToAttach.bin.keySet()) {
+                responseLive.getProformaVersion().getResponseHelper().addAttachedBinFile(responseLive.getResponse(), filepath);
+            }
+        }
+
+        for (String filepath : filesToEmbed.txt.keySet()) {
+            String txtContent = filesToEmbed.txt.get(filepath);
+            responseLive.getProformaVersion().getResponseHelper().addEmbeddedTxtFile(responseLive.getResponse(), filepath, txtContent);
+        }
+
+        for (String filepath : filesToEmbed.bin.keySet()) {
+            byte[] binContent = filesToEmbed.bin.get(filepath);
+            responseLive.getProformaVersion().getResponseHelper().addEmbeddedBinFile(responseLive.getResponse(), filepath, binContent);
+        }
+
+        responseLive.markPojoChanged(MarshalOption.of(MarshalOption.CDATA));
     }
 }
