@@ -17,17 +17,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import proforma.util.ProformaResponseFileHandle;
+import proforma.util.*;
 import proforma.util.ProformaResponseHelper.Audience;
-import proforma.util.ProformaResponseHelper;
-import proforma.util.ProformaResponseZipPathes;
-import proforma.util.ProformaSubmissionHelper;
-import proforma.util.ProformaSubmissionRestrictionsChecker;
-import proforma.util.ProformaSubmissionRestrictionViolations;
-import proforma.util.ProformaSubmissionTaskConverter;
-import proforma.util.ProformaVersion;
-import proforma.util.ResponseLive;
-import proforma.util.SubmissionLive;
 import proforma.util.boundary.Boundary;
 import proforma.util.div.Strings;
 import proforma.util.div.XmlUtils;
@@ -301,26 +292,8 @@ public class GraderPool {
                 log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process exited.",
                     graderConfig.getId(), subm.getGradeProcId());
                 if (null != resp) {
-                    MimeType respType = resp.getMimeType();
-                    //if needed convert xml to zip
-                    log.debug("[GraderId: '{}', GradeProcessId: '{}']: Response Format is '{}' and requested Format is '{}'. Response will be converted.",
-                    graderConfig.getId(), subm.getGradeProcId(), respType.toString(), requestedResponseFormat);
-                    if(respType == MimeType.XML && requestedResponseFormat.equals("zip")) {
-                        resp.setContent(Zip.wrapSingleFileIntoZip(resp.getContent(), ProformaResponseZipPathes.RESPONSE_XML_FILE_NAME));
-                        resp.setMimeType(MimeType.ZIP);
-                    } else if (respType.equals(MimeType.ZIP) && requestedResponseFormat.equals("xml")) {
-                        ResponseLive responseLive = new ResponseLive(resp);
-
-                        //Convert all attached files to embedded files
-                        for (ProformaResponseFileHandle prfh : responseLive.getResponseFileHandles()) {
-                            prfh.convertResponseFileToEmbedded(false, false);
-                        }
-                        responseLive.markPojoChanged(XmlUtils.MarshalOption.of(XmlUtils.MarshalOption.CDATA));
-
-                        //Convert response.zip -> response.xml (just retrieve the now converted response.xml from responseLive)
-                        resp.setContent(responseLive.getZipContent().get(ProformaResponseZipPathes.RESPONSE_XML_FILE_NAME).getBytes());
-                        resp.setMimeType(MimeType.XML);
-                    }
+                    log.debug("[GraderId: '{}', GradeProcessId: '{}']: Convert response format if necessary.", graderConfig.getId(), subm.getGradeProcId());
+                    resp = ProformaResponseConverter.convertResponseFormat(resp, requestedResponseFormat);
                     totalGradingProcessesSucceeded.incrementAndGet();
                     long durationSeconds = Duration.between(gradeProc.startTime, LocalDateTime.now()).getSeconds();
                     log.info("[GraderId: '{}', GradeProcessId: '{}']: Grading process finished successfully after {} " +

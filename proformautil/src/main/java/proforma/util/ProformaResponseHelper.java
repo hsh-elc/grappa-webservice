@@ -39,5 +39,23 @@ public abstract class ProformaResponseHelper extends ProformaHelper {
 
     public abstract List<? extends ProformaResponseFileHandle> getResponseFileHandles(AbstractResponseType response, ZipContent zipContent);
 
+    /**
+     * File id and metadata will be auto-generated.
+     */
+    public abstract void addAttachedTxtFile(AbstractResponseType response, String filepath);
 
+    /**
+     * File id and metadata will be auto-generated.
+     */
+    public abstract void addAttachedBinFile(AbstractResponseType response, String filepath);
+
+    /**
+     * File id and metadata will be auto-generated.
+     */
+    public abstract void addEmbeddedTxtFile(AbstractResponseType response, String filename, String content);
+
+    /**
+     * File id and metadata will be auto-generated.
+     */
+    public abstract void addEmbeddedBinFile(AbstractResponseType response, String filename, byte[] content);
 }
