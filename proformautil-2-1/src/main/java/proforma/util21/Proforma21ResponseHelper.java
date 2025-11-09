@@ -14,7 +14,11 @@ import proforma.xml21.FeedbackType.Content;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class creates a proforma response with the is-internal-error
@@ -124,6 +128,46 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
     }
 
     /**
+     * Extracts all test refs into map if the test ref contains a sub-ref attribute
+     */
+    private void extractSubtestRefsForRefList(List<GradesBaseRefChildType> refs, Map<String, Set<String>> map) {
+        for (GradesBaseRefChildType refChildType : refs) {
+            if (refChildType instanceof GradesTestRefChildType testRefChildType && null != testRefChildType.getRef() && null != testRefChildType.getSubRef()) {
+                map.computeIfAbsent(testRefChildType.getRef(), k -> new HashSet<>()).add(testRefChildType.getSubRef());
+            }
+        }
+    }
+
+    /**
+     * Extracts all subtests grouped to their respective tests
+     * Return Key: test id
+     * Return Val: subtest id
+     */
+    private Map<String, Set<String>> extractSubtestRefsByTest(TaskType taskPojo) {
+        Map<String, Set<String>> map = new HashMap<>();
+        // Root node
+        extractSubtestRefsForRefList(taskPojo.getGradingHints().getRoot().getTestRefOrCombineRef(), map);
+        // Combine ndoes
+        taskPojo.getGradingHints().getCombine().forEach(node -> {
+            extractSubtestRefsForRefList(node.getTestRefOrCombineRef(), map);
+        });
+        return map;
+    }
+
+    /**
+     * Creates a TestResultType with it's score set to ZERO
+     */
+    private TestResultType createZeroedTestResult(FeedbackListType feedbackList, boolean isInternalError) {
+        TestResultType testResult = new TestResultType();
+        testResult.setFeedbackList(feedbackList);
+        ResultType result = new ResultType();
+        result.setIsInternalError(isInternalError);
+        result.setScore(BigDecimal.ZERO);
+        testResult.setResult(result);
+        return testResult;
+    }
+
+    /**
      * This currently only works for ProFormA 2.1 submissions.
      * Otherwise null is returned.
      */
@@ -132,34 +176,45 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
             SubmissionLive sw = new SubmissionLive(subm);
             SubmissionType submPojo = sw.getSubmission();
             String structure = submPojo.getResultSpec().getStructure();
-            if ("separate-test-feedback".equals(structure)) {
-                TaskLive tw = sw.getTask(tb);
-                TaskType taskPojo = tw.getTask();
-                TestsResponseType testsResponse = new TestsResponseType();
-                for (TestType test : taskPojo.getTests().getTest()) {
-                    TestResponseType testResponse = new TestResponseType();
-                    testResponse.setId(test.getId());
-                    TestResultType testResult = new TestResultType();
-                    testResult.setFeedbackList(feedbackList);
-                    ResultType result = new ResultType();
-                    result.setIsInternalError(isInternalError);
-                    result.setScore(BigDecimal.ZERO);
-                    testResult.setResult(result);
-                    testResponse.setTestResult(testResult);
-                    testsResponse.getTestResponse().add(testResponse);
-                }
-                SeparateTestFeedbackType separate = new SeparateTestFeedbackType();
-                separate.setSubmissionFeedbackList(feedbackList);
-                separate.setTestsResponse(testsResponse);
-                return separate;
+
+            if (!"separate-test-feedback".equals(structure)) {
+                // Falling back to merged feedback. Nothing to do.
+                return null;
             }
-            // Falling back to merged feedback
-            // nothing to do
+            TaskLive tw = sw.getTask(tb);
+            TaskType taskPojo = tw.getTask();
+
+            Map<String, Set<String>> testRefsByTest = extractSubtestRefsByTest(taskPojo);
+
+            TestsResponseType testsResponse = new TestsResponseType();
+            for (TestType test : taskPojo.getTests().getTest()) {
+                TestResponseType testResponse = new TestResponseType();
+                testResponse.setId(test.getId());
+
+                Set<String> subRefs = testRefsByTest.get(test.getId());
+                if (null != subRefs && !subRefs.isEmpty()) {
+                    SubtestsResponseType subtestsResponse = new SubtestsResponseType();
+                    subRefs.forEach(subRef -> {
+                        SubtestResponseType subtestResponse = new SubtestResponseType();
+                        subtestResponse.setId(subRef);
+                        subtestResponse.setTestResult(createZeroedTestResult(feedbackList, isInternalError));
+                        subtestsResponse.getSubtestResponse().add(subtestResponse);
+                    });
+                    testResponse.setSubtestsResponse(subtestsResponse);
+                } else {
+                    testResponse.setTestResult(createZeroedTestResult(feedbackList, isInternalError));
+                }
+                testsResponse.getTestResponse().add(testResponse);
+            }
+            SeparateTestFeedbackType separate = new SeparateTestFeedbackType();
+            separate.setSubmissionFeedbackList(feedbackList);
+            separate.setTestsResponse(testsResponse);
+            return separate;
         } catch (Exception e) {
             // cannot identify desired response type.
             // Falling back to merged feedback
+            return null; // set null in case of a half-prepared separate test feedback object.
         }
-        return null; // set null in case of a half-prepared separate test feedback object.
     }
 
     private MergedTestFeedbackType createInternalErrorMergedTestFeedback(String errorMessage, Audience audience) {
