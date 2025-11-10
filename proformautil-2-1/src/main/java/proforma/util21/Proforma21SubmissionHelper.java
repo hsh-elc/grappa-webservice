@@ -36,8 +36,8 @@ public class Proforma21SubmissionHelper extends ProformaSubmissionHelper {
     }
 
     @Override
-    public ProformaSubmissionRestrictionsChecker getSubmissionRestrictionsChecker(SubmissionLive submission) {
-        return new Proforma21SubmissionRestrictionsChecker(submission);
+    public ProformaSubmissionRestrictionsChecker getSubmissionRestrictionsChecker(SubmissionLive submission, TaskBoundary tb) {
+        return new Proforma21SubmissionRestrictionsChecker(submission, tb);
     }
 
 

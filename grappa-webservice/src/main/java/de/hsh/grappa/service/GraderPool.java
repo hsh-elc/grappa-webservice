@@ -257,7 +257,7 @@ public class GraderPool {
             ProformaSubmissionHelper helper = pv.getSubmissionHelper();
 
             if (this.graderConfig.getGrappa_submission_restriction_checks()) {
-                ProformaSubmissionRestrictionsChecker restrictionsChecker = helper.getSubmissionRestrictionsChecker(sl);
+                ProformaSubmissionRestrictionsChecker restrictionsChecker = helper.getSubmissionRestrictionsChecker(sl, boundary);
 
                 log.info("Checking Proforma Submission Restrictions.....");
                 ProformaSubmissionRestrictionViolations restrictionViolations = restrictionsChecker.checkSubmissionRestrictions();
