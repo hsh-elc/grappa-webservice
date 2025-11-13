@@ -12,6 +12,7 @@ import proforma.util.ProformaSubmissionRestrictionViolations;
 import proforma.util.ProformaSubmissionRestrictionsChecker;
 import proforma.util.SubmissionLive;
 import proforma.util.TaskLive;
+import proforma.util.boundary.TaskBoundary;
 import proforma.util.div.Zip;
 import proforma.util.div.Zip.ZipContent;
 import proforma.util.div.Zip.ZipContentElement;
@@ -24,15 +25,15 @@ public class Proforma21SubmissionRestrictionsChecker extends ProformaSubmissionR
     private final List<String> submissionFileNames = new ArrayList<>();
     private final List<ProformaSubmissionRestrictionViolation> restrictionViolations = new ArrayList<>();
 
-    public Proforma21SubmissionRestrictionsChecker(SubmissionLive submission) {
-        super(submission);
+    public Proforma21SubmissionRestrictionsChecker(SubmissionLive submission, TaskBoundary tb) {
+        super(submission, tb);
     }
 
     @Override
     public ProformaSubmissionRestrictionViolations checkSubmissionRestrictions() throws Exception {
         extractSubmissionFileNames();
 
-        TaskLive taskLive = this.submissionLive.getTask(null);
+        TaskLive taskLive = this.submissionLive.getTask(tb);
         TaskType task = (TaskType) taskLive.getTask();
         SubmissionRestrictionsType restrictions = task.getSubmissionRestrictions();
 
