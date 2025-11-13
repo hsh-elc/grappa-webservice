@@ -119,6 +119,15 @@ public class GraderBackendStarter {
             }
 
             try {
+                log.info("Initializing grader backend...");
+                bp.init(graderConfig, new BackendStarterBoundaryImpl(), System.getProperty("logging.level"));
+            } catch (Exception e) {
+                log.error("Failed to initialize grader backend.");
+                log.error(ExceptionUtils.getStackTrace(e));
+                System.exit(-1);
+            }
+
+            try {
                 log.info("Convert task format if necessary.");
                 submissionResource = ProformaSubmissionTaskConverter.convertTaskFormat(submissionResource, bp.requiredTaskFormat(), new BackendStarterBoundaryImpl());
             } catch (Exception e) {
@@ -129,8 +138,6 @@ public class GraderBackendStarter {
 
             ResponseResource responseResource = null;
             try {
-                log.info("Initializing grader backend...");
-                bp.init(graderConfig, new BackendStarterBoundaryImpl(), System.getProperty("logging.level"));
                 log.info("Starting grading process...");
                 responseResource = bp.grade(submissionResource);
                 log.info("Grading finished.");
