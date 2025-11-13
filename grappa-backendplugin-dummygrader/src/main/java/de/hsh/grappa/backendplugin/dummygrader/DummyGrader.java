@@ -45,8 +45,18 @@ public class DummyGrader extends BackendPlugin {
         }
     }
 
+    private MimeType requiredTaskFormat = null;
+
     @Override
     public void init(Properties properties) throws Exception {
+        String format = properties.getProperty("requiredTaskFormat");
+        if (format != null) {
+            if (format.equalsIgnoreCase("xml")) {
+                this.requiredTaskFormat = MimeType.XML;
+            } else if (format.equalsIgnoreCase("zip")) {
+                this.requiredTaskFormat = MimeType.ZIP;
+            }
+        }
     }
 
     private void printFile(StringBuilder feedback, byte[] binContent, String txtContent, String filename) {
@@ -286,5 +296,10 @@ public class DummyGrader extends BackendPlugin {
             // TODO
         }
         return false;
+    }
+
+    @Override
+    public MimeType requiredTaskFormat() {
+        return requiredTaskFormat;
     }
 }
