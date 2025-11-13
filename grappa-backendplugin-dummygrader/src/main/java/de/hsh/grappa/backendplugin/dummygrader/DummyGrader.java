@@ -44,6 +44,8 @@ public class DummyGrader extends BackendPlugin {
         }
     }
 
+    private MimeType requiredTaskFormat = null;
+
     private static final String FORMAT_XML = "xml";
     private static final String FORMAT_ZIP = "zip";
 
@@ -66,6 +68,14 @@ public class DummyGrader extends BackendPlugin {
 
     @Override
     public void init(Properties properties) throws Exception {
+        String format = properties.getProperty("requiredTaskFormat");
+        if (format != null) {
+            if (format.equalsIgnoreCase("xml")) {
+                this.requiredTaskFormat = MimeType.XML;
+            } else if (format.equalsIgnoreCase("zip")) {
+                this.requiredTaskFormat = MimeType.ZIP;
+            }
+        }
     }
 
     private void printFile(StringBuilder feedback, byte[] binContent, String txtContent, String filename) {
@@ -420,5 +430,10 @@ public class DummyGrader extends BackendPlugin {
         }
 
         responseLive.markPojoChanged(MarshalOption.of(MarshalOption.CDATA));
+    }
+
+    @Override
+    public MimeType requiredTaskFormat() {
+        return requiredTaskFormat;
     }
 }
