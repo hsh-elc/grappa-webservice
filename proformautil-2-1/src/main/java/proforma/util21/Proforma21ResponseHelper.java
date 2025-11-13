@@ -367,7 +367,7 @@ public class Proforma21ResponseHelper extends ProformaResponseHelper {
 
         ResponseFilesType responseFiles = response.getFiles();
 
-        Proforma21HtmlFeedbackGenerator generator = new Proforma21HtmlFeedbackGenerator(separateFeedback, task, responseFiles);
+        Proforma21HtmlFeedbackGenerator generator = new Proforma21HtmlFeedbackGenerator(separateFeedback, task, responseFiles, null);
         String studentHtml = generator.buildFeedbackHtml(false, false, false);
         String teacherHtml = generator.buildFeedbackHtml(true, false, false);
 
