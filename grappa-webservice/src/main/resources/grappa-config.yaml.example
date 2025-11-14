@@ -76,6 +76,13 @@ graders:
     # in the result when a client polls for available grader types.
     enabled: true  # enable or disable grader
 
+    # optional, defaults to "true" if not defined.
+    # Determines whether Grappa validates submission restrictions
+    # defined in the task.xml before invoking the grader. If disabled,
+    # restriction checks are skipped and the submission is always passed
+    # to the grader, which must then perform it's own validation.
+    grappa_submission_restriction_checks: true
+
     # The timeout in seconds dictates the maximum time for a submission
     # to be graded after which the grading process is forcibly
     # interrupted. Timed out submissions are considered failed
