@@ -41,6 +41,7 @@ public class Proforma21HtmlFeedbackGenerator {
     private static final String CSS_INNER_CONTENT = "padding: 5px 10px; border-top: 1px dashed #ccc; overflow: hidden; background-color: inherit;";
     private static final String CSS_FEEDBACK_LIST = "margin-bottom: 5px;";
     private static final String CSS_FEEDBACK_CONTENT = "margin-bottom: 5px;";
+    private static final String CSS_FEEDBACK_ELEMENT = "margin-top: 10px; margin-bottom: 10px;";
     private static final String CSS_GRADING_NODE = "padding: 5px; margin-bottom: 0; border-bottom: 1px solid #ddd;";
     private static final String CSS_TITLE_CONTAINER = "display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding-bottom: 5px;";
     private static final String CSS_TITLE_CONTAINER_P_H3 = "color: black; margin: 0; flex-grow: 1;";
@@ -97,7 +98,6 @@ public class Proforma21HtmlFeedbackGenerator {
         this.task = task;
         this.responseFiles = responseFiles;
         this.random = new Random();
-        randomizeHTMLIdentifiers();
         
         ResponseFormatter formatter = new ResponseFormatter(this.separateFeedback, this.task, maxScoreLMS);
         this.rootNode = formatter.generateGradingStructure();
@@ -112,6 +112,7 @@ public class Proforma21HtmlFeedbackGenerator {
      * @param generateWholeHtmlDocument should the document also contain &lt;!DOCTYPE html&gt;, &lt;html&gt;, &lt;head&gt; and &lt;body&gt; tags?
      */
     public String buildFeedbackHtml(boolean includeTeacherFeedback, boolean generateWholeHtmlDocument, boolean includeJavaScript) {
+        randomizeHTMLIdentifiers();
         this.sb = new StringBuilder();
         this.includeTeacherFeedback = includeTeacherFeedback;
         this.includeJavaScript = includeJavaScript;
@@ -287,8 +288,8 @@ public class Proforma21HtmlFeedbackGenerator {
     private void addExpandCollapseAllButtons() {
         appendLine("<div " + createStyle(CSS_EXPAND_COLLAPSE_BUTTONS) + ">");
         this.indentationLevel++;
-        appendLine("<button " + createStyle(CSS_EXPAND_COLLAPSE_BUTTON) + " id=\"" + ID_EXPAND_ALL + "\">" + TEXT_EXPAND_ALL + "</button>");
-        appendLine("<button " + createStyle(CSS_EXPAND_COLLAPSE_BUTTON) + " id=\"" + ID_COLLAPSE_ALL + "\">" + TEXT_COLLAPSE_ALL + "</button>");
+        appendLine("<button type=\"button\" " + createStyle(CSS_EXPAND_COLLAPSE_BUTTON) + " id=\"" + ID_EXPAND_ALL + "\">" + TEXT_EXPAND_ALL + "</button>");
+        appendLine("<button type=\"button\" " + createStyle(CSS_EXPAND_COLLAPSE_BUTTON) + " id=\"" + ID_COLLAPSE_ALL + "\">" + TEXT_COLLAPSE_ALL + "</button>");
         this.indentationLevel--;
         appendLine("</div>");
     }
@@ -298,7 +299,7 @@ public class Proforma21HtmlFeedbackGenerator {
      */
     private void addSummarizedFeedbackSection() {
         addCollapsibleTopButton(FEEDBACK_TITLE_SUMMARIZED);
-        appendLine("<div " + createStyle(CSS_CONTENT + " background-color: white; padding: 5px 10px;") + ">");
+        appendLine("<div " + createStyle(CSS_CONTENT + " background-color: white;") + ">");
         this.indentationLevel++;
         addStudentFeedbackList();
         if (this.includeTeacherFeedback) {
@@ -312,7 +313,7 @@ public class Proforma21HtmlFeedbackGenerator {
      * Adds button for expanding/collapsing when clicking section titles
      */
     private void addCollapsibleTopButton(String title) {
-        appendLine("<button " + createStyle(CSS_COLLAPSIBLE) + " class=\"" + CLASS_COLLAPSIBLE + "\">");
+        appendLine("<button type=\"button\" " + createStyle(CSS_COLLAPSIBLE) + " class=\"" + CLASS_COLLAPSIBLE + "\">");
         this.indentationLevel++;
         appendLine("<h1 " + createStyle(CSS_H1_H2) + ">" + title + "</h1>");
         this.indentationLevel--;
@@ -323,8 +324,11 @@ public class Proforma21HtmlFeedbackGenerator {
      * Adds Student feedback list to summarized feedback
      */
     private void addStudentFeedbackList() {
-        appendLine("<h2 " + createStyle(CSS_H1_H2) + ">" + FEEDBACK_TITLE_STUDENT + "</h2>");
-        appendLine("<div " + createStyle(CSS_FEEDBACK_LIST + " " + CSS_BLACK) + ">");
+        if (this.includeTeacherFeedback) {
+            // Only add "Student Feedback" title if the document contains both student and teacher feedback
+            appendLine("<h2 " + createStyle(CSS_H1_H2 + " padding: 5px 10px;") + ">" + FEEDBACK_TITLE_STUDENT + "</h2>");
+        }
+        appendLine("<div " + createStyle(CSS_FEEDBACK_LIST + " padding: 5px 10px; " + CSS_BLACK) + ">");
         this.indentationLevel++;
 
         List<String> feedbackStrings = new ArrayList<>();
@@ -344,8 +348,8 @@ public class Proforma21HtmlFeedbackGenerator {
      * Adds teacher feedback list to summarized feedback
      */
     private void addTeacherFeedbackList() {
-        appendLine("<h2 " + createStyle(CSS_H1_H2) + ">" + FEEDBACK_TITLE_TEACHER + "</h2>");
-        appendLine("<div " + createStyle(CSS_FEEDBACK_LIST + " " + CSS_BLACK) + ">");
+        appendLine("<h2 " + createStyle(CSS_H1_H2 + " padding: 5px 10px;") + ">" + FEEDBACK_TITLE_TEACHER + "</h2>");
+        appendLine("<div " + createStyle(CSS_FEEDBACK_LIST + " padding: 5px 10px; " + CSS_BLACK) + ">");
         this.indentationLevel++;
 
         List<String> feebackStrings = new ArrayList<>();
@@ -367,13 +371,15 @@ public class Proforma21HtmlFeedbackGenerator {
      */
     private void addFeedbackList(List<String> feedbackList) {
         if (null == feedbackList || feedbackList.isEmpty()) {
-            appendLine("<p " + createStyle(CSS_BLACK) + "><i>" + NO_FEEDBACK_MSG + "</i></p>");
+            appendLine("<p " + createStyle(CSS_BLACK + " " + CSS_FEEDBACK_ELEMENT) + "><i>" + NO_FEEDBACK_MSG + "</i></p>");
             return;
         }
         for (String feedback : feedbackList) {
+            appendLine("<p " + createStyle(CSS_FEEDBACK_ELEMENT) + ">");
             feedback.lines().forEach(line -> {
                 appendLine(line);
             });
+            appendLine("</p>");
         }
     }
 
@@ -483,7 +489,7 @@ public class Proforma21HtmlFeedbackGenerator {
         appendLine("<p " + createStyle(CSS_TITLE_CONTAINER_P_H3) +  ">" + titleText + "</p>");
         appendLine("<span " + createStyle(CSS_TITLE_RESULT + " " + CSS_BLACK) + ">" + String.format("[%s %.2f]", TEST_ACTUAL_SCORE, actualScore) + "</span>");
         if (this.includeJavaScript) {
-            appendLine("<button " + createStyle(CSS_INNER_COLLAPSIBLE) + " class=\"" + CLASS_COLLAPSIBLE + " " + CLASS_INNER_COLLAPSIBLE + "\">" + TEXT_DETAILS + "</button>");
+            appendLine("<button type=\"button\" " + createStyle(CSS_INNER_COLLAPSIBLE) + " class=\"" + CLASS_COLLAPSIBLE + " " + CLASS_INNER_COLLAPSIBLE + "\">" + TEXT_DETAILS + "</button>");
         }
         this.indentationLevel--;
         appendLine("</div>");
@@ -555,7 +561,10 @@ public class Proforma21HtmlFeedbackGenerator {
         addDescription(node.getDescription(), node.getInternalDescription());
 
         List<String> studentFeedback = node.getStudentFeedback();
-        appendLine("<h4 " + createStyle(CSS_BLACK) + ">" + FEEDBACK_TITLE_STUDENT + "</h4>");
+        if (this.includeTeacherFeedback) {
+            // Only add "Student Feedback" title if the document contains both student and teacher feedback
+            appendLine("<h4 " + createStyle(CSS_BLACK) + ">" + FEEDBACK_TITLE_STUDENT + "</h4>");
+        }
         appendLine("<div " + createStyle(CSS_FEEDBACK_CONTENT + " " + CSS_BLACK) + ">");
         this.indentationLevel++;
         addFeedbackList(studentFeedback);
@@ -601,7 +610,7 @@ public class Proforma21HtmlFeedbackGenerator {
 
         appendLine("<span " + createStyle(CSS_TITLE_RESULT + " " + CSS_BLACK) + ">" + resultText.toString() + "</span>");
         if (this.includeJavaScript) {
-            appendLine("<button " + createStyle(CSS_INNER_COLLAPSIBLE) + " class=\"" + CLASS_COLLAPSIBLE + " " + CLASS_INNER_COLLAPSIBLE + "\">" + TEXT_DETAILS_FEEDBACK + "</button>");
+            appendLine("<button type=\"button\" " + createStyle(CSS_INNER_COLLAPSIBLE) + " class=\"" + CLASS_COLLAPSIBLE + " " + CLASS_INNER_COLLAPSIBLE + "\">" + TEXT_DETAILS_FEEDBACK + "</button>");
         }
         this.indentationLevel--;
         appendLine("</div>");
