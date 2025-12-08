@@ -88,9 +88,13 @@ public class XmlUtils {
     public static <T> T unmarshalToObject(InputStream is, Class<T> clazz) throws Exception {
         JAXBContext c = JAXBContext.newInstance(clazz);
         Unmarshaller u = c.createUnmarshaller();
-        @SuppressWarnings("unchecked")
-        JAXBElement<T> j = (JAXBElement<T>) u.unmarshal(is);
-        return j.getValue();
+        Object o = u.unmarshal(is);
+        if (o instanceof JAXBElement) {
+            @SuppressWarnings("unchecked")
+            JAXBElement<T> elem = (JAXBElement<T>)o;
+            return elem.getValue();
+        }
+        return clazz.cast(o);
     }
 
     public static <T> T unmarshalToObject(byte[] byteArray, Class<T> clazz) throws Exception {
