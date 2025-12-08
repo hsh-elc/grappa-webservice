@@ -15,3 +15,6 @@ classes/
 
 # Visual Studio Code
 .vscode/
+
+# local maven repo
+/maven-repository/proforma/

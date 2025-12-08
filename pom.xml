@@ -20,17 +20,13 @@
         <de.hsh.grappa.grappa-backendplugin-dockerproxy.version>0.3.0
         </de.hsh.grappa.grappa-backendplugin-dockerproxy.version>
         <de.hsh.grappa.grappa-webservice.version>2.7.0</de.hsh.grappa.grappa-webservice.version>
-        <proforma.proformaxml.version>0.4.1</proforma.proformaxml.version>
-        <proforma.proformautil.version>0.4.1</proforma.proformautil.version>
-        <proforma.proformaxml-2-1.version>0.4.1</proforma.proformaxml-2-1.version>
-        <proforma.proformautil-2-1.version>0.4.1</proforma.proformautil-2-1.version>
+        <proforma.proformaxml.version>0.4.0</proforma.proformaxml.version>
+        <proforma.proformautil.version>0.4.0</proforma.proformautil.version>
+        <proforma.proformaxml-2-1.version>0.4.0</proforma.proformaxml-2-1.version>
+        <proforma.proformautil-2-1.version>0.4.0</proforma.proformautil-2-1.version>
     </properties>
 
     <modules>
-        <module>proformaxml</module>
-        <module>proformautil</module>
-        <module>proformaxml-2-1</module>
-        <module>proformautil-2-1</module>
         <module>grappa-util</module>
         <module>grappa-backendplugin</module>
         <module>grappa-webservice</module>
@@ -39,6 +35,13 @@
         <module>grappa-backendstarter</module>
         <module>grappa-backendplugin-dummygrader</module>
     </modules>
+
+    <repositories>
+        <repository>
+            <id>maven-repository</id>
+            <url>file:///${maven.multiModuleProjectDirectory}/maven-repository</url>
+        </repository>
+    </repositories>
 
     <dependencyManagement>
         <dependencies>
