@@ -18,17 +18,6 @@ declare -A arrayDownloads=(\
 # Working directory:
 mkdir -p target/tmp/download
 
-# Repository path:
-unameOut="$(uname -s)"
-PWN=`pwd`
-case "${unameOut}" in
-    CYGWIN*)    REPOPATH=`cygpath -w ${PWD}`;;
-    *)          REPOPATH=${PWD}
-esac
-REPOPATH="${REPOPATH}/maven-repository"
-
-mkdir -p "${REPOPATH}"
-
 
 
 download() {
@@ -55,16 +44,15 @@ download() {
 deploy() {
     local file=$1
     echo "-------------------------------------------------------------------------------------"
-    echo "  mvn deploy $file to file:///${REPOPATH}"
+    echo "  mvn install $file"
     echo "-------------------------------------------------------------------------------------"
 
     extension="${file##*.}"
     filename="${file%.*}"
 
-    mvn deploy:deploy-file \
+    mvn install:install-file \
       -Dfile="target/tmp/download/$file" \
-      -DpomFile="target/tmp/download/$filename.pom" \
-      -Durl="file:///${REPOPATH}"
+      -DpomFile="target/tmp/download/$filename.pom" 
 }
 
 

@@ -276,74 +276,12 @@ The following building and deployment instructions are for Ubuntu Linux.
 
    git clone https://github.com/hsh-elc/grappa-webservice.git
 
-2. Download and install dependencies in a local directory `maven-repository`:
+2. Download and install dependencies for ProFormA java libraries from github:
 
    ```bash
-   ./downloadDependenciesFromGithub.sh
+   ./mvnInstallProformaDependenciesFromGithub.sh
    ```
 
-   This should download and install various dependencies to the directory `maven-repository`. The result should look like this:
-   
-   ```
-    $ tree maven-repository/
-    maven-repository/
-    ├── maven-repository
-    └── proforma
-        ├── proforma
-        │   ├── 0.4.0
-        │   │   ├── proforma-0.4.0.pom
-        │   │   ├── proforma-0.4.0.pom.md5
-        │   │   └── proforma-0.4.0.pom.sha1
-        │   ├── maven-metadata.xml
-        │   ├── maven-metadata.xml.md5
-        │   └── maven-metadata.xml.sha1
-        ├── proformautil
-        │   ├── 0.4.0
-        │   │   ├── proformautil-0.4.0.jar
-        │   │   ├── proformautil-0.4.0.jar.md5
-        │   │   ├── proformautil-0.4.0.jar.sha1
-        │   │   ├── proformautil-0.4.0.pom
-        │   │   ├── proformautil-0.4.0.pom.md5
-        │   │   └── proformautil-0.4.0.pom.sha1
-        │   ├── maven-metadata.xml
-        │   ├── maven-metadata.xml.md5
-        │   └── maven-metadata.xml.sha1
-        ├── proformautil-2-1
-        │   ├── 0.4.0
-        │   │   ├── proformautil-2-1-0.4.0.jar
-        │   │   ├── proformautil-2-1-0.4.0.jar.md5
-        │   │   ├── proformautil-2-1-0.4.0.jar.sha1
-        │   │   ├── proformautil-2-1-0.4.0.pom
-        │   │   ├── proformautil-2-1-0.4.0.pom.md5
-        │   │   └── proformautil-2-1-0.4.0.pom.sha1
-        │   ├── maven-metadata.xml
-        │   ├── maven-metadata.xml.md5
-        │   └── maven-metadata.xml.sha1
-        ├── proformaxml
-        │   ├── 0.4.0
-        │   │   ├── proformaxml-0.4.0.jar
-        │   │   ├── proformaxml-0.4.0.jar.md5
-        │   │   ├── proformaxml-0.4.0.jar.sha1
-        │   │   ├── proformaxml-0.4.0.pom
-        │   │   ├── proformaxml-0.4.0.pom.md5
-        │   │   └── proformaxml-0.4.0.pom.sha1
-        │   ├── maven-metadata.xml
-        │   ├── maven-metadata.xml.md5
-        │   └── maven-metadata.xml.sha1
-        └── proformaxml-2-1
-            ├── 0.4.0
-            │   ├── proformaxml-2-1-0.4.0.jar
-            │   ├── proformaxml-2-1-0.4.0.jar.md5
-            │   ├── proformaxml-2-1-0.4.0.jar.sha1
-            │   ├── proformaxml-2-1-0.4.0.pom
-            │   ├── proformaxml-2-1-0.4.0.pom.md5
-            │   └── proformaxml-2-1-0.4.0.pom.sha1
-            ├── maven-metadata.xml
-            ├── maven-metadata.xml.md5
-            └── maven-metadata.xml.sha1
-    
-    12 directories, 42 files
-   ```
 
 3. Pull desired Docker images from ghcr.io:
    ```bash
