@@ -2,19 +2,23 @@
 
 set -e # exit on first error
 
+PFLIBVER=0.4.0
+GHURL="https://github.com/hsh-elc/proforma/releases/download"
+
 # Jars to be downloaded and installed:
 declare -A arrayDownloads=(\
-  [proforma-0.4.0.pom]="https://github.com/hsh-elc/proforma/releases/download/v0.4.0/proforma-0.4.0.pom" \
-  [proformaxml-0.4.0.jar]="https://github.com/hsh-elc/proforma/releases/download/v0.4.0/proformaxml-0.4.0.jar" \
-  [proformaxml-2-1-0.4.0.jar]="https://github.com/hsh-elc/proforma/releases/download/v0.4.0/proformaxml-2-1-0.4.0.jar"  \
-  [proformautil-0.4.0.jar]="https://github.com/hsh-elc/proforma/releases/download/v0.4.0/proformautil-0.4.0.jar"  \
-  [proformautil-2-1-0.4.0.jar]="https://github.com/hsh-elc/proforma/releases/download/v0.4.0/proformautil-2-1-0.4.0.jar"  \
+  [proforma-${PFLIBVER}.pom]="${GHURL}/v${PFLIBVER}/proforma-${PFLIBVER}.pom" \
+  [proformaxml-${PFLIBVER}.jar]="${GHURL}/v${PFLIBVER}/proformaxml-${PFLIBVER}.jar" \
+  [proformaxml-2-1-${PFLIBVER}.jar]="${GHURL}/v${PFLIBVER}/proformaxml-2-1-${PFLIBVER}.jar"  \
+  [proformautil-${PFLIBVER}.jar]="${GHURL}/v${PFLIBVER}/proformautil-${PFLIBVER}.jar"  \
+  [proformautil-2-1-${PFLIBVER}.jar]="${GHURL}/v${PFLIBVER}/proformautil-2-1-${PFLIBVER}.jar"  \
 )
 
 
-
+# Working directory:
 mkdir -p target/tmp/download
 
+# Repository path:
 unameOut="$(uname -s)"
 PWN=`pwd`
 case "${unameOut}" in
@@ -22,6 +26,9 @@ case "${unameOut}" in
     *)          REPOPATH=${PWD}
 esac
 REPOPATH="${REPOPATH}/maven-repository"
+
+mkdir -p "${REPOPATH}"
+
 
 
 download() {
@@ -58,10 +65,7 @@ deploy() {
       -Dfile="target/tmp/download/$file" \
       -DpomFile="target/tmp/download/$filename.pom" \
       -Durl="file:///${REPOPATH}"
-
 }
-
-
 
 
 
@@ -71,4 +75,3 @@ do
     download "$i" "${arrayDownloads[$i]}"
     deploy "$i"
 done
-

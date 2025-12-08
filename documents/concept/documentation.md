@@ -276,7 +276,76 @@ The following building and deployment instructions are for Ubuntu Linux.
 
    git clone https://github.com/hsh-elc/grappa-webservice.git
 
-2. Pull desired Docker images from ghcr.io:
+2. Download and install dependencies in a local directory `maven-repository`:
+
+   ```bash
+   ./downloadDependenciesFromGithub.sh
+   ```
+
+   This should download and install various dependencies to the directory `maven-repository`. The result should look like this:
+   
+   ```
+    $ tree maven-repository/
+    maven-repository/
+    ├── maven-repository
+    └── proforma
+        ├── proforma
+        │   ├── 0.4.0
+        │   │   ├── proforma-0.4.0.pom
+        │   │   ├── proforma-0.4.0.pom.md5
+        │   │   └── proforma-0.4.0.pom.sha1
+        │   ├── maven-metadata.xml
+        │   ├── maven-metadata.xml.md5
+        │   └── maven-metadata.xml.sha1
+        ├── proformautil
+        │   ├── 0.4.0
+        │   │   ├── proformautil-0.4.0.jar
+        │   │   ├── proformautil-0.4.0.jar.md5
+        │   │   ├── proformautil-0.4.0.jar.sha1
+        │   │   ├── proformautil-0.4.0.pom
+        │   │   ├── proformautil-0.4.0.pom.md5
+        │   │   └── proformautil-0.4.0.pom.sha1
+        │   ├── maven-metadata.xml
+        │   ├── maven-metadata.xml.md5
+        │   └── maven-metadata.xml.sha1
+        ├── proformautil-2-1
+        │   ├── 0.4.0
+        │   │   ├── proformautil-2-1-0.4.0.jar
+        │   │   ├── proformautil-2-1-0.4.0.jar.md5
+        │   │   ├── proformautil-2-1-0.4.0.jar.sha1
+        │   │   ├── proformautil-2-1-0.4.0.pom
+        │   │   ├── proformautil-2-1-0.4.0.pom.md5
+        │   │   └── proformautil-2-1-0.4.0.pom.sha1
+        │   ├── maven-metadata.xml
+        │   ├── maven-metadata.xml.md5
+        │   └── maven-metadata.xml.sha1
+        ├── proformaxml
+        │   ├── 0.4.0
+        │   │   ├── proformaxml-0.4.0.jar
+        │   │   ├── proformaxml-0.4.0.jar.md5
+        │   │   ├── proformaxml-0.4.0.jar.sha1
+        │   │   ├── proformaxml-0.4.0.pom
+        │   │   ├── proformaxml-0.4.0.pom.md5
+        │   │   └── proformaxml-0.4.0.pom.sha1
+        │   ├── maven-metadata.xml
+        │   ├── maven-metadata.xml.md5
+        │   └── maven-metadata.xml.sha1
+        └── proformaxml-2-1
+            ├── 0.4.0
+            │   ├── proformaxml-2-1-0.4.0.jar
+            │   ├── proformaxml-2-1-0.4.0.jar.md5
+            │   ├── proformaxml-2-1-0.4.0.jar.sha1
+            │   ├── proformaxml-2-1-0.4.0.pom
+            │   ├── proformaxml-2-1-0.4.0.pom.md5
+            │   └── proformaxml-2-1-0.4.0.pom.sha1
+            ├── maven-metadata.xml
+            ├── maven-metadata.xml.md5
+            └── maven-metadata.xml.sha1
+    
+    12 directories, 42 files
+   ```
+
+3. Pull desired Docker images from ghcr.io:
    ```bash
    docker pull ghcr.io/hsh-elc/grappa-backend-dummygrader:latest
    ```
@@ -324,7 +393,7 @@ The following building and deployment instructions are for Ubuntu Linux.
 Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-proxy/src/main/resources/docker/` directory, specifically its docker, shell and JAR files will require re-executing the `build-images.sh` script to take effect. This includes changes to the `grappa-grader-backend-starter` module, as well as adding and changing grader Backend Plugins.
 -->
 
-3. Navigate to Grappa's root directory `grappa-webservice/` and build the web application resource using maven.
+4. Navigate to Grappa's root directory `grappa-webservice/` and build the web application resource using maven.
    ```
    mvn install package -DskipTests
    ```
@@ -333,23 +402,23 @@ Note that any changes to the `grappa-webservice/grappa-backend-plugin-docker-pro
 deployed and running in Tomcat. Not skipping the tests will not affect the build process in any way, but it will result
 in additional error messages on part of the maven-test-plugin.*
 
-4. Copy the resulting WAR file `grappa-webservice/grappa-webservice/target/grappa-webservice-2.M.N.war`  to Tomcat's
+5. Copy the resulting WAR file `grappa-webservice/grappa-webservice/target/grappa-webservice-2.M.N.war`  to Tomcat's
    webapps directory (`CATALINA_BASE/webapps/grappa-webservice-2.war`)
 
-5. Configure Grappa
+6. Configure Grappa
 
     - copy file `grappa-webservice/grappa-webservice/src/main/resources/grappa-config.yaml.example` to `/etc/grappa/` (
       or `C:/etc/grappa/` on a Windows-based system) and remove the `.example` part
     - refer to section [Configuration](#24-configuration) for more details
 
-6. Run Tomcat (e.g. `sudo systemctl start tomcat`)
+7. Run Tomcat (e.g. `sudo systemctl start tomcat`)
 
     - you may want to test the web service locally by using a GET request to
       the [serivce's status endpoint](get-web-service-status) using  `curl` like
       so: `curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2/rest`, with `test:test` being the LMS ID
       and password hash, respectively
 
-7. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2/rest`.  
+8. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2/rest`.  
    Note to set name here according to filename in step 4.
 
 ### Configuration

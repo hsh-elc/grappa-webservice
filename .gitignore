@@ -17,4 +17,4 @@ classes/
 .vscode/
 
 # local maven repo
-/maven-repository/proforma/
+/maven-repository/
