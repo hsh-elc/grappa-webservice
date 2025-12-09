@@ -61,8 +61,8 @@ jobs:
 
       - name: Download Proforma dependencies
         run: |
-          chmod +x mvnInstallProformaDependenciesFromGithub.sh
-          ./mvnInstallProformaDependenciesFromGithub.sh
+          chmod +x mvnInstallDependenciesFromGithub.sh
+          ./mvnInstallDependenciesFromGithub.sh
 
       - name: Build with Maven
         run: |

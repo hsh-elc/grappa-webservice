@@ -25,7 +25,6 @@
 
     <modules>
         <module>grappa-util</module>
-        <module>grappa-backendplugin</module>
         <module>grappa-webservice</module>
         <module>grappa-backendplugin-dockerproxy</module>
         <!--        <module>grappa-grader-environment-vagrant</module>-->

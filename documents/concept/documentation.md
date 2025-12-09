@@ -276,10 +276,10 @@ The following building and deployment instructions are for Ubuntu Linux.
 
    git clone https://github.com/hsh-elc/grappa-webservice.git
 
-2. Download and install dependencies for ProFormA java libraries from github:
+2. Download and install dependencies for java libraries from github:
 
    ```bash
-   ./mvnInstallProformaDependenciesFromGithub.sh
+   ./mvnInstallDependenciesFromGithub.sh
    ```
 
 

@@ -5,6 +5,7 @@ set -e # exit on first error
 MVNOPTS=""
 CURLOPTS=""
 VERBOSE="1"
+GBPLIBVER="$(mvn help:evaluate -Dexpression=de.hsh.grappa.grappa-backendplugin.version -q -DforceStdout)"
 PFLIBVER="$(mvn help:evaluate -Dexpression=proforma.version -q -DforceStdout)"
 TMPDIR=/tmp
 
@@ -15,7 +16,7 @@ case "${unameOut}" in
 esac
 
 
-while getopts 'qr:h' opt; do
+while getopts 'q:h' opt; do
   case "$opt" in
     q)
       MVNOPTS="-q"
@@ -23,21 +24,13 @@ while getopts 'qr:h' opt; do
       VERBOSE="0"
       ;;
 
-    r)
-      arg="$OPTARG"
-      PFLIBVER=${OPTARG}
-      ;;
-   
     ?|h)
-      echo "This script downloads a proforma java library release from github and"
+      echo "This script downloads libraries dependencies from github and"
       echo "installs it to your local maven repository."
-      echo "All releases can be found here:"
-      echo "  https://github.com/hsh-elc/proforma/releases"
       echo ""
-      echo "Usage: $(basename $0) [-q] [-r release]"
+      echo "Usage: $(basename $0) [-q]"
       echo "  -h            help"
       echo "  -q            quiet"
-      echo "  -r release    select release. Default release is $PFLIBVER"
       exit 1
       ;;
   esac
@@ -46,7 +39,7 @@ shift "$(($OPTIND -1))"
 
 
 
-declare -a arrayDownloads=(\
+declare -a arrayProformaDownloads=(\
   proforma-${PFLIBVER}.pom \
   proformaxml-${PFLIBVER}.pom \
   proformaxml-2-1-${PFLIBVER}.pom  \
@@ -58,11 +51,16 @@ declare -a arrayDownloads=(\
   proformautil-2-1-${PFLIBVER}.jar  \
 )
 
+declare -a arrayGBPDownloads=(\
+  grappa-backendplugin-${GBPLIBVER}.pom \
+  grappa-backendplugin-${GBPLIBVER}.jar \
+)
+
 
 # Working directory:
-WDIR="$TMPDIR/mvnInstallProformaDependenciesFromGithub"
+WDIR="$TMPDIR/mvnInstallDependenciesFromGithub"
 mkdir -p "$WDIR"
-WDIRWIN="$TMPDIRWIN/mvnInstallProformaDependenciesFromGithub"
+WDIRWIN="$TMPDIRWIN/mvnInstallDependenciesFromGithub"
 
 
 echoline() {
@@ -75,15 +73,29 @@ echoline() {
 }
 
 
+
 download() {
     local file=$1
-    local url="https://github.com/hsh-elc/proforma/releases/download/v${PFLIBVER}/$file"
+    local url=$2
     echoline "   downloading from $url to $WDIR/$file"
     curl $CURLOPTS -L \
         -o "$WDIR/$file" \
         $url
-        
 }
+
+downloadGrappaBackendplugin() {
+    local file=$1
+    local url="https://github.com/hsh-elc/grappa-backendplugin/releases/download/v${GBPLIBVER}/$file"
+    download "$file" "$url"
+}
+
+downloadProforma() {
+    local file=$1
+    local url="https://github.com/hsh-elc/proforma/releases/download/v${PFLIBVER}/$file"
+    download "$file" "$url"
+}
+
+
 
 deploy() {
     local file=$1
@@ -100,9 +112,15 @@ deploy() {
 
 
 
-for i in "${arrayDownloads[@]}"
+for i in "${arrayProformaDownloads[@]}"
 do
-    download "$i"
+    downloadProforma "$i"
+    deploy "$i"
+done
+
+for i in "${arrayGBPDownloads[@]}"
+do
+    downloadGrappaBackendplugin "$i"
     deploy "$i"
 done
 
