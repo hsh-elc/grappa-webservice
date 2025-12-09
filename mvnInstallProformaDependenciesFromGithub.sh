@@ -79,7 +79,7 @@ download() {
     local file=$1
     local url="https://github.com/hsh-elc/proforma/releases/download/v${PFLIBVER}/$file"
     echoline "   downloading from $url to $WDIR/$file"
-    curl $CURLOPTS --follow \
+    curl $CURLOPTS -L \
         -o "$WDIR/$file" \
         $url
         
