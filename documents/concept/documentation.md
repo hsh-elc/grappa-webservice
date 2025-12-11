@@ -43,6 +43,7 @@ A web service for connecting multiple Learn Management Systems to multiple autom
 
 ## 2 Installing and Running Grappa as a Docker Container
 
+This chapter explains installing and running Grappa as a pre-packaged Docker container. For installation of Grappa on the host machine, see [3 Installation and Running Grappa on the Host Machine](#3-installation-and-running-grappa-on-the-host-machine).
 
 ### 2.1 System Requirements
 
@@ -242,6 +243,8 @@ curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2/rest
 You should see status output [such as this](#get-web-service-status).
 
 ## 3 Installation and Running Grappa on the Host Machine
+
+This chapter explains installing and running Grappa on the host machine. For installation as a pre-packaged Docker container see [2 Installing and Running Grappa as a Docker Container](#2-installing-and-running-grappa-as-a-docker-container).
 
 
 ### 3.1 System Requirements
