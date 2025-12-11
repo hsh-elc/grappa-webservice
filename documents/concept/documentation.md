@@ -246,11 +246,11 @@ You should see status output [such as this](#get-web-service-status).
 
 ### 3.1 System Requirements
 
-- [JDK 11 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+- [JDK 17 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
-  *Note: JDK 11 is used to develop and compile the Grappa web service. Backend Plugin modules use JDK 8 to ensure
+  *Note: JDK 17 is used to develop and compile the Grappa web service. Backend Plugin modules may use more recent JDK versions to ensure
   compatibility with existing graders.*
-- [Apache Tomcat 8.X or higher](http://tomcat.apache.org/) for running the web service
+- [Apache Tomcat 9.X or higher](http://tomcat.apache.org/) for running the web service
 - [Apache Maven](https://maven.apache.org/index.html) for building a web application resource
 - [Redis](https://redis.io/) for storing ProFormA submissions and results
 - [Docker](https://www.docker.com/) for providing an additional security layer to the web service
