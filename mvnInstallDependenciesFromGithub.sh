@@ -78,7 +78,7 @@ download() {
     local file=$1
     local url=$2
     echoline "   downloading from $url to $WDIR/$file"
-    curl $CURLOPTS -L \
+    wget $CURLOPTS \
         -o "$WDIR/$file" \
         $url
 }
