@@ -16,7 +16,7 @@ environment, checkout the [developers documentation](developers.md).
       + [2.5 Starting Redis Container](#25-starting-redis-container)
       + [2.6 Starting Grappa Container](#26-starting-grappa-container)
       + [2.7 Test](#27-test)
-   * [3 Installation without Docker](#3-installation-without-docker)
+   * [3 Installation and Running Grappa on the Host Machine](#3-installation-and-running-grappa-on-the-host-machine)
       + [3.1 System Requirements](#31-system-requirements)
       + [3.2 Installing Grappa - Prerequisites](#32-installing-grappa-prerequisites)
       + [3.3 Building and Deployment](#33-building-and-deployment)
@@ -241,7 +241,7 @@ curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2/rest
 
 You should see status output [such as this](#get-web-service-status).
 
-## 3 Installation without Docker
+## 3 Installation and Running Grappa on the Host Machine
 
 
 ### 3.1 System Requirements
