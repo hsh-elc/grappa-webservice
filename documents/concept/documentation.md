@@ -1,60 +1,67 @@
 # Grappa Webservice
 
-This documentation is meant for system admins that _operates_ the Grappa Webservice.
+This documentation is meant for system admins that _operate_ the Grappa Webservice.
 
 **@Developers**: For implementing backend-plugins, building docker images from baseimage or setting up a test
 environment, checkout the [developers documentation](developers.md).
 
 ## Table of Contents
 
-1 [Introduction](#1-introduction)<br>
-2 [Installation](#2-installation)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;2.1 [System Requirements](#21-system-requirements)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;2.2 [Prerequisites](#22-prerequisites)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[2.2.1 Installing Redis](#221-installing-redis)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[2.2.2 Installing Docker](#222-installing-docker)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;2.3 [Building and Deployment](#23-building-and-deployment)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[Configuration](#configuration)<br>
-3 [REST API](#3-rest-api)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[Get web service status](#get-web-service-status)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[Grade a Proforma submission](#grade-a-proforma-submission)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[Poll for a Proforma response](#poll-for-a-proforma-response)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[Cancel a Proforma submission](#cancel-a-proforma-submission)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[Get list of all online graders](#get-list-of-all-online-graders)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[Get grader status](#get-grader-status)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[Check if a Proforma task is cached](#check-if-a-proforma-task-is-cached)<br>
-4 [Backend Plugin](#4-backend-plugin)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;4.1 [proformaxml module](#41-proformaxml-module)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;4.2 [grappa-backendplugin-api module](#42-grappa-common-module)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;4.3 [grappa-backendplugin-docker-proxy module](#43-grappa-backendplugin-dockerproxy-module)<br>
-5 [Modules](#5-modules)<br>
-6 [Understanding the Submission Process](#6-understanding-the-submission-process)<br>
-<!--- 5 [Docker](#2-internationalization)<br> -->
-<!--- 6 [Vagrant](#2-internationalization)<br> -->
-<!--- 7 [Development](#3-elements-and-types-that-are-used-in-several-parts-of-the-xsd)<br> -->
-<!-- 8 [Workflow](#6-workflow)<br> -->
+   * [1 Introduction](#1-introduction)
+   * [2 Installing and Running Grappa as a Docker Container](#2-installing-and-running-grappa-as-a-docker-container)
+      + [2.1 System Requirements](#21-system-requirements)
+      + [2.2 Installation](#22-installation)
+      + [2.3 Redis Cache](#23-redis-cache)
+      + [2.4 Running Grappa](#24-running-grappa)
+         - [2.4.1 Using Grappa with the Host's Network](#241-using-grappa-with-the-hosts-network)
+         - [2.4.2 Using Grappa with host name mapped to host IP](#242-using-grappa-with-host-name-mapped-to-host-ip)
+      + [2.5 Starting Redis Container](#25-starting-redis-container)
+      + [2.6 Starting Grappa Container](#26-starting-grappa-container)
+         - [2.6.1 Run command with `--network=host`](#261-run-command-with-networkhost)
+         - [2.6.2 Run command with host name `host.docker.internal`](#262-run-command-with-host-name-hostdockerinternal)
+      + [2.7 Test](#27-test)
+   * [3 Installation without Docker](#3-installation-without-docker)
+      + [3.1 System Requirements](#31-system-requirements)
+      + [3.2 Installing Grappa - Prerequisites](#32-installing-grappa-prerequisites)
+         - [3.2.1 Installing Redis](#321-installing-redis)
+         - [3.2.2 Installing Docker](#322-installing-docker)
+      + [3.3 Building and Deployment](#33-building-and-deployment)
+      + [3.4 Configuration](#34-configuration)
+         - [3.4.1 Grader-specific Properties](#341-grader-specific-properties)
+   * [4 Installing Graders](#4-installing-graders)
+   * [5 REST API](#5-rest-api)
+      + [Get web service status](#get-web-service-status)
+      + [Grade a Proforma submission](#grade-a-proforma-submission)
+      + [Poll for a Proforma response](#poll-for-a-proforma-response)
+      + [Cancel a Proforma submission](#cancel-a-proforma-submission)
+      + [Get list of all online graders](#get-list-of-all-online-graders)
+      + [Get grader status](#get-grader-status)
+      + [Check if a Proforma task is cached](#check-if-a-proforma-task-is-cached)
+   * [6 Backend Plugin](#6-backend-plugin)
+      + [6.1 proformaxml module](#61-proformaxml-module)
+      + [6.2 grappa-backendplugin module](#62-grappa-backendplugin-module)
+         - [6.2.1 Passing a Proforma submission as a blob resource](#621-passing-a-proforma-submission-as-a-blob-resource)
+         - [6.2.2 Passing a Proforma submission as a Java class object](#622-passing-a-proforma-submission-as-a-java-class-object)
+      + [6.3 grappa-backendplugin-dockerproxy module](#63-grappa-backendplugin-dockerproxy-module)
+   * [7 Modules](#7-modules)
+   * [8 Understanding the Submission Process](#8-understanding-the-submission-process)
 
 ## 1 Introduction
 
 A web service for connecting multiple Learn Management Systems to multiple automatic graders with a unified interface.
 
-## 2 Installation
+## 2 Installing and Running Grappa as a Docker Container
+
 
 ### 2.1 System Requirements
 
-- [JDK 11 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-
-  *Note: JDK 11 is used to develop and compile the Grappa web service. Backend Plugin modules use JDK 8 to ensure
-  compatibility with existing graders.*
-- [Apache Tomcat 8.X or higher](http://tomcat.apache.org/) for running the web service
-- [Apache Maven](https://maven.apache.org/index.html) for building a web application resource
 - [Redis](https://redis.io/) for storing ProFormA submissions and results
 - [Docker](https://www.docker.com/) for providing an additional security layer to the web service
 
-## 2.x Installing and Running Grappa as a Docker Container
+### 2.2 Installation
 
 You can use a pre-packaged Docker container running Grappa out-of-the-box. The only external dependency required is
-Redis, which can also be installed as a [Docker container](), or [as a regular service](#2.2.1-installing-redis) on the
+Redis, which can also be installed as a [Docker container](#25-starting-redis-container), or [as a regular service](#321-installing-redis) on the
 host if preferred.
 
 This installation guide assumes a Linux environment (Ubuntu 20.04 in this example) that has Docker already installed,
@@ -72,7 +79,7 @@ The following files are created or generated as a result of running Grappa and R
 
 Grappa uses a configuration file residing in `/etc/grappa/grappa-config.yaml`. We will need to mount that configuration
 file into the file system of Grappa's Docker container. Copy and adapt the configuration file template as
-described [here](#5-configure-grappa). Once the config file has been mounted into the container, Grappa will be able to
+described [here](#6-configure-grappa). Once the config file has been mounted into the container, Grappa will be able to
 read the file. Note that changes to the config file on the host system will affect the file in the container.
 
 **2. Log files**
@@ -87,7 +94,7 @@ For log files, we will use the following directory:
 
 `$ mkdir ~/grappa/log`
 
-### Redis Cache
+### 2.3 Redis Cache
 
 Redis will create regular snapshots of its database, which we also want to persist on the host system so we can re-use
 the data when the Redis container restarts. We will use one of the
@@ -96,7 +103,7 @@ dedicated directory for this:
 
 `mkdir ~/grappa/cache`
 
-### Running Grappa
+### 2.4 Running Grappa
 
 Grappa needs to access external services (such as Redis and the Docker socket) outside its container. We can run Grappa
 using two different networking methods. Each method differs slightly in how these services are addressed in Grappa's
@@ -108,7 +115,7 @@ IP in file `/etc/hosts`.
 
 The command to run Grappa with the `network="host"` enabled is listed below.
 
-#### Using Grappa with the Host's Network
+#### 2.4.1 Using Grappa with the Host's Network
 
 Using this option, any request to `127.0.0.1` will point to the host (no matter the port).
 
@@ -129,7 +136,7 @@ docker_proxy:
   host: "unix:///var/run/docker.sock"
 ```
 
-#### Using Grappa with host name mapped to host IP
+#### 2.4.2 Using Grappa with host name mapped to host IP
 
 Mapping the host's IP to host name `host.docker.internal` in the Grappa container, the host name can be used to address
 external services.
@@ -151,7 +158,7 @@ docker_proxy:
   host: "unix:///var/run/docker.sock"
 ```
 
-### Starting Redis Container
+### 2.5 Starting Redis Container
 
 The Grappa web service depends on Redis, so we start the Redis container before Grappa.
 
@@ -187,7 +194,7 @@ docker run -d \
     redis-server --requirepass foobared
 ```
 
-### Starting Grappa Container
+### 2.6 Starting Grappa Container
 
 Pull the Grappa Docker image first. Check [here](https://github.com/hsh-elc/grappa-webservice/pkgs/container/grappa-webservice) for the latest tag version.
 
@@ -197,7 +204,7 @@ docker pull ghcr.io/hsh-elc/grappa-webservice:latest_develop
 
 Like Redis, we want the Grappa container to restart automatically using the run option `--restart=always`.
 
-#### Run command with `--network=host`
+#### 2.6.1 Run command with `--network=host`
 
 ```bash
 docker run -d \
@@ -213,7 +220,7 @@ docker run -d \
 Note that we want the container to inherit the host's date and time, so we set the timezone environment variable
 `TZ` to the content of the /etc/timezone file of the host machine.
 
-#### Run command with host name `host.docker.internal`
+#### 2.6.2 Run command with host name `host.docker.internal`
 
 Additionally to introducing the `host.docker.internal` host name, Tomcat's port `8080` also needs to be forwarded so the
 Grappa web service running within the container can be addressed via `localhost:8080` on the host system.
@@ -231,7 +238,7 @@ docker run -d \
     ghcr.io/hsh-elc/grappa-webservice:latest
 ```
 
-#### Test
+### 2.7 Test
 
 Make sure Grappa is running properly inside the container by executing the following curl request on your host. Note
 that your user and password might vary depending on your configuration in file `/etc/grappa/grappa-config.yaml`, section
@@ -243,18 +250,33 @@ curl -v --user test:test http://127.0.0.1:8080/grappa-webservice-2/rest
 
 You should see status output [such as this](#get-web-service-status).
 
-### 2.2 Installing Grappa - Prerequisites
+## 3 Installation without Docker
 
-Install the software listed in the [System Requirements](#21-system-requirements).
 
-#### 2.2.1 Installing Redis
+### 3.1 System Requirements
+
+- [JDK 11 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+
+  *Note: JDK 11 is used to develop and compile the Grappa web service. Backend Plugin modules use JDK 8 to ensure
+  compatibility with existing graders.*
+- [Apache Tomcat 8.X or higher](http://tomcat.apache.org/) for running the web service
+- [Apache Maven](https://maven.apache.org/index.html) for building a web application resource
+- [Redis](https://redis.io/) for storing ProFormA submissions and results
+- [Docker](https://www.docker.com/) for providing an additional security layer to the web service
+
+
+### 3.2 Installing Grappa - Prerequisites
+
+Install the software listed in the [System Requirements](#31-system-requirements).
+
+#### 3.2.1 Installing Redis
 
 - Install Redis, e.g. `sudo apt install redis-server`
 - edit file `/etc/redis/redis.conf`
     - comment out line `bind 127.0.0.1 ::1`
     - add line `bind 0.0.0.0`
     - activate line `requirepass foobared` with a password of your choosing
-        - the password must be set in Grappa's [configuration](#24-configuration) file
+        - the password must be set in Grappa's [configuration](#34-configuration) file
     - restart redis using `sudo systemctl restart redis`
     - test if everything is properly running by logging into redis' command line interface:
 
@@ -262,11 +284,11 @@ Install the software listed in the [System Requirements](#21-system-requirements
 
       `$ auth foobared`
 
-#### 2.2.2 Installing Docker
+#### 3.2.2 Installing Docker
 
 - Install Docker, e.g. https://docs.docker.com/engine/install/ubuntu/
 
-### 2.3 Building and Deployment
+### 3.3 Building and Deployment
 
 *Note: deploying and running Grappa has been tested on Ubuntu Linux 18.04 and Windows 10.*
 
@@ -347,7 +369,7 @@ in additional error messages on part of the maven-test-plugin.*
 
     - copy file `grappa-webservice/grappa-webservice/src/main/resources/grappa-config.yaml.example` to `/etc/grappa/` (
       or `C:/etc/grappa/` on a Windows-based system) and remove the `.example` part
-    - refer to section [Configuration](#24-configuration) for more details
+    - refer to section [Configuration](#34-configuration) for more details
 
 7. Run Tomcat (e.g. `sudo systemctl start tomcat`)
 
@@ -359,7 +381,7 @@ in additional error messages on part of the maven-test-plugin.*
 8. Set the connection string in your LMS client to `http://serverip:8080/grappa-webservice-2/rest`.  
    Note to set name here according to filename in step 4.
 
-### Configuration
+### 3.4 Configuration
 
 Any changes to Grappa's configuration file will require a web service restart to take effect.
 
@@ -369,7 +391,7 @@ An example file can be found
 in [`grappa-webservice/src/main/resources/grappa-config.yaml.example`](../../grappa-webservice/src/main/resources/grappa-config.yaml.example)
 .
 
-#### 2.4.1 Grader-specific Properties
+#### 3.4.1 Grader-specific Properties
 
 You can give properties (key/value pairs only) to the backend plugin within the `grappa-config.yaml`. For each grading
 these properties will be forwarded to the backend plugin.
@@ -382,7 +404,7 @@ grader_plugin_defaults:
 
 Note: The input syntax here is yaml (`": "` instead of `"="`).
 
-### 3.x Installing Graders
+## 4 Installing Graders
 
 Grappa starts grading processes inside grader containers, regardless of whether Grappa runs in a container itself or
 not.
@@ -401,9 +423,9 @@ For example, install the Dummy Grader by simply pulling the Docker image:
 docker pull ghcr.io/hsh-elc/grappa-backend-dummygrader:latest
 ```
 
-Finally, configure Grappa to use the grader in Grappa's [configuration file](#configuration).
+Finally, configure Grappa to use the grader in Grappa's [configuration file](#34-configuration).
 
-## 3 REST API
+## 5 REST API
 
 ![Grappa REST API](https://github.com/hsh-elc/grappa-webservice/raw/master/documents/concept/images/rest_interface.png "Grappa REST API")
 
@@ -855,39 +877,35 @@ repeated grading requests for the same Proforma task.
       **Content Type**: `application/json` <br/>
       **Description**: The web service or one of its sub services (e.g. redis) is unavailable.
 
-## 4 Backend Plugin
+## 6 Backend Plugin
 
 Grappa passes submissions onto the actual grader backend system. A backend plugin is used to connect a grader to the
 Grappa webservice.
 
-### 4.1 proformaxml module
+### 6.1 proformaxml module
 
 The `proformaxml` module contains the POJO classes for the [ProForma](https://github.com/ProFormA/proformaxml) format (
 currently version 2.1).
 
-### 4.2 grappa-common module
+### 6.2 grappa-backendplugin module
 
 There are two different ways to pass a submission to a grader system from within a grader backend plugin.
 
-<!--- 
-TODO: uml class diagram of proformaxml, plugin-api and an example grader.
--->
-
-Grappa (as well as the [dockerproxy module](#43-grappa-backendplugin-dockerproxy-module)) passes a Proforma submission
+Grappa (as well as the [dockerproxy module](#63-grappa-backendplugin-dockerproxy-module)) passes a Proforma submission
 as a byte array resource to a backend plugin. This is because a submission resource needs to be in a suitable storage
 format so it can be transmitted between different parts of the service system (e.g. different parts of the service
 running on different systems, such as physical servers, Vagrant and Docker environments).
 
-#### Passing a Proforma submission as a blob resource
+#### 6.2.1 Passing a Proforma submission as a blob resource
 
 The backend plugin may pass the submission blob as is to the grader and have the grader deal with the interpretation and
 implementation of the Proforma format in its own way.
 
-#### Passing a Proforma submission as a Java class object
+#### 6.2.2 Passing a Proforma submission as a Java class object
 
 The backend plugin may convert the submission blob into a Java class instance and pass that instance to the grader
 backend system. This would require the grader backend system to set an additional dependency to
-the [proformaxml module](#41-proformaxml-module), which contains all Proforma Java classes.
+the [proformaxml module](#61-proformaxml-module), which contains all Proforma Java classes.
 
 One bare-bones implementation would look like this:
 
@@ -903,8 +921,9 @@ public class PythonGrader extends BackendPlugin {
     
         // Unmarshal the Proforma submission blob into an actual Java class using XML binding.
         // The Java object can be any of the supported ProFormA versions (currently 2.1 only).
-        AbstractSubmissionType submissionPojo = ProformaConverter.convertToPojo(submissionResource);
-        
+        SubmissionLive submissionLive= new SubmissionLive(submissionResource);
+        AbstractSubmissionType submissionPojo= submissionLive.getSubmission();
+
         // Pass the submission on to the backend grader system and await the result.
         // The resulting response must be marshalled to a ResponseResource object.
         return useBackendGraderToGrade(submissionPojo);
@@ -917,9 +936,9 @@ public class PythonGrader extends BackendPlugin {
 ```
 
 Properties delivered in `init(Properties properties)` coming from `grader_plugin_defaults` within `grappa-config.yaml` (
-see [2.4.1 Grader-specific Properties](#241-grader-specific-properties))
+see [Grader-specific Properties](#341-grader-specific-properties))
 
-### 4.3 grappa-backendplugin-dockerproxy module
+### 6.3 grappa-backendplugin-dockerproxy module
 
 A grader pool may use a docker proxy backend plugin acting as a layer in between Grappa and the 'real' grader backend
 plugin that resides within a Docker container. Every submission request is delegated from the proxy plugin to the real
@@ -958,7 +977,7 @@ graders
         image_name: "grappa-backend-dummygrader"
 ```
 
-# 5 Modules
+## 7 Modules
 
 The following diagram shows the modules of the Grappa system and the dependencies between them.
 
@@ -1041,12 +1060,8 @@ All modules currently are built for Java-11-compatibility.
 
 
 
-<!---
-# Workflow
 
--->
-
-# 6 Understanding the Submission Process
+## 8 Understanding the Submission Process
 
 ![Submitting a Proforma Submission](https://github.com/hsh-elc/grappa-webservice/raw/master/documents/concept/images/submitting.png "Submitting a Proforma Submission")
 

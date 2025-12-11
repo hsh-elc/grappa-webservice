@@ -5,7 +5,7 @@
     <groupId>de.hsh.grappa</groupId>
     <artifactId>grappa-webservice-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.7.0</version>
+    <version>2.8.0</version>
 
     <name>grappa-webservice</name>
     <description>A web service for connecting multiple Learn Management Systems (e.g. moodle, LON-CAPA) to multiple
@@ -15,11 +15,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
-        <de.hsh.grappa.grappa-util.version>0.2.1</de.hsh.grappa.grappa-util.version>
         <de.hsh.grappa.grappa-backendplugin.version>0.3.0</de.hsh.grappa.grappa-backendplugin.version>
-        <de.hsh.grappa.grappa-backendplugin-dockerproxy.version>0.3.0
-        </de.hsh.grappa.grappa-backendplugin-dockerproxy.version>
-        <de.hsh.grappa.grappa-webservice.version>2.7.0</de.hsh.grappa.grappa-webservice.version>
         <proforma.version>0.4.0</proforma.version>
     </properties>
 
@@ -37,7 +33,7 @@
             <dependency>
                 <groupId>de.hsh.grappa</groupId>
                 <artifactId>grappa-util</artifactId>
-                <version>${de.hsh.grappa.grappa-util.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>de.hsh.grappa</groupId>
@@ -47,12 +43,12 @@
             <dependency>
                 <groupId>de.hsh.grappa</groupId>
                 <artifactId>grappa-backendplugin-dockerproxy</artifactId>
-                <version>${de.hsh.grappa.grappa-backendplugin-dockerproxy.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>de.hsh.grappa</groupId>
                 <artifactId>grappa-webservice</artifactId>
-                <version>${de.hsh.grappa.grappa-webservice.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>proforma</groupId>
