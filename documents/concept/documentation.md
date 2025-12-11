@@ -975,6 +975,21 @@ graders
 
 The following diagram shows the modules of the Grappa system and the dependencies between them.
 
+The modules are spread across several git repositories:
+- https://github.com/hsh-elc/grappa-webservice
+  + grappa-webservice
+  + grappa-util
+  + grappa-backendstarter
+  + grappa-backendplugin-dummygrader
+  + grappa-backendplugin-dockerproxy
+- https://github.com/hsh-elc/grappa-backendplugin
+  + grappa-backendplugin
+- https://github.com/hsh-elc/proforma
+  + proformaxml
+  + proformaxml-2-1
+  + proformautil
+  + proformautil-2-1
+
 ![Modules](images/components1.png "Modules")
 
 `grappa-webservice` is the largest module and implements the restful webservice. It also operates a Redis cache to store
