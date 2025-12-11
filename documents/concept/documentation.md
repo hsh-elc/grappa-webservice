@@ -1065,7 +1065,7 @@ ProFormA version without modifications.
 `grappa-util` is a module of useful routines that are not specific to Grappa or ProFormA. Think about one of the Apache
 commons projects and you get the point about `grappa-util`.
 
-All modules currently are built for Java-11-compatibility.
+All modules currently are built for Java-17-compatibility.
 
 
 
