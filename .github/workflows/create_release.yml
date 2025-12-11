@@ -1,0 +1,18 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+  
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: TODO
+        run: |
+          echo "tbd"
+
