@@ -60,6 +60,7 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
     private String dockerHost;
     private String dockerContainerImage;
 
+    private String runContainerInDockerNetwork;
     private String copySubmissionToDirectoryPath;
     private String responseResultDirectoryPath;
     private String graderBpPropertiesDirectoryPath;
@@ -90,11 +91,17 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
         this.gradeProcId = graderProcessId;
     }
 
-    public void setDockerPrefs(String host, String imageName,
+    public void setDockerPrefs(String host, String imageName, String runContainerInDockerNetwork,
                                String copySubmissionToDirPath, String loadResponseFromDirPath, String copyGraderPluginDefaultsPropertiesToFile) {
 
         dockerHost = host;
         dockerContainerImage = imageName;
+
+        if (runContainerInDockerNetwork != null && !runContainerInDockerNetwork.equals("")) {
+            this.runContainerInDockerNetwork = runContainerInDockerNetwork;
+        } else {
+            this.runContainerInDockerNetwork = null;
+        }
 
         //set these paths fix (if not specified), since the BackendStarter relies on them
         if (copySubmissionToDirPath != null && !copySubmissionToDirPath.equals("")) {
@@ -157,7 +164,11 @@ public class DockerProxyBackendPlugin extends BackendPlugin {
                 "SYSPROPS=" + String.join(" ", sysProps));
             log.info("[GraderId: '{}', GradeProcId: '{}']: passing environment '{}'...",
                 graderId, gradeProcId, environment.toString());
-            String containerId = DockerController.createContainer(dockerClient, dockerContainerImage, environment);
+            log.info("[GraderId: '{}', GradeProcId: '{}']: passing docker bridge network '{}'...",
+                    graderId, gradeProcId, runContainerInDockerNetwork);
+
+            String containerId = DockerController.createContainer(dockerClient, dockerContainerImage, environment, runContainerInDockerNetwork);
+
             log.info("[GraderId: '{}', GradeProcId: '{}']: Container with id '{}' created, env={}",
                 graderId, gradeProcId, containerId, environment);
 

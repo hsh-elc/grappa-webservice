@@ -2,13 +2,17 @@ package de.hsh.grappa.backendplugin.dockerproxy;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.Network;
 import de.hsh.grappa.util.Tar;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -28,11 +32,30 @@ class DockerController { // TODO: refactor to ctor(dockerClient, containerId)
         }
     }
 
-    public static String createContainer(DockerClient client, String imageId, List<String> environment) throws Exception {
-        String id = client.createContainerCmd(imageId)
-            .withEnv(environment)
-            .exec().getId();
-        return id;
+    /**
+     * Create a docker container with the given parameters.
+     *
+     * @param client
+     * @param imageId
+     * @param environment
+     * @param network The network in which the container should be started.
+     *                Can be null if the container should not be started in a specific docker network.
+     *                The docker network will be automatically created if it does not exist already.
+     * @return
+     * @throws Exception
+     */
+    public static String createContainer(DockerClient client, String imageId, List<String> environment, String network) throws Exception {
+        CreateContainerCmd cmd = client.createContainerCmd(imageId).withEnv(environment);
+
+        if (network != null && !network.equals("")) {
+            Collection<Network> networks = client.listNetworksCmd().withNameFilter(network).exec();
+            if (networks.isEmpty()) { //Network does not exist, create it
+                client.createNetworkCmd().withName(network).exec();
+            }
+            cmd = cmd.withHostConfig(HostConfig.newHostConfig().withNetworkMode(network));
+        }
+
+        return cmd.exec().getId();
     }
 
     public static void startContainer(DockerClient client, String containerId) throws Exception {
