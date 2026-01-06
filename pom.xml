@@ -15,7 +15,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
-        <de.hsh.grappa.grappa-backendplugin.version>0.3.0</de.hsh.grappa.grappa-backendplugin.version>
+        <de.hsh.grappa.grappa-backendplugin.version>0.3.1</de.hsh.grappa.grappa-backendplugin.version>
         <proforma.version>0.4.1</proforma.version>
     </properties>
 
