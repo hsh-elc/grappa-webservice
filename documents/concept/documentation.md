@@ -22,6 +22,7 @@ environment, checkout the [developers documentation](developers.md).
       + [3.3 Building and Deployment](#33-building-and-deployment)
       + [3.4 Configuration](#34-configuration)
    * [4 Installing Graders](#4-installing-graders)
+      + [4.1 Connection to other containers on the same host system](#41-connection-to-other-containers-on-the-same-host-system)
    * [5 REST API](#5-rest-api)
       + [Get web service status](#get-web-service-status)
       + [Grade a Proforma submission](#grade-a-proforma-submission)
@@ -418,6 +419,36 @@ docker pull ghcr.io/hsh-elc/grappa-backend-dummygrader:latest
 ```
 
 Finally, configure Grappa to use the grader in Grappa's [configuration file](#34-configuration).
+
+### 4.1 Connection to other containers on the same host system
+
+If a grader needs to connect to another Docker container on the same host,
+a Docker bridge network can be used.
+On a user-defined bridge network, containers can access other containers in the same bridge network by name. 
+(See: [Docker documentation](https://docs.docker.com/engine/network/drivers/bridge/) for more details).
+
+To configure this, the option `run_container_in_docker_network` can be added 
+under the `docker_jvm_bp` section in Grappa's [configuration file](#34-configuration) for the corresponding grader.
+
+For example: 
+```yaml
+docker_jvm_bp:
+    run_container_in_docker_network: "asqlg_network"
+```
+
+Grappa automatically creates the Docker bridge network before grading if it does not already exist.
+Alternatively, the network can also be created directly using `docker network create` (e.g., `docker network create asqlg_network`).
+
+The container that should be accessed from within the grader must be started in the same network using the `--network` option and must have a name assigned via `--name`.
+For example: 
+```bash
+docker run --network=asqlg_network --name postgres_db -d postgres:latest
+```
+
+The container can then be accessed from within the grader by its name (e.g., `postgres_db`) instead of its IP address.
+
+
+
 
 ## 5 REST API
 
