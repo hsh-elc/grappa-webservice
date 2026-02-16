@@ -109,7 +109,7 @@ jobs:
             BRANCH=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')
             echo "-current branch: '${BRANCH}'"
       
-            if [[ "$BRANCH" == "master" ]]; then
+            if [[ "$BRANCH" == "master" || "$BRANCH" == release* ]]; then
               IMAGE_TAG=$IMAGE_VERSION
               # Use Docker `latest` tag convention
               docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_TAG
