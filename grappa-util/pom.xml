@@ -9,7 +9,6 @@
     </parent>
 
     <artifactId>grappa-util</artifactId>
-    <version>0.2.1</version>
 
     <name>grappa-util</name>
 

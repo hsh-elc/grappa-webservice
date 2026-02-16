@@ -15,24 +15,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
-        <de.hsh.grappa.grappa-util.version>0.2.1</de.hsh.grappa.grappa-util.version>
-        <de.hsh.grappa.grappa-backendplugin.version>0.3.0</de.hsh.grappa.grappa-backendplugin.version>
-        <de.hsh.grappa.grappa-backendplugin-dockerproxy.version>0.3.0
-        </de.hsh.grappa.grappa-backendplugin-dockerproxy.version>
-        <de.hsh.grappa.grappa-webservice.version>2.7.0</de.hsh.grappa.grappa-webservice.version>
-        <proforma.proformaxml.version>0.4.0</proforma.proformaxml.version>
-        <proforma.proformautil.version>0.4.0</proforma.proformautil.version>
-        <proforma.proformaxml-2-1.version>0.4.0</proforma.proformaxml-2-1.version>
-        <proforma.proformautil-2-1.version>0.4.0</proforma.proformautil-2-1.version>
+        <de.hsh.grappa.grappa-backendplugin.version>0.3.1</de.hsh.grappa.grappa-backendplugin.version>
+        <proforma.version>0.4.1</proforma.version>
     </properties>
 
     <modules>
-        <module>proformaxml</module>
-        <module>proformautil</module>
-        <module>proformaxml-2-1</module>
-        <module>proformautil-2-1</module>
         <module>grappa-util</module>
-        <module>grappa-backendplugin</module>
         <module>grappa-webservice</module>
         <module>grappa-backendplugin-dockerproxy</module>
         <!--        <module>grappa-grader-environment-vagrant</module>-->
@@ -45,7 +33,7 @@
             <dependency>
                 <groupId>de.hsh.grappa</groupId>
                 <artifactId>grappa-util</artifactId>
-                <version>${de.hsh.grappa.grappa-util.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>de.hsh.grappa</groupId>
@@ -55,32 +43,32 @@
             <dependency>
                 <groupId>de.hsh.grappa</groupId>
                 <artifactId>grappa-backendplugin-dockerproxy</artifactId>
-                <version>${de.hsh.grappa.grappa-backendplugin-dockerproxy.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>de.hsh.grappa</groupId>
                 <artifactId>grappa-webservice</artifactId>
-                <version>${de.hsh.grappa.grappa-webservice.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>proforma</groupId>
                 <artifactId>proformaxml</artifactId>
-                <version>${proforma.proformaxml.version}</version>
+                <version>${proforma.version}</version>
             </dependency>
             <dependency>
                 <groupId>proforma</groupId>
                 <artifactId>proformautil</artifactId>
-                <version>${proforma.proformautil.version}</version>
+                <version>${proforma.version}</version>
             </dependency>
             <dependency>
                 <groupId>proforma</groupId>
                 <artifactId>proformaxml-2-1</artifactId>
-                <version>${proforma.proformaxml-2-1.version}</version>
+                <version>${proforma.version}</version>
             </dependency>
             <dependency>
                 <groupId>proforma</groupId>
                 <artifactId>proformautil-2-1</artifactId>
-                <version>${proforma.proformautil-2-1.version}</version>
+                <version>${proforma.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>

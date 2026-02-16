@@ -1,0 +1,87 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'master'
+  
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: maven
+
+      - name: Set Release version env variable
+        run: |
+          echo "RELEASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      - name: Download dependencies from github
+        run: |
+          chmod +x mvnInstallDependenciesFromGithub.sh
+          ./mvnInstallDependenciesFromGithub.sh
+
+      - name: Build with Maven
+        run: |
+          mvn -DskipTests --batch-mode --update-snapshots --also-make clean package
+
+      - name: Provide files
+        run: |
+          destdir="${RUNNER_TEMP}/dist/"
+          mkdir "$destdir"
+          for subdir in grappa-backendplugin-dockerproxy grappa-backendplugin-dummygrader grappa-backendstarter grappa-util; do
+              jarname=$subdir/target/$subdir-${{ env.RELEASE_VERSION }}.jar
+              if [ -e $jarname ];  then
+                  cp -v $jarname "$destdir"
+              fi
+              jarname2=$subdir/target/$subdir-${{ env.RELEASE_VERSION }}-jar-with-dependencies.jar
+              if [ -e $jarname2 ];  then
+                  cp -v $jarname2 "$destdir"
+              fi
+              cp -v $subdir/pom.xml "$destdir/$subdir-${{ env.RELEASE_VERSION }}.pom"
+          done
+          warname=grappa-webservice/target/grappa-webservice-${{ env.RELEASE_VERSION }}.war
+          if [ -e $warname ];  then
+              cp -v $warname "$destdir"
+          fi
+          cp -v grappa-webservice/pom.xml "$destdir/grappa-webservice-${{ env.RELEASE_VERSION }}.pom"
+          cp -v pom.xml "$destdir/grappa-webservice-parent-${{ env.RELEASE_VERSION }}.pom"
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get branch name and repace special chars into "-"
+          BRANCH=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')
+          STAMP=$(TZ=Europe/Berlin date +%0Y%0m%0d-%0H%0M%0S)
+          echo "Current branch: '${BRANCH}'"
+          echo "Files to be included into release ${{ env.RELEASE_VERSION }}:"
+          ls "${RUNNER_TEMP}/dist/"
+          if [[ "$BRANCH" == "master" ]]; then
+            THE_TAG="${{ env.RELEASE_VERSION }}"
+            gh release create "v$THE_TAG" \
+              --verify-tag \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${GITHUB_REPOSITORY#*/}-$THE_TAG" \
+              "${RUNNER_TEMP}/dist/*"
+          else
+            THE_TAG="${{ env.RELEASE_VERSION }}-${BRANCH}-${STAMP}"
+            gh release create "v$THE_TAG" \
+              --draft --prerelease \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${GITHUB_REPOSITORY#*/}-$THE_TAG" \
+              "${RUNNER_TEMP}/dist/*"
+          fi

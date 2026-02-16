@@ -9,7 +9,6 @@
     </parent>
 
     <artifactId>grappa-backendplugin-dockerproxy</artifactId>
-    <version>0.3.0</version>
     <packaging>jar</packaging>
 
     <name>grappa-backendplugin-dockerproxy</name>

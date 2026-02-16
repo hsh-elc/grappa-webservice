@@ -9,7 +9,6 @@
     </parent>
 
     <artifactId>grappa-backendstarter</artifactId>
-    <version>1.1.0</version>
     <!--  <packaging>jar</packaging>-->
 
     <name>grappa-backendstarter</name>

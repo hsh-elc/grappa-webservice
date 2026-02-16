@@ -13,9 +13,9 @@ RUN apt-get -qq update && apt-get -yq install \
      nano vim \
      && rm -rf /var/lib/apt/lists/*
 
-ENV CATALINA_HOME /usr/share/tomcat9
-ENV CATALINA_BASE /var/lib/tomcat9
-ENV PATH $CATALINA_HOME/bin:$PATH
+ENV CATALINA_HOME=/usr/share/tomcat9
+ENV CATALINA_BASE=/var/lib/tomcat9
+ENV PATH=$CATALINA_HOME/bin:$PATH
 
 ADD ["grappa-webservice-2.war",  "$CATALINA_BASE/webapps"]
 
