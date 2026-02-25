@@ -28,6 +28,8 @@ on:
     workflows: [ "Java2Docker Baseimage" ]
     types:
       - completed
+    branches:
+      'master'
 
 env:
   # image name for this workflow
