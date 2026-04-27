@@ -9,7 +9,7 @@ The following description references individual settings described [here](1_sett
 
 ## MooPT
 
-The MooPT extension of Moodle consists of three plugins: a qtype plugin and two qbehaviour plugins.
+The MooPT extension of Moodle consists of three plugins: a qtype plugin and several qbehaviour plugins.
 
 ### Download / fetch plugins
 

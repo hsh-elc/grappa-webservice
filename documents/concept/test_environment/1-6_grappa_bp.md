@@ -17,7 +17,7 @@ Add the following lines into ```/etc/grappa/grappa-config.yaml``` below the ```g
 graders:
   - id:
       name: "DummyGrader"
-      version: "1.0"
+      version: "2.8"
     display_name: "DummyGrader"
     enabled: true  
     timeout_seconds: 60
@@ -36,18 +36,18 @@ graders:
       image_name: ghcr.io/hsh-elc/grappa-backend-dummygrader:latest
 ```
 
-### Graja 2.3
+### Graja 2.6
 Add the following lines into ```C:\etc\grappa\grappa-config.yaml``` below the ```graders: ``` section, so it looks like this:
 ```
 graders:
   - id: 
       name: "DummyGrader"
-      version: "1.0"
+      version: "2.8"
   ...
   - id:
       name: "Graja"
-      version: "2.3"
-    display_name: "Graja2.3"
+      version: "2.6"
+    display_name: "Graja2.6"
     proglangs: ["java"]
     enabled: true 
     timeout_seconds: 60
@@ -63,7 +63,7 @@ graders:
     user_country: DE
     operating_mode: docker_jvm_bp
     docker_jvm_bp:        
-      image_name: "ghcr.io/hsh-elc/grappa-backendplugin-graja:2.3.0.0-develop" 
+      image_name: "ghcr.io/hsh-elc/grappa-backendplugin-graja:2.6.0.2" 
 ```
 
 ### GraFlap
@@ -72,11 +72,11 @@ Add the following lines into ```C:\etc\grappa\grappa-config.yaml``` below the ``
 graders:
   - id: 
       name: "DummyGrader"
-      version: "1.0"
+      version: "2.8"
   ...
   - id: 
       name: "Graja"
-      version: "2.3"
+      version: "2.6"
   ...
   - id:
       name: "Graflap"
@@ -137,7 +137,7 @@ You should see a list like this:
 ```
 REPOSITORY                                     TAG                IMAGE ID       CREATED         SIZE
 ghcr.io/hsh-elc/grappa-backend-dummygrader     latest             6d748bbb9a1a   4 minutes ago   779MB
-ghcr.io/hsh-elc/grappa-backendplugin-graja     2.3.0.0-develop    249db441a45a   4 minutes ago   1.07GB
+ghcr.io/hsh-elc/grappa-backendplugin-graja     2.6.0.2            249db441a45a   4 minutes ago   1.07GB
 ghcr.io/hsh-elc/grappa-backendplugin-graflap   latest             8881fde3a039   4 minutes ago   788MB
 hello-world                                    latest             d1165f221234   3 months ago    13.3kB
 ```
@@ -147,8 +147,8 @@ hello-world                                    latest             d1165f221234  
 Restart Tomcat and watch the output. There should be lines like these:
 
 ```
-2023-02-25 16:54:27,252 INFO  d.h.g.s.GraderPool - Using grader 'DummyGrader(1.0)' with 5 concurrent instances in docker_jvm_bp mode.
-2023-02-25 16:54:27,254 INFO  d.h.g.s.GraderPool - Using grader 'Graja(2.3)' with 5 concurrent instances in docker_jvm_bp mode.
+2023-02-25 16:54:27,252 INFO  d.h.g.s.GraderPool - Using grader 'DummyGrader(2.8)' with 5 concurrent instances in docker_jvm_bp mode.
+2023-02-25 16:54:27,254 INFO  d.h.g.s.GraderPool - Using grader 'Graja(2.6)' with 5 concurrent instances in docker_jvm_bp mode.
 2023-02-25 16:54:27,254 INFO  d.h.g.s.GraderPool - Using grader 'Graflap(1.0)' with 5 concurrent instances in docker_jvm_bp mode.
 ```
 

@@ -10,7 +10,7 @@ The following description references individual settings described [here](1_sett
 
 ### Installation
 
-Install Xampp with php version 7.4 (switch off the virus protection on access scan) to folder {xampp.home}.
+Install Xampp with php version 8.2 (switch off the virus protection on access scan) to folder {xampp.home}.
 
 ### Configuration
 
@@ -52,9 +52,9 @@ This allows for the import of larger database dumps.
 
 ## Moodle
 
-Download Moodle 3.10.3+
+Download Moodle 5.1
 
-Install Moodle as described in https://docs.moodle.org/310/en/Installation_quick_guide, i. e.
+Install Moodle as described in https://docs.moodle.org/501/en/Installation_quick_guide, i. e.
 
 * Unzip the downloaded zip into {xampp.home}\htdocs\moodle
 * On the webinterface {localip}:{apache.port} go to phpMyAdmin and do the following:
@@ -80,7 +80,7 @@ Install Moodle as described in https://docs.moodle.org/310/en/Installation_quick
 
       extension=intl extension=xmlrpc extension=soap
 
-    - opcache not needed (see also https://docs.moodle.org/310/en/OPcache). If needed, you could configure:
+    - opcache not needed (see also https://docs.moodle.org/501/en/OPcache). If needed, you could configure:
 
       opcache.enable=1 opcache.memory_consumption=128 opcache.max_accelerated_files=10000 opcache.use_cwd=1
       opcache.validate_timestamps=1 opcache.save_comments=1 opcache.enable_file_override=0
@@ -175,12 +175,11 @@ Optionally you could make the following changes to the configuration of the plug
 
 Moodle documentation for developers:
 
-* https://docs.moodle.org/dev/Main_Page
-* https://docs.moodle.org/dev/Finding_your_way_into_the_Moodle_code
+* https://moodledev.io/
 * https://docs.moodle.org/en/Developer_tools
 * https://docs.moodle.org/en/Debugging
 * https://docs.moodle.org/en/Administration_via_command_line
-* https://wimski.org/api/3.10/classes.html
+* https://wimski.org/api/5.1/classes.html
 
 Moodle documentation for developers of question type plugins:
 

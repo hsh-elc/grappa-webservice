@@ -66,7 +66,7 @@ subfolder do a right click > Import > Existing Maven Project.
 We build Grappa on the command line using Maven.
 
 In a WSL-Terminal we build Grappa
-following `https://github.com/hsh-elc/grappa-webservice/blob/develop/documents/concept/documentation.md#23-building-and-deployment`
+following `https://github.com/hsh-elc/grappa-webservice/blob/develop/documents/concept/documentation.md#33-building-and-deployment`
 .
 
 Change to the mounted directory corresponding to {workspace.path} (note the backticks!):
@@ -81,6 +81,15 @@ Then:
 sudo apt install maven
 
 cd `wslpath "{workspace.path}"`/github_hsh-elc_grappa-webservice
+```
+
+Download and install dependencies for java libraries from github: 
+```
+./mvnInstallDependenciesFromGithub.sh
+```
+
+Then build Grappa:
+```
 sudo mvn package -DskipTests
 ```
 
@@ -90,7 +99,7 @@ In a WSL terminal:
 
 ```
 cd `wslpath "{workspace.path}"`/github_hsh-elc_grappa-webservice
-sudo cp grappa-webservice/target/grappa-webservice-2.5.0.war `/var/lib/tomcat9/webapps/grappa-webservice-2.war
+sudo cp grappa-webservice/target/grappa-webservice-2.8.0.war `/var/lib/tomcat9/webapps/grappa-webservice-2.war
 ```
 
 Check in Tomcat Manager if the Grappa webapp has been reconized by Tomcat: `http://{wslip}:{tomcat.port}/manager/html`
