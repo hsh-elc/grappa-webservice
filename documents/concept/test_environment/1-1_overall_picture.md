@@ -11,7 +11,7 @@ Currently this description assumes a windows computer running xampp and WSL.
 
 You need to install a web server (Apache), a database (MySQL), and PHP as well as Tomcat, Redis and Docker. You also
 need WSL and (as a proposal) eclipse as your IDE. Some Grappa backend plugins need Gradle as a build tool. Grappa will
-be built using Maven. As Java versions you need JDK SE 10 and (for some graders) JDK SE 8.
+be built using Maven. As Java versions you need JDK SE 17.
 
 * Apache, MySQL and PHP come with the xampp distribution and will run on Windows.
 * Eclipse will run on Windows.

@@ -30,7 +30,7 @@ Then download the wsl-installer wsl_update_x64.msi and execute it.
 Open Powershell as Admin. Type:
 `wsl --set-default-version 2`
 
-Go to the Microsoft Store and select Ubuntu 20.04 wählen. Download it (about 0,5 GB). Then "Start" (or altenatively
+Go to the Microsoft Store and select Ubuntu 26.04. Download it (about 0,5 GB). Then "Start" (or altenatively
 type `wsl.exe` in a command prompt "cmd"). Take a coffee break.
 
 Set up a unix user:
@@ -50,7 +50,7 @@ sudo apt-get install net-tools
 
 ### Use it
 
-You could open more than one WSL terminal, by typing `ubuntu2004` in a cmd command prompt.
+You could open more than one WSL terminal, by typing `ubuntu2604` in a cmd command prompt.
 
 If you want to query the IP of the WSL guest, on a Windows cmd prompt type: `wsl hostname -I`. The ip changes on every
 WSL startup.
