@@ -31,6 +31,7 @@ Currently we have:
 
 - [Quickly set up Docker-Compose Test Environment for Grappa and MooPT](https://github.com/hsh-elc/grappa-moopt-test-env-docker)
 - [Setting up a development computer (Win10) for MooPT and Grappa](test_environment/1_setting_up.md)
+- [Setting up a development computer (Debian) for MooPT and Grappa](test_environment/debian/setting_up.md)
 - [Setup dev. Servers for MooPT and Grappa as Virtual Box VMs](test_environment/vb_vms.md)
 
 # Building Grader Docker Images for Grappa
@@ -270,9 +271,4 @@ jobs: [...]
 
 Viewing your GitHub Packages usage follow:  
 Profile (/Organisation) ->Settings ->Access ->Billing and plans  
-Shorthand: https://docs.github.com/en/billing/managing-billing-for-github-packages/viewing-your-github-packages-usage 
-
-
-
-
-
+Shorthand: https://docs.github.com/en/billing/managing-billing-for-github-packages/viewing-your-github-packages-usage
